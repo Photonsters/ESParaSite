@@ -6,6 +6,7 @@ The idea for this project is to make use of the empty ESP01 slot available on th
 something like this dashboard
 ![image](https://user-images.githubusercontent.com/11083514/52355578-774c6880-2a2a-11e9-8e68-ede82868c0f7.png)
 
+![image](https://user-images.githubusercontent.com/11083514/54575800-76293680-49ed-11e9-9d85-362e04bd88fa.png)
 
 Reference projects
 https://homecircuits.eu/blog/battery-powered-esp8266-iot-logger/
