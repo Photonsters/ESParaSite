@@ -1,0 +1,67 @@
+// ESParasite Attributions
+
+/* ESParasite Data Logger v0.1 (2019/04/02)
+	Authors: Andy  (SolidSt8Dad)Eakin
+			
+	
+	All Derived Content is subject to the most licence of it's source.
+	
+	All Original content is free and unencumbered software released into the public domain.
+*/
+
+//This project contains derivative code and libraries from the following projects: (With much gratitude)
+
+
+/*
+ 
+ DHTServer - ESP8266 Webserver with a DHT sensor as an input
+https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver?view=all
+   Based on ESP8266Webserver, DHTexample, and BlinkWithoutDelay (thank you)
+
+   Version 1.0  5/3/2014  Version 1.0   Mike Barela for Adafruit Industries
+*/  
+ 
+ 
+ 
+/*
+ Arduino library for the DHT11, DHT12, DHT22, DHT33, DHT44 and clone temperature and humidity sensors
+  https://github.com/dplasa/dht
+ 
+ * dht.h
+ *
+ * Version 0.52
+ *
+ * DHTxx Temperature and humidity sensor library for Arduino.
+ *
+ * See http://playground.arduino.cc/main/DHT11Lib 
+ * See http://playground.arduino.cc/main/DHTLib 
+ *
+ * License:   GPL v3 (http://www.gnu.org/licenses/gpl.html)
+ * Datasheet: http://www.micro4you.com/files/sensor/DHT11.pdf
+ *
+ * Modification History:
+ *   - George Hadjikyriacou                     - Version 0.1 (??)
+ *   - SimKard                                  - Version 0.2 (24/11/2010)
+ *   - Rob Tillaart                             - Version 0.3 (28/03/2011)
+ *       * Added comments
+ *       * Removed all non-DHT11 specific code
+ *       * Added References
+ *   - Rob Tillaart                             - Version 0.4 (17/03/2012)
+ *       * Added Arduino 1.0 support
+ *   - Rob Tillaart                             - Version 0.4.1 (19/05/2012)
+ *       * Added error codes
+ *   - Andy Dalton                              - Version 0.5 (13/09/2013)
+ *       * Replaced magic numbers with named constants
+ *       * Factored out repeated code into a helper method.
+ *       * Made pin a parameter to the constructor instead of a parameter
+ *         to read()
+ *       * Changed the error codes to an enumeration
+ *       * Update the temp/humidity only if the checksum is correct
+ *       * Added more comments
+ *   - Daniel Plasa                             - Version 0.52 (13/09/2016)
+ *      * Merged in a dew point function
+ *      * Merged in  code from DHTlib for DHT22,33,44 ...
+ *      * Merged in code from https://github.com/Bobadas/DHT12_library_Arduino
+ *        for DHT12 (I2C communication) support
+*/
+
