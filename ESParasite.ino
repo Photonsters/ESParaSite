@@ -2,9 +2,9 @@
 	Authors: Andy  (SolidSt8Dad)Eakin
 
 
-	Please see /attrib.txt for full credits and OSS License Info
-  Please see /libraries.txt for necessary libraries
-  Please see /VersionHistory.txt for Hstory
+	Please see /ATTRIB for full credits and OSS License Info
+  	Please see /LIBRARIES for necessary libraries
+  	Please see /VERSION for Hstory
 
 	All Content is subject to the most restrictive licence of it's source.
 
