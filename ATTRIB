@@ -1,10 +1,13 @@
 // ESParasite Attributions
 
-/* ESParasite Data Logger v0.1 (2019/04/02)
+/* ESParasite Data Logger v0.1
 	Authors: Andy  (SolidSt8Dad)Eakin
-			
 	
-	All Derived Content is subject to the most licence of it's source.
+	Please see /ATTRIB for full credits and OSS License Info
+  	Please see /LIBRARIES for necessary libraries
+  	Please see /VERSION for Hstory
+	
+	All Derived Content is subject to the most restrictive licence of it's source.
 	
 	All Original content is free and unencumbered software released into the public domain.
 */
@@ -13,8 +16,7 @@
 
 
 /*
- 
- DHTServer - ESP8266 Webserver with a DHT sensor as an input
+  DHTServer - ESP8266 Webserver with a DHT sensor as an input
 https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver?view=all
    Based on ESP8266Webserver, DHTexample, and BlinkWithoutDelay (thank you)
 
