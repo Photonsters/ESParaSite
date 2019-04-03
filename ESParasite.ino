@@ -1,14 +1,13 @@
 /* ESParasite Data Logger v0.1
 	Authors: Andy (DocMadmag) Eakin
-
-
+	
 	Please see /ATTRIB for full credits and OSS License Info
   	Please see /LIBRARIES for necessary libraries
   	Please see /VERSION for Hstory
-
-	All Content is subject to the most restrictive licence of it's source.
-
-	All Original content is released under Creative Commons (BY-NC-SA)
+	
+	All Derived Content is subject to the most restrictive licence of it's source.
+	
+	All Original content is free and unencumbered software released into the public domain.
 */
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
