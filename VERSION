@@ -24,7 +24,7 @@ v0.2 - Second Release - Bed Bugs- 2019-04-07
 		- Chamber - The printing chamber itself. (Temp, Humidity, Dewpoint)
 		- Optics - The LCD Screen and UV LED (UV, Visible light, IR light, LED Temp and LCD Temp)
 		- Enclosure - The base of the printer that contains the MainBoard and Optics (Temperature)
-		- All classes have a timestamp as part of the retun value.	
+		- All classes have a timestamp as part of the return value.	
 */
 /*
 v0.1 - Initial release! - Amebiasis - 2019-04-03
