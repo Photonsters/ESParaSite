@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Used Libraries
 
 si1145
@@ -30,3 +31,37 @@ Adafruit Unified Sensor Library
 https://github.com/adafruit/Adafruit_Sensor
 Adafruit DHT11/22 Library
 https://github.com/adafruit/DHT-sensor-library
+=======
+Used Libraries
+
+si1145
+https://github.com/adafruit/Adafruit_SI1145_Library
+
+DHT12
+https://github.com/dplasa/dht
+
+MLX90614
+https://github.com/adafruit/Adafruit-MLX90614-Library
+
+DS3231/AT24C32
+https://github.com/sleemanj/DS3231_Simple
+
+
+
+Unused (but useful) Libraries 
+
+DS3231
+https://www.arduinolibraries.info/libraries/ds3231
+
+Above is a Splice of:
+https://github.com/adafruit/RTClib
+http://hacks.ayars.org/2011/04/ds3231-real-time-clock.html
+
+AT24C32
+https://github.com/cyberp/AT24Cx
+
+Adafruit Unified Sensor Library
+https://github.com/adafruit/Adafruit_Sensor
+Adafruit DHT11/22 Library
+https://github.com/adafruit/DHT-sensor-library
+>>>>>>> 6a48cd1fc1a774e59301ed8a21ca09765e535155
