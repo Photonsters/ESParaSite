@@ -1,4 +1,6 @@
-/* ESParasite Data Logger v0.2
+//ESParaSite_Core.cpp
+
+/* ESParasite Data Logger v0.3
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info

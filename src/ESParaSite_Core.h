@@ -1,6 +1,6 @@
 //ESParaSite_Core.h
 
-/* ESParaSite Data Logger v0.2
+/* ESParaSite Data Logger v0.3
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
