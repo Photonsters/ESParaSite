@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //ESParasite VERSION HISTORY
 
 /* ESParasite Data Logger v0.1
@@ -44,3 +45,51 @@ v0.1 - Initial release! - Amebiasis - 2019-04-03
 		- SI1145 UV index is available by querying http://<ipaddress>/uvledStatus
 	-Lots left to do!
 */
+=======
+//ESParasite VERSION HISTORY
+
+/* ESParasite Data Logger v0.1
+	Authors: Andy (DocMadmag) Eakin
+	
+	Please see /ATTRIB for full credits and OSS License Info
+  	Please see /LIBRARIES for necessary libraries
+  	Please see /VERSION for Hstory
+	
+	All Derived Content is subject to the most restrictive licence of it's source.
+	
+	All Original content is free and unencumbered software released into the public domain.
+*/
+
+/*
+v0.2 - Second Release - Bed Bugs- 2019-04-07
+	- Adds support for the BME280 Sensor (For Ambient Temperature, Temperature, Humidity and Altitude.)
+	- Nearly all code has been refactored! (I just love saying that) Since we are relying on 3rd party open source libraries, 
+		each one is a bit different in how it behaves. Refactoring has prioritized standardization across the main functions 
+		and attempted to limit snowflakes to the functions that talk to the various sensor libraries.
+	- HTTP server re-created as RESTful api with JSON returns. (Currently GET only)
+	- Sensor data has been organized into 4 key groupings or "classes" 
+		- Ambient - The room an environment in which the printer lives (Temp, Humidity, Barometric Pressure, Altitude)
+		- Chamber - The printing chamber itself. (Temp, Humidity, Dewpoint)
+		- Optics - The LCD Screen and UV LED (UV, Visible light, IR light, LED Temp and LCD Temp)
+		- Enclosure - The base of the printer that contains the MainBoard and Optics (Temperature)
+		- All classes have a timestamp as part of the return value.	
+*/
+/*
+v0.1 - Initial release! - Amebiasis - 2019-04-03
+	- What it does:
+		- Connects to Wifi
+		- Launches a webserver
+		- opens I2C communication
+		- Talks to the following sensors:
+			- DHT12 (untested)
+			- MLX90614
+			- SI1145
+		- Talks to DS3231
+			- If time not set, sets time to Compile Time
+			- Reads Timestamp
+		- Writes all sensor data to Serial port
+		- DHT12 Temperature and Humidity are available by querying http://<ipaddress>/chamberTemp and /chamberHumidity
+		- SI1145 UV index is available by querying http://<ipaddress>/uvledStatus
+	-Lots left to do!
+*/
+>>>>>>> 6a48cd1fc1a774e59301ed8a21ca09765e535155

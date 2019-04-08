@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // ESParasite Required Libraries
 
 /* ESParasite Data Logger v0.1
@@ -35,3 +36,42 @@ https://github.com/adafruit/Adafruit_Sensor
 dplasa/dht
 https://github.com/dplasa/dht
 
+=======
+// ESParasite Required Libraries
+
+/* ESParasite Data Logger v0.1
+	Authors: Andy (DocMadmag) Eakin
+	
+	Please see /ATTRIB for full credits and OSS License Info
+  	Please see /LIBRARIES for necessary libraries
+  	Please see /VERSION for Hstory
+	
+	All Derived Content is subject to the most restrictive licence of it's source.
+	
+	All Original content is free and unencumbered software released into the public domain.
+*/
+
+Visit https://github.com/esp8266/Arduino for instructions on setting up the ESP8266 with the Arduino IDE
+
+
+This Sketch depends on the folowing libraries:
+
+***Installed through Library Manager
+Makuna/Rtc
+https://github.com/Makuna/Rtc/wiki
+
+adafruit/Adafruit-MLX90614-Library
+https://github.com/adafruit/Adafruit-MLX90614-Library
+
+adafruit/Adafruit_SI1145_Library
+https://github.com/adafruit/Adafruit_SI1145_Library
+
+adafruit/Adafruit_Sensor
+https://github.com/adafruit/Adafruit_Sensor
+
+
+****Installed Manually
+dplasa/dht
+https://github.com/dplasa/dht
+
+>>>>>>> 6a48cd1fc1a774e59301ed8a21ca09765e535155

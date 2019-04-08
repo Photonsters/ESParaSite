@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // ESParasite Attributions
 
 /* ESParasite Data Logger v0.2
@@ -160,3 +161,167 @@ https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver?view=all
  *        for DHT12 (I2C communication) support
 */
 
+=======
+// ESParasite Attributions
+
+/* ESParasite Data Logger v0.2
+	Authors: Andy (DocMadmag) Eakin
+	
+	Please see /ATTRIB for full credits and OSS License Info
+  	Please see /LIBRARIES for necessary libraries
+  	Please see /VERSION for Hstory
+	
+	All Derived Content is subject to the most restrictive licence of it's source.
+	
+	All Original content is free and unencumbered software released into the public domain.
+	
+	The Authors are extremely grateful for the amazing open source communities that work to support all of the sensors, microcontrollers, web standards, etc.
+	
+*/
+
+//This project contains derivative code and libraries from the following projects: (With much gratitude)
+
+
+//ESP8266 Community
+// https://github.com/esp8266
+
+/*
+ ESP8266WiFi.h - esp8266 Wifi support.
+ Based on WiFi.h from Arduino WiFi shield library.
+ Copyright (c) 2011-2014 Arduino.  All right reserved.
+ Modified by Ivan Grokhotkov, December 2014
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+ 
+//Arduino
+// https://github.com/arduino/Arduino
+ 
+ /*
+ * This file is part of Arduino.
+ *
+ * Arduino is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * As a special exception, you may use this file as part of a free software
+ * library without restriction.  Specifically, if other files instantiate
+ * templates or use macros or inline functions from this file, or you compile
+ * this file and link it with other files to produce an executable, this
+ * file does not by itself cause the resulting executable to be covered by
+ * the GNU General Public License.  This exception does not however
+ * invalidate any other reasons why the executable file might be covered by
+ * the GNU General Public License.
+ *
+ * Copyright 2015 Arduino LLC (http://www.arduino.cc/)
+ */
+ 
+ 
+//Arduino JSON
+//https://github.com/bblanchon/ArduinoJson
+ 
+// ArduinoJson - arduinojson.org
+// Copyright Benoit Blanchon 2014-2019
+// MIT License
+ 
+ 
+//Adafruit
+//https://github.com/adafruit
+
+//Adafruit Sensor
+//Adafruit SI1145
+//Adafruit MLX90614
+      
+/*
+* Copyright (C) 2008 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software< /span>
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+ 
+ 
+ 
+/*
+  DHTServer - ESP8266 Webserver with a DHT sensor as an input
+https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver?view=all
+   Based on ESP8266Webserver, DHTexample, and BlinkWithoutDelay (thank you)
+
+   Version 1.0  5/3/2014  Version 1.0   Mike Barela for Adafruit Industries
+*/  
+ 
+  
+/*
+ Arduino library for the DHT11, DHT12, DHT22, DHT33, DHT44 and clone temperature and humidity sensors
+  https://github.com/dplasa/dht
+ 
+ * dht.h
+ *
+ * Version 0.52
+ *
+ * DHTxx Temperature and humidity sensor library for Arduino.
+ *
+ * See http://playground.arduino.cc/main/DHT11Lib 
+ * See http://playground.arduino.cc/main/DHTLib 
+ *
+ * License:   GPL v3 (http://www.gnu.org/licenses/gpl.html)
+ * Datasheet: http://www.micro4you.com/files/sensor/DHT11.pdf
+ *
+ * Modification History:
+ *   - George Hadjikyriacou                     - Version 0.1 (??)
+ *   - SimKard                                  - Version 0.2 (24/11/2010)
+ *   - Rob Tillaart                             - Version 0.3 (28/03/2011)
+ *       * Added comments
+ *       * Removed all non-DHT11 specific code
+ *       * Added References
+ *   - Rob Tillaart                             - Version 0.4 (17/03/2012)
+ *       * Added Arduino 1.0 support
+ *   - Rob Tillaart                             - Version 0.4.1 (19/05/2012)
+ *       * Added error codes
+ *   - Andy Dalton                              - Version 0.5 (13/09/2013)
+ *       * Replaced magic numbers with named constants
+ *       * Factored out repeated code into a helper method.
+ *       * Made pin a parameter to the constructor instead of a parameter
+ *         to read()
+ *       * Changed the error codes to an enumeration
+ *       * Update the temp/humidity only if the checksum is correct
+ *       * Added more comments
+ *   - Daniel Plasa                             - Version 0.52 (13/09/2016)
+ *      * Merged in a dew point function
+ *      * Merged in  code from DHTlib for DHT22,33,44 ...
+ *      * Merged in code from https://github.com/Bobadas/DHT12_library_Arduino
+ *        for DHT12 (I2C communication) support
+*/
+
+>>>>>>> 6a48cd1fc1a774e59301ed8a21ca09765e535155
