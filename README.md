@@ -11,6 +11,10 @@ something like this dashboard
 
 ![image](https://user-images.githubusercontent.com/11083514/54575800-76293680-49ed-11e9-9d85-362e04bd88fa.png)
 
+
+**Check More on the [WIKI](https://github.com/Photonsters/ESParaSite_TemperatureLogger/wiki)**
+
+
 Reference projects
 https://homecircuits.eu/blog/battery-powered-esp8266-iot-logger/
 http://baddotrobot.com/blog/2016/03/23/homebrew-temperature-logger/
