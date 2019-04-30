@@ -15,60 +15,27 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
-#include <ArduinoJson.h>
 #include <Wire.h>
+#include <ArduinoJson.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_SI1145.h>
 #include <Adafruit_MLX90614.h>
-#include <DHT12.h>
-#include <EepromAT24C32.h>
 #include <RtcDateTime.h>
 #include <RtcDS3231.h>
 #include <RtcTemperature.h>
 #include <RtcUtility.h>
+#include <EepromAT24C32.h>
 #include <BlueDot_BME280.h>
-#include <ESParaSite_Core.h>
-
-//+++ User Settings +++
-const char* wifi_ssid     = "yourwifinetwork";
-const char* wifi_password = "yourwifipassword";
-
-using namespace std;
-
-//+++ Advanced Settings +++
-// For precise altitude measurements please put in the current pressure corrected for the sea level
-// Otherwise leave the standard pressure as default (1013.25 hPa);
-// Also put in the current average temperature outside (yes, really outside!)
-// For slightly less precise altitude measurements, just leave the standard temperature as default (15°C and 59°F);
-#define SEALEVELPRESSURE_HPA (1013.25)
-#define CURRENTAVGTEMP_C (15)
-#define CURRENTAVGTEMP_F (59)
-
-#define HTTP_REST_PORT 80
-
-//Set the I2C address of your breakout board
-//int bme_i2c_address = 0x77;
-int bme_i2c_address = 0x76;
+#include <DHT12.h>
+#include "ESParaSite_Core.h"
 
 //Initialize Libraries
 ESP8266WebServer http_rest_server(HTTP_REST_PORT);
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-Adafruit_SI1145 uv = Adafruit_SI1145();
-BlueDot_BME280 bme;
-RtcDS3231<TwoWire> Rtc(Wire);
-EepromAt24c32<TwoWire> RtcEeprom(Wire);
 
-ESParaSite::printchamber chamber_resource;
-ESParaSite::optics optics_resource;
-ESParaSite::ambient ambient_resource;
-ESParaSite::enclosure enclosure_resource;
-
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-unsigned long delayTime;
-int bmeDetected = 0;
-
-RtcDateTime now;
-char timestamp[14];
+printchamber chamber_resource;
+optics optics_resource;
+ambient ambient_resource;
+enclosure enclosure_resource;
 
 void loop(void) {
   http_rest_server.handleClient();
@@ -267,7 +234,6 @@ void setup(void) {
   init_bme_sensor();
   Serial.println();
 
-
   // initialize DS3231 RTC
   Serial.println("Read DS3231 RTC sensor");
   init_rtc_clock();
@@ -299,6 +265,7 @@ void setup(void) {
   Serial.println();
   Serial.println("ESParasite Ready!");
 }
+
 
 void  init_dht_sensor() {
   // initialize DHT12 temperature sensor
@@ -524,8 +491,6 @@ int convertCtoF(int temp_c)  {
   temp_f = ((int)round(1.8 * temp_c + 32));
   return temp_f;
 }
-
-#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 void printDateTime(const RtcDateTime & dt)
 {
