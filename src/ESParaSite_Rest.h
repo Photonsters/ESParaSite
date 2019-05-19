@@ -17,19 +17,33 @@
 #ifndef _ESParaSite_Rest_h
 #define _ESParaSite_Rest_h
 
-#include <ESP8266WebServer.h>
-#include "ESParaSite_Settings.hxx"
-extern ESP8266WebServer http_rest_server(HTTP_REST_PORT);
+class http_rest_server;
 
-extern time_t timestamp;
+void config_rest_server_routing();
 
-extern void get_chamber ();
-extern void get_optics ();
-extern void get_ambient();
-extern void get_enclosure();
+void do_client();
+void start_http_server();
+
+void get_chamber();
+void get_optics();
+void get_ambient();
+void get_enclosure();
 
 extern void read_dht_sensor();
 extern void read_rtc_data();
+
+extern void init_dht_sensor();
+extern void init_bme_sensor();
+extern void init_rtc_clock();
+
+extern void read_rtc_data();
+extern void read_dht_sensor();
+extern void read_si_sensor();
+extern void read_mlx_sensor();
+extern void read_bme_sensor();
+
+extern int convertCtoF(int temp_c);
+extern time_t rtc_timestamp;
 
 extern printchamber chamber_resource;
 extern optics optics_resource;

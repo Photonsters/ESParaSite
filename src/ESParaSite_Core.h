@@ -17,13 +17,13 @@
 #ifndef _ESParaSite_Core_h
 #define _ESParaSite_Core_h
 
-void config_rest_server_routing();
+int ping_sensor(int address);
 
 void init_dht_sensor();
 void init_bme_sensor();
 void init_rtc_clock();
 
-void read_rtc_data ();
+void read_rtc_data();
 void read_dht_sensor();
 void read_si_sensor();
 void read_mlx_sensor();
@@ -31,33 +31,42 @@ void read_bme_sensor();
 
 int convertCtoF(int temp_c);
 
-struct printchamber {
-  float dht_temp_c{ 0 };
-  float dht_humidity{ 0 };
-  float dht_dewpoint{ 0 };
+
+
+struct printchamber
+{
+  float dht_temp_c{};
+  float dht_humidity{};
+  float dht_dewpoint{};
 };
 
-struct optics {
-  float si_uvindex{ 0 };
-  float si_visible{ 0 };
-  float si_infrared{ 0 };
-  float mlx_amb_temp_c{ 0 };
-  float mlx_obj_temp_c{ 0 };
+struct optics
+{
+  float si_uvindex{};
+  float si_visible{};
+  float si_infrared{};
+  float mlx_amb_temp_c{};
+  float mlx_obj_temp_c{};
 };
 
-struct ambient {
-  float bme_temp_c{ 0 };
-  float bme_humidity{ 0 };
-  float bme_barometer{ 0 };
-  float bme_altitude{ 0 };
+struct ambient
+{
+  float bme_temp_c{};
+  float bme_humidity{};
+  float bme_barometer{};
+  float bme_altitude{};
 };
 
-struct enclosure {
-  float case_temp{ 0 };
-  float total_sec{ 0 };
-  float screen_sec{ 0 };
-  float led_sec{ 0 };
-  float fep_sec{0};
+struct enclosure
+{
+  float case_temp{};
+  float total_sec{};
+  float screen_sec{};
+  float led_sec{};
+  float fep_sec{};
 };
+
+extern void do_client();
+extern void start_http_server();
 
 #endif

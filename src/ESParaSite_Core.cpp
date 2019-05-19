@@ -17,45 +17,59 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+#include <BlueDot_BME280.h>
+#include <dht12.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_SI1145.h>
 #include <Adafruit_MLX90614.h>
-//#include <RtcDateTime.h>
-//#include <RtcDS3231.h>
-#include <RtcTemperature.h>
-#include <RtcUtility.h>
-#include <EepromAT24C32.h>
-#include <BlueDot_BME280.h>
-#include <dht12.h>
-#include <Time.h>
+
 #include "ESParaSite_Core.h"
 #include "ESParaSite_Rest.h"
-#include "ESParaSite_Settings.hxx"
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
-unsigned long delayTime;
-int bmeDetected = 0;
+//Put your WiFi network and WiFi password here:
 
-time_t timestamp;
+//const char* wifi_ssid     = "yourwifinetwork";
+//const char* wifi_password = "yourwifipassword";
 
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-Adafruit_SI1145 uv = Adafruit_SI1145();
-BlueDot_BME280 bme;
-DHT12 dht;
-//RtcDS3231<TwoWire> Rtc(Wire);
-//EepromAt24c32<TwoWire> RtcEeprom(Wire);
+const char *wifi_ssid = "<wifi_ssid>";
+const char *wifi_password = "<wifi_passwd>";
 
-//Initialize Libraries
+//+++ Advanced Settings +++
+// For precise altitude measurements please put in the current pressure corrected for the sea level
+// Otherwise leave the standard pressure as default (1013.25 hPa);
+// Also put in the current average temperature outside (yes, really outside!)
+// For slightly less precise altitude measurements, just leave the standard temperature as default (15°C and 59°F);
+#define SEALEVELPRESSURE_HPA (1013.25)
+#define CURRENTAVGTEMP_C (15)
+#define CURRENTAVGTEMP_F (59)
+
+//Set the I2C address of your BME280 breakout board
+//int bme_i2c_address = 0x77;
+
+//*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
 printchamber chamber_resource;
 optics optics_resource;
 ambient ambient_resource;
 enclosure enclosure_resource;
 
+unsigned long delayTime;
+int bmeDetected = 0;
+int bme_i2c_address;
+time_t rtc_timestamp;
+
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+Adafruit_SI1145 uv = Adafruit_SI1145();
+BlueDot_BME280 bme;
+DHT12 dht;
+
+//Initialize Libraries
+
 void loop(void)
 {
-  http_rest_server.handleClient();
+  do_client();
 }
 
 int init_wifi()
@@ -72,10 +86,9 @@ int init_wifi()
   return WiFi.status(); // return the WiFi connection status
 }
 
-
 void setup(void)
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("");
 
   if (init_wifi() == WL_CONNECTED)
@@ -92,8 +105,6 @@ void setup(void)
     Serial.println(wifi_ssid);
   }
 
-  config_rest_server_routing();
-
   Serial.println("");
   Serial.println("ESParaSite Data Logging Server");
   Serial.print("Compiled: ");
@@ -103,47 +114,98 @@ void setup(void)
   Serial.println("");
 
   //start http rest server
-  http_rest_server.begin();
+  start_http_server();
   Serial.println("HTTP REST server started");
+  config_rest_server_routing();
   Serial.println();
 
   // initialize I2C bus
-  Serial.println("Initialize I2C bus");
-  Wire.begin(0, 2);
-  Serial.println("OK!");
+  Serial.print("Init I2C bus...");
+  Wire.begin(0, 4);
+  Serial.println("\t\t\t\t\t\t\tOK!");
   Serial.println();
 
-  // initialize dht12 sensor
-  Serial.println("Initialize dht12 Sensor");
-  init_dht_sensor();
+  // initialize DHT12 sensor
+  Serial.print("Init DHT12 Sensor...");
+  int i2c_addr = 0x5C;
+  int error = ping_sensor(i2c_addr);
+  if (error == 0)
+  {
+    init_dht_sensor();
+  }
   Serial.println();
 
   // initialize SI1145 UV sensor
-  Serial.println("Read SI1145 sensor");
-  if (!uv.begin())
+  Serial.print("Init SI1145 sensor...");
+  i2c_addr = 0x60;
+  error = ping_sensor(i2c_addr);
+  if (error == 0)
   {
-    Serial.println("SI1145 Initialization Failure");
+    if (!uv.begin())
+    {
+      Serial.println("SI1145 Initialization Failure!");
+    }
+    else
+    {
+      Serial.println("OK!");
+    }
   }
-  Serial.println("OK!");
   Serial.println();
 
   // initialize MLX90614 temperature sensor
-  Serial.println("Read MLX90614 sensor");
-  if (!mlx.begin())
+  Serial.print("Init MLX90614 sensor...");
+  i2c_addr = 0x5A;
+  error = ping_sensor(i2c_addr);
+  if (error == 0)
   {
-    Serial.println("MLX90614 Initialization Failure");
+    if (!mlx.begin())
+    {
+      Serial.println("MLX90614 Initialization Failure");
+    }
+    else
+    {
+      Serial.println("OK!");
+    }
   }
-  Serial.println("OK!");
   Serial.println();
 
-  // initialize bme80 temperature sensor
-  Serial.println("Read BME280 sensor");
-  init_bme_sensor();
+  // initialize BME280 temperature sensor
+  Serial.print("Init BME280 sensor...");
+  i2c_addr = 0x76;
+  error = ping_sensor(i2c_addr);
+  if (error == 0)
+  {
+    bme_i2c_address = i2c_addr;
+    init_bme_sensor();
+  }
+  else
+  {
+    i2c_addr = 0x77;
+    error = ping_sensor(i2c_addr);
+    if (error == 0)
+    {
+      bme_i2c_address = i2c_addr;
+      init_bme_sensor();
+    }
+  }
   Serial.println();
 
   // initialize DS3231 RTC
-  Serial.println("Read DS3231 RTC sensor");
-  init_rtc_clock();
+  Serial.print("Init DS3231 RTC...");
+  i2c_addr = 0x68;
+  error = ping_sensor(i2c_addr);
+  if (error == 0)
+  {
+    Serial.println("OK!");
+    Serial.print("Init AT24C32 EEPROM...");
+    i2c_addr = 0x57;
+    error = ping_sensor(i2c_addr);
+    if (error == 0)
+    {
+      Serial.println("OK!");
+      init_rtc_clock();
+    }
+  }
   Serial.println();
 
   //Dump all Sensor data to Serial
@@ -163,26 +225,73 @@ void setup(void)
   read_si_sensor();
   Serial.println();
 
-  Serial.println("MLX90614 Temp Sensor Data:");
+  Serial.println("MLX90614 LED Temp Sensor Data:");
   read_mlx_sensor();
   Serial.println();
 
-  Serial.println("BME280 Temp Sensor Data:");
+  Serial.println("BME280 Ambient Temp Sensor Data:");
   read_bme_sensor();
   Serial.println();
-  Serial.println("ESParasite Ready!");
+  Serial.println("ESParaSite Ready!");
+  
+  loop();
+}
+
+int ping_sensor(int address)
+{
+  byte error;
+  Wire.beginTransmission(address);
+  error = Wire.endTransmission();
+
+  if (error == 0)
+  {
+    Serial.print("I2C device found at address 0x");
+    if (address < 16)
+      Serial.print("0");
+    Serial.print(address, HEX);
+    Serial.print("\t\t");
+  }
+  else if (error == 2)
+  {
+    Serial.print("No device (Ping recieved NACK) at address 0x");
+    if (address < 16)
+      Serial.print("0");
+    Serial.print(address, HEX);
+    Serial.print("\t\t");
+  }
+  else if (error == 4)
+  {
+    Serial.print("Unknown error at address 0x");
+    if (address < 16)
+      Serial.print("0");
+    Serial.print(address, HEX);
+    Serial.print("\t\t");
+  }
+  return error;
 }
 
 void init_dht_sensor()
 {
   // initialize dht12 temperature sensor
-  Serial.begin(115200);
-  Serial.println(__FILE__);
-  Serial.print("DHT12 LIBRARY VERSION: ");
-  Serial.println(DHT12_VERSION);
-  Serial.println();
-  read_bme_sensor();
-  Serial.println("Type,\tStatus,\tHumidity (%),\tTemperature (C)");
+  int status = dht.read();
+  switch (status)
+  {
+  case DHT12_OK:
+    Serial.println("OK!\t");
+    break;
+  case DHT12_ERROR_CHECKSUM:
+    Serial.println("Checksum error,\t");
+    break;
+  case DHT12_ERROR_CONNECT:
+    Serial.println("Connect error,\t");
+    break;
+  case DHT12_MISSING_BYTES:
+    Serial.println("Missing bytes,\t");
+    break;
+  default:
+    Serial.println("Unknown error,\t");
+    break;
+  }
 }
 
 void init_bme_sensor()
@@ -207,85 +316,17 @@ void init_bme_sensor()
   }
   else
   {
-    Serial.println(F("BME280 Sensor detected!"));
+    Serial.println(F("OK!"));
     bmeDetected = 1;
   }
-  Serial.println();
 }
 
 void init_rtc_clock()
 {
- /* Rtc.Begin();
-
-  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
-  printDateTime(compiled);
-  Serial.println();
-
-  if (!Rtc.IsDateTimeValid())
-  {
-    if (Rtc.LastError() != 0)
-    {
-      Serial.print("RTC communications error = ");
-      Serial.println(Rtc.LastError());
-    }
-    else
-    {
-      Serial.println("RTC lost confidence in the DateTime!");
-      Rtc.SetDateTime(compiled);
-    }
-  }
-
-  if (!Rtc.GetIsRunning())
-  {
-    Serial.println("RTC was not actively running, starting now");
-    Rtc.SetIsRunning(true);
-  }
-
-  RtcDateTime now = Rtc.GetDateTime();
-  if (now < compiled)
-  {
-    Serial.println("RTC is older than compile time!  (Updating DateTime)");
-    Rtc.SetDateTime(compiled);
-  }
-  else if (now > compiled)
-  {
-    Serial.println("RTC is newer than compile time. (this is expected)");
-  }
-  else if (now == compiled)
-  {
-    Serial.println("RTC is the same as compile time! (not expected but all is fine)");
-  }
-
-  Rtc.Enable32kHzPin(false);
-  Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
-*/}
+}
 
 void read_rtc_data()
 {
-  /*Serial.println("===================");
-  if (!Rtc.IsDateTimeValid())
-  {
-    if (Rtc.LastError() != 0)
-    {
-      Serial.print("RTC communications error = ");
-      Serial.println(Rtc.LastError());
-    }
-    else
-    {
-      Serial.println("RTC lost confidence in the DateTime!");
-    }
-  }
-
-  now = Rtc.GetDateTime();
-  printDateTime(rtcnow);
-  Serial.println();
-
-  RtcTemperature temp = Rtc.GetTemperature();
-  enclosure_resource.case_temp = (temp.AsFloatDegC());
-  Serial.print(enclosure_resource.case_temp);
-  Serial.println("°C");
-
-  delay(500);*/
 }
 
 void read_dht_sensor()
@@ -298,7 +339,6 @@ void read_dht_sensor()
   switch (status)
   {
   case DHT12_OK:
-    Serial.print("OK,\t");
     break;
   case DHT12_ERROR_CHECKSUM:
     Serial.print("Checksum error,\t");
@@ -313,14 +353,26 @@ void read_dht_sensor()
     Serial.print("Unknown error,\t");
     break;
   }
+
   delay(2500);
 
-  Serial.print("dht12, \t");
   status = dht.read();
-   switch (status)
+  switch (status)
   {
   case DHT12_OK:
-    Serial.print("OK,\t");
+    Serial.print(F("Temperature (°C): "));
+    chamber_resource.dht_temp_c = dht.temperature;
+    Serial.println(chamber_resource.dht_temp_c, 1);
+
+    Serial.print(F("Humidity: "));
+    chamber_resource.dht_humidity = dht.humidity;
+    Serial.print(chamber_resource.dht_humidity, 1);
+    Serial.println("%");
+
+    /*Serial.print(F("Dew Point (°C): "));
+  chamber_resource.dht_dewpoint = ((float)dht.dewPoint());
+  Serial.println(((int)chamber_resource.dht_dewpoint));
+*/
     break;
   case DHT12_ERROR_CHECKSUM:
     Serial.print("Checksum error,\t");
@@ -335,23 +387,6 @@ void read_dht_sensor()
     Serial.print("Unknown error,\t");
     break;
   }
-
-  delay(2000);
-  /*
-  Serial.print(F("Temperature (°C): "));
-  chamber_resource.dht_temp_c = ((float)dht.getTemperature() / (float)10);
-  Serial.println(((int)chamber_resource.dht_temp_c));
-
-  Serial.print(F("Humidity: "));
-  chamber_resource.dht_humidity = ((float)dht.getHumidity() / (float)10);
-  Serial.print(((int)chamber_resource.dht_humidity));
-  Serial.println("%");
-
-  Serial.print(F("Dew Point (°C): "));
-  chamber_resource.dht_dewpoint = ((float)dht.dewPoint());
-  Serial.println(((int)chamber_resource.dht_dewpoint));
-
-  */
 }
 
 void read_si_sensor()
@@ -399,8 +434,7 @@ void read_mlx_sensor()
 void read_bme_sensor()
 {
   Serial.println("===================");
-  //  if (bmeDetected)
-  //  {
+
   ambient_resource.bme_temp_c = bme.readTempC();
   Serial.print(F("Temperature Sensor:\t\t"));
   Serial.print(ambient_resource.bme_temp_c);
@@ -424,24 +458,7 @@ void read_bme_sensor()
   Serial.print("m\t");
   Serial.print(bme.readAltitudeFeet());
   Serial.println("ft");
-  //  }
 
-  /*  else
-    {
-      Serial.print(F("Temperature Sensor [°C]:\t\t"));
-      Serial.println(F("Null"));
-      Serial.print(F("Temperature Sensor [°F]:\t\t"));
-      Serial.println(F("Null"));
-      Serial.print(F("Humidity Sensor [%]:\t\t\t"));
-      Serial.println(F("Null"));
-      Serial.print(F("Pressure Sensor [hPa]:\t\t"));
-      Serial.println(F("Null"));
-      Serial.print(F("Altitude Sensor [m]:\t\t\t"));
-      Serial.println(F("Null"));
-      Serial.print(F("Altitude Sensor [ft]:\t\t\t"));
-      Serial.println(F("Null"));
-    }
-  */
   Serial.println();
   Serial.println();
 
@@ -454,33 +471,3 @@ int convertCtoF(int temp_c)
   temp_f = ((int)round(1.8 * temp_c + 32));
   return temp_f;
 }
-
-/*void printDateTime(const RtcDateTime &dt)
-{
-  char datestring[20];
-
-  snprintf_P(datestring,
-             countof(datestring),
-             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-             dt.Month(),
-             dt.Day(),
-             dt.Year(),
-             dt.Hour(),
-             dt.Minute(),
-             dt.Second());
-  Serial.print(datestring);
-}*/
-
-/*void create_timestamp(const RtcDateTime &dt)
-{
-  snprintf_P(timestamp,
-             countof(timestamp),
-             PSTR("%04u%02u%02u%02u%02u%02u"),
-             dt.Year(),
-             dt.Month(),
-             dt.Day(),
-             dt.Hour(),
-             dt.Minute(),
-             dt.Second());
-  Serial.print(timestamp);
-}*/
