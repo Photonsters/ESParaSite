@@ -33,9 +33,6 @@
 //const char* wifi_ssid     = "yourwifinetwork";
 //const char* wifi_password = "yourwifipassword";
 
-const char *wifi_ssid = "<wifi_ssid>";
-const char *wifi_password = "<wifi_passwd>";
-
 //+++ Advanced Settings +++
 // For precise altitude measurements please put in the current pressure corrected for the sea level
 // Otherwise leave the standard pressure as default (1013.25 hPa);
