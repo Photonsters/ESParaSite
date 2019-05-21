@@ -34,8 +34,11 @@
 //const char* wifi_ssid     = "yourwifinetwork";
 //const char* wifi_password = "yourwifipassword";
 
+<<<<<<< HEAD
 #include "wifi.ini" //Delete or comment this line if you have input your wifi information above.
 
+=======
+>>>>>>> 11161feb22a15d9ffdea3a5e4933bd98fa82b6ae
 //+++ Advanced Settings +++
 // For precise altitude measurements please put in the current pressure corrected for the sea level
 // Otherwise leave the standard pressure as default (1013.25 hPa);
