@@ -58,8 +58,7 @@ void get_chamber()
 
   read_dht_sensor();
   read_rtc_data();
-  //create_timestamp(now);
-
+  
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";

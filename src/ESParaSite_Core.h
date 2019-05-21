@@ -18,7 +18,6 @@
 #define _ESParaSite_Core_h
 
 int ping_sensor(int address);
-
 void init_dht_sensor();
 void init_bme_sensor();
 void init_rtc_clock();
@@ -29,9 +28,11 @@ void read_si_sensor();
 void read_mlx_sensor();
 void read_bme_sensor();
 
+class RtcDateTime;
+
 int convertCtoF(int temp_c);
-
-
+double dewPoint(double celsius, double humidity);
+void printDateTime(const RtcDateTime& dt);
 
 struct printchamber
 {
@@ -68,5 +69,6 @@ struct enclosure
 
 extern void do_client();
 extern void start_http_server();
+
 
 #endif

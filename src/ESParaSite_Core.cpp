@@ -22,6 +22,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_SI1145.h>
 #include <Adafruit_MLX90614.h>
+#include <RtcDS3231.h>
 
 #include "ESParaSite_Core.h"
 #include "ESParaSite_Rest.h"
@@ -33,6 +34,8 @@
 //const char* wifi_ssid     = "yourwifinetwork";
 //const char* wifi_password = "yourwifipassword";
 
+#include "wifi.ini" //Delete or comment this line if you have input your wifi information above.
+
 //+++ Advanced Settings +++
 // For precise altitude measurements please put in the current pressure corrected for the sea level
 // Otherwise leave the standard pressure as default (1013.25 hPa);
@@ -42,9 +45,6 @@
 #define CURRENTAVGTEMP_C (15)
 #define CURRENTAVGTEMP_F (59)
 
-//Set the I2C address of your BME280 breakout board
-//int bme_i2c_address = 0x77;
-
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
 printchamber chamber_resource;
@@ -53,12 +53,17 @@ ambient ambient_resource;
 enclosure enclosure_resource;
 
 unsigned long delayTime;
-int bmeDetected = 0;
 int bme_i2c_address;
 time_t rtc_timestamp;
+int bmeDetected = 0;
+int dhtDetected = 0;
+int mlxDetected = 0;
+int rtcDetected = 0;
+int siDetected = 0;
 
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_SI1145 uv = Adafruit_SI1145();
+RtcDS3231<TwoWire> rtc(Wire);
 BlueDot_BME280 bme;
 DHT12 dht;
 
@@ -112,8 +117,8 @@ void setup(void)
 
   //start http rest server
   start_http_server();
-  Serial.println("HTTP REST server started");
   config_rest_server_routing();
+  Serial.println("HTTP REST server started");
   Serial.println();
 
   // initialize I2C bus
@@ -140,11 +145,12 @@ void setup(void)
   {
     if (!uv.begin())
     {
-      Serial.println("SI1145 Initialization Failure!");
+      Serial.print("SI1145 Initialization Failure!");
     }
     else
     {
-      Serial.println("OK!");
+      siDetected = 1;
+      Serial.print("OK!");
     }
   }
   Serial.println();
@@ -157,11 +163,12 @@ void setup(void)
   {
     if (!mlx.begin())
     {
-      Serial.println("MLX90614 Initialization Failure");
+      Serial.print("MLX90614 Initialization Failure");
     }
     else
     {
-      Serial.println("OK!");
+      mlxDetected = 1;
+      Serial.print("OK!");
     }
   }
   Serial.println();
@@ -230,7 +237,7 @@ void setup(void)
   read_bme_sensor();
   Serial.println();
   Serial.println("ESParaSite Ready!");
-  
+
   loop();
 }
 
@@ -274,19 +281,24 @@ void init_dht_sensor()
   switch (status)
   {
   case DHT12_OK:
-    Serial.println("OK!\t");
+    Serial.print("OK!\t");
+    dhtDetected = 1;
     break;
   case DHT12_ERROR_CHECKSUM:
-    Serial.println("Checksum error,\t");
+    Serial.print("Checksum error,\t");
+    dhtDetected = 0;
     break;
   case DHT12_ERROR_CONNECT:
-    Serial.println("Connect error,\t");
+    Serial.print("Connect error,\t");
+    dhtDetected = 0;
     break;
   case DHT12_MISSING_BYTES:
-    Serial.println("Missing bytes,\t");
+    Serial.print("Missing bytes,\t");
+    dhtDetected = 0;
     break;
   default:
-    Serial.println("Unknown error,\t");
+    Serial.print("Unknown error,\t");
+    dhtDetected = 0;
     break;
   }
 }
@@ -308,22 +320,114 @@ void init_bme_sensor()
 
   if (bme.init() != 0x60)
   {
-    Serial.println(F("BME280 Sensor not found!"));
+    Serial.print(F("BME280 Sensor not found!"));
     bmeDetected = 0;
   }
   else
   {
-    Serial.println(F("OK!"));
+    Serial.print(F("OK!"));
     bmeDetected = 1;
   }
 }
 
 void init_rtc_clock()
 {
+  rtc.Begin();
+
+  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+  printDateTime(compiled);
+  Serial.println();
+
+  if (!rtc.IsDateTimeValid())
+  {
+    if (rtc.LastError() != 0)
+    {
+      // we have a communications error
+      // see https://www.arduino.cc/en/Reference/WireEndTransmission for
+      // what the number means
+      Serial.print("RTC communications error = ");
+      Serial.println(rtc.LastError());
+    }
+    else
+    {
+      // Common Cuases:
+      //    1) first time you ran and the device wasn't running yet
+      //    2) the battery on the device is low or even missing
+
+      Serial.println("RTC lost confidence in the DateTime!");
+
+      // following line sets the RTC to the date & time this sketch was compiled
+      // it will also reset the valid flag internally unless the Rtc device is
+      // having an issue
+
+      rtc.SetDateTime(compiled);
+    }
+  }
+
+  if (!rtc.GetIsRunning())
+  {
+    Serial.println("RTC was not actively running, starting now");
+    rtc.SetIsRunning(true);
+  }
+
+  RtcDateTime now = rtc.GetDateTime();
+  if (now < compiled)
+  {
+    Serial.println("RTC is older than compile time!  (Updating DateTime)");
+    rtc.SetDateTime(compiled);
+  }
+  else if (now > compiled)
+  {
+    Serial.println("RTC is newer than compile time. (this is expected)");
+  }
+  else if (now == compiled)
+  {
+    Serial.println("RTC is the same as compile time! (not expected but all is fine)");
+  }
+
+  rtc_timestamp = (rtc.GetDateTime() + 946684800);
+  Serial.print("Epoch\t");
+  Serial.println(rtc_timestamp);
+
+  // never assume the Rtc was last configured by you, so
+  // just clear them to your needed state
+  rtc.Enable32kHzPin(false);
+  rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
 }
 
 void read_rtc_data()
 {
+  if (!rtc.IsDateTimeValid())
+  {
+    if (rtc.LastError() != 0)
+    {
+      // we have a communications error
+      // see https://www.arduino.cc/en/Reference/WireEndTransmission for
+      // what the number means
+      Serial.print("RTC communications error = ");
+      Serial.println(rtc.LastError());
+    }
+    else
+    {
+      // Common Cuases:
+      //    1) the battery on the device is low or even missing and the power line was disconnected
+      Serial.println("RTC lost confidence in the DateTime!");
+    }
+  }
+
+  RtcDateTime now = rtc.GetDateTime();
+  printDateTime(now);
+  Serial.println();
+
+  rtc_timestamp = (rtc.GetDateTime() + 946684800);
+  Serial.print("Epoch\t");
+  Serial.println(rtc_timestamp);
+
+  RtcTemperature temp = rtc.GetTemperature();
+  temp.Print(Serial);
+  // you may also get the temperature as a float and print it
+  // Serial.print(temp.AsFloatDegC());
+  Serial.println("C");
 }
 
 void read_dht_sensor()
@@ -331,58 +435,66 @@ void read_dht_sensor()
   Serial.println("===================");
 
   //First dht measurement is stale, so we measure, wait ~2 seconds, then measure again.
-
-  int status = dht.read();
-  switch (status)
+  if (dhtDetected == 1)
   {
-  case DHT12_OK:
-    break;
-  case DHT12_ERROR_CHECKSUM:
-    Serial.print("Checksum error,\t");
-    break;
-  case DHT12_ERROR_CONNECT:
-    Serial.print("Connect error,\t");
-    break;
-  case DHT12_MISSING_BYTES:
-    Serial.print("Missing bytes,\t");
-    break;
-  default:
-    Serial.print("Unknown error,\t");
-    break;
+    int status = dht.read();
+    switch (status)
+    {
+    case DHT12_OK:
+      break;
+    case DHT12_ERROR_CHECKSUM:
+      Serial.print("Checksum error,\t");
+      break;
+    case DHT12_ERROR_CONNECT:
+      Serial.print("Connect error,\t");
+      break;
+    case DHT12_MISSING_BYTES:
+      Serial.print("Missing bytes,\t");
+      break;
+    default:
+      Serial.print("Unknown error,\t");
+      break;
+    }
+
+    delay(2500);
+
+    status = dht.read();
+    switch (status)
+    {
+    case DHT12_OK:
+      Serial.print(F("Temperature (°C): "));
+      chamber_resource.dht_temp_c = dht.temperature;
+      Serial.println(chamber_resource.dht_temp_c, 1);
+
+      Serial.print(F("Humidity: "));
+      chamber_resource.dht_humidity = dht.humidity;
+      Serial.print(chamber_resource.dht_humidity, 1);
+      Serial.println("%");
+
+      Serial.print(F("Dew Point (°C): "));
+      chamber_resource.dht_dewpoint = (dewPoint(chamber_resource.dht_temp_c, chamber_resource.dht_humidity));
+      Serial.println(((int)chamber_resource.dht_dewpoint));
+
+      break;
+    case DHT12_ERROR_CHECKSUM:
+      Serial.print("Checksum error,\t");
+      break;
+    case DHT12_ERROR_CONNECT:
+      Serial.print("Connect error,\t");
+      break;
+    case DHT12_MISSING_BYTES:
+      Serial.print("Missing bytes,\t");
+      break;
+    default:
+      Serial.print("Unknown error,\t");
+      break;
+    }
   }
-
-  delay(2500);
-
-  status = dht.read();
-  switch (status)
+  else
   {
-  case DHT12_OK:
-    Serial.print(F("Temperature (°C): "));
-    chamber_resource.dht_temp_c = dht.temperature;
-    Serial.println(chamber_resource.dht_temp_c, 1);
-
-    Serial.print(F("Humidity: "));
-    chamber_resource.dht_humidity = dht.humidity;
-    Serial.print(chamber_resource.dht_humidity, 1);
-    Serial.println("%");
-
-    /*Serial.print(F("Dew Point (°C): "));
-  chamber_resource.dht_dewpoint = ((float)dht.dewPoint());
-  Serial.println(((int)chamber_resource.dht_dewpoint));
-*/
-    break;
-  case DHT12_ERROR_CHECKSUM:
-    Serial.print("Checksum error,\t");
-    break;
-  case DHT12_ERROR_CONNECT:
-    Serial.print("Connect error,\t");
-    break;
-  case DHT12_MISSING_BYTES:
-    Serial.print("Missing bytes,\t");
-    break;
-  default:
-    Serial.print("Unknown error,\t");
-    break;
+    chamber_resource.dht_temp_c = 0;
+    chamber_resource.dht_humidity = 0;
+    chamber_resource.dht_dewpoint = 0;
   }
 }
 
@@ -432,34 +544,44 @@ void read_bme_sensor()
 {
   Serial.println("===================");
 
-  ambient_resource.bme_temp_c = bme.readTempC();
-  Serial.print(F("Temperature Sensor:\t\t"));
-  Serial.print(ambient_resource.bme_temp_c);
-  Serial.print("°C\t");
-  Serial.print(bme.readTempF());
-  Serial.println("°F");
+  if (siDetected == 1)
+  {
+    ambient_resource.bme_temp_c = bme.readTempC();
+    Serial.print(F("Temperature Sensor:\t\t"));
+    Serial.print(ambient_resource.bme_temp_c);
+    Serial.print("°C\t");
+    Serial.print(bme.readTempF());
+    Serial.println("°F");
 
-  ambient_resource.bme_humidity = bme.readHumidity();
-  Serial.print(F("Humidity Sensor:\t\t"));
-  Serial.print(ambient_resource.bme_humidity);
-  Serial.println("%");
+    ambient_resource.bme_humidity = bme.readHumidity();
+    Serial.print(F("Humidity Sensor:\t\t"));
+    Serial.print(ambient_resource.bme_humidity);
+    Serial.println("%");
 
-  ambient_resource.bme_barometer = bme.readPressure();
-  Serial.print(F("Pressure Sensor [hPa]:\t"));
-  Serial.print(ambient_resource.bme_barometer);
-  Serial.println(" hPa");
+    ambient_resource.bme_barometer = bme.readPressure();
+    Serial.print(F("Pressure Sensor [hPa]:\t"));
+    Serial.print(ambient_resource.bme_barometer);
+    Serial.println(" hPa");
 
-  ambient_resource.bme_altitude = bme.readAltitudeMeter();
-  Serial.print(F("Altitude Sensor:\t\t"));
-  Serial.print(ambient_resource.bme_altitude);
-  Serial.print("m\t");
-  Serial.print(bme.readAltitudeFeet());
-  Serial.println("ft");
+    ambient_resource.bme_altitude = bme.readAltitudeMeter();
+    Serial.print(F("Altitude Sensor:\t\t"));
+    Serial.print(ambient_resource.bme_altitude);
+    Serial.print("m\t");
+    Serial.print(bme.readAltitudeFeet());
+    Serial.println("ft");
 
-  Serial.println();
-  Serial.println();
+    Serial.println();
+    Serial.println();
 
-  delay(1000);
+    delay(1000);
+  }
+  else
+  {
+    ambient_resource.bme_temp_c = 0;
+    ambient_resource.bme_humidity = 0;
+    ambient_resource.bme_barometer = 0;
+    ambient_resource.bme_altitude = 0;
+  }
 }
 
 int convertCtoF(int temp_c)
@@ -467,4 +589,38 @@ int convertCtoF(int temp_c)
   int temp_f;
   temp_f = ((int)round(1.8 * temp_c + 32));
   return temp_f;
+}
+
+double dewPoint(double celsius, double humidity)
+{
+  // (1) Saturation Vapor Pressure = ESGG(T)
+  double RATIO = 373.15 / (273.15 + celsius);
+  double RHS = -7.90298 * (RATIO - 1);
+  RHS += 5.02808 * log10(RATIO);
+  RHS += -1.3816e-7 * (pow(10, (11.344 * (1 - 1 / RATIO))) - 1);
+  RHS += 8.1328e-3 * (pow(10, (-3.49149 * (RATIO - 1))) - 1);
+  RHS += log10(1013.246);
+
+  // factor -3 is to adjust units - Vapor Pressure SVP * humidity
+  double VP = pow(10, RHS - 3) * humidity;
+
+  // (2) DEWPOINT = F(Vapor Pressure)
+  double T = log(VP / 0.61078); // temp var
+  return (241.88 * T) / (17.558 - T);
+}
+
+void printDateTime(const RtcDateTime &dt)
+{
+  char datestring[20];
+
+  snprintf_P(datestring,
+             countof(datestring),
+             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+             dt.Month(),
+             dt.Day(),
+             dt.Year(),
+             dt.Hour(),
+             dt.Minute(),
+             dt.Second());
+  Serial.print(datestring);
 }
