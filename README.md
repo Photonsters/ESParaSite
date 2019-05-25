@@ -18,5 +18,6 @@ something like this dashboard
 Reference projects
 https://homecircuits.eu/blog/battery-powered-esp8266-iot-logger/
 http://baddotrobot.com/blog/2016/03/23/homebrew-temperature-logger/
+https://github.com/luc-github/ESP3D-WEBUI
 
 
