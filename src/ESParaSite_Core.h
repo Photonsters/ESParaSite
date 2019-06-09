@@ -23,6 +23,7 @@ void init_bme_sensor();
 void init_rtc_clock();
 
 void read_rtc_data();
+time_t read_rtc_epoch();
 void read_dht_sensor();
 void read_si_sensor();
 void read_mlx_sensor();

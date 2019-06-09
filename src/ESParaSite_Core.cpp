@@ -34,11 +34,8 @@
 //const char* wifi_ssid     = "yourwifinetwork";
 //const char* wifi_password = "yourwifipassword";
 
-<<<<<<< HEAD
 #include "wifi.ini" //Delete or comment this line if you have input your wifi information above.
 
-=======
->>>>>>> 11161feb22a15d9ffdea3a5e4933bd98fa82b6ae
 //+++ Advanced Settings +++
 // For precise altitude measurements please put in the current pressure corrected for the sea level
 // Otherwise leave the standard pressure as default (1013.25 hPa);
@@ -75,6 +72,14 @@ DHT12 dht;
 void loop(void)
 {
   do_client();
+  
+  time_t rtc_cur_epoch = read_rtc_epoch();
+  if ((rtc_cur_epoch) >= ((rtc_timestamp) + 5))
+  {
+    (rtc_timestamp) = (rtc_cur_epoch);
+    // Do the updates to the EEPROM
+    Serial.println(rtc_cur_epoch);
+  }
 }
 
 int init_wifi()
@@ -433,6 +438,31 @@ void read_rtc_data()
   Serial.println("C");
 }
 
+time_t read_rtc_epoch()
+{
+  if (!rtc.IsDateTimeValid())
+  {
+    if (rtc.LastError() != 0)
+    {
+      // we have a communications error
+      // see https://www.arduino.cc/en/Reference/WireEndTransmission for
+      // what the number means
+      Serial.print("RTC communications error = ");
+      Serial.println(rtc.LastError());
+    }
+    else
+    {
+      // Common Causes:
+      //    1) the battery on the device is low or even missing and the power line was disconnected
+      Serial.println("RTC lost confidence in the DateTime!");
+    }
+  }
+
+  time_t rtc_return;
+  rtc_return = (rtc.GetDateTime() + 946684800);
+  return rtc_return;
+}
+ 
 void read_dht_sensor()
 {
   Serial.println("===================");
