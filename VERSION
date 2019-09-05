@@ -1,6 +1,6 @@
 //ESParasite VERSION HISTORY
 
-/* ESParasite Data Logger v0.3
+/* ESParasite Data Logger v0.4
 	Authors: Andy (DocMadmag) Eakin
 	
 	Please see /ATTRIB for full credits and OSS License Info
@@ -13,11 +13,23 @@
 */
 
 /*
+v0.4 - Fourth Release - Diphyllobothriasis - 2019-09-05
+	- Added support for DHT12 Sensor and AT24C32 EEPROM.
+	- ESParaSite now records the following values to EEPROM - first_on_timestamp (immutable), eeprom_format_version, last_write_timestamp, lcd_screen_life, led_life, fep_life.
+		-These values can be queried http://<ipaddress>/enclosure
+		-(not yet implemented) lcd_screen_life, led_life, fep_life values will be resettable via the REST interface.
+	- EEPROM error handling and wear levelling.  This will allow us to log 8 separate 32-bit values twice each minute for over 13 years.
+	- Changes to DHT12 Sensor, DS3231 RTC and AT4C32 EEPROM Libraries.  I am happy with the capabilites and performance of these libraries.
+	- Lots of refactoring to make code more modular. This will make adding support for other sensors, RTCs and EEPROM chips much easier in the future.
+	- Refactored initialization routines to standardize call to init routine for a given sensor and abstract the various routines created by different libraries and authors.
+	- Added error handling to many sensor routines.
+*/
+/*
 v0.3 - Third Release - Crabs - 2019-04-07
 	- Removed DHT12 Support, temporarily, while I find a better library.
 	- Migrated to Platform.IO for substantially better development experience.
 		- Required refactoring code to make it fully C++ complaint. (I'm a Real Boy!)
-
+*/
 /*
 v0.2 - Second Release - Bed Bugs - 2019-04-07
 	- Adds support for the BME280 Sensor (For Ambient Temperature, Temperature, Humidity and Altitude.)

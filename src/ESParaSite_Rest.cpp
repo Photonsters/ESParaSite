@@ -1,6 +1,6 @@
 //ESParaSite_Rest.cpp
 
-/* ESParasite Data Logger v0.3
+/* ESParasite Data Logger v0.4
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -14,9 +14,11 @@
 
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+
 #include "ESParaSite_Core.h"
 #include "ESParaSite_Rest.h"
-
+#include "ESParaSite_Eeprom.h"
+#include "ESParaSite_Sensors.h"
 
 //+++ User Settings +++
 
@@ -31,13 +33,14 @@ ESP8266WebServer http_rest_server(HTTP_REST_PORT);
 void config_rest_server_routing()
 {
   http_rest_server.on("/", HTTP_GET, []() {
-  http_rest_server.send(200, "text/html",
+    http_rest_server.send(200, "text/html",
                           "Welcome to the ESParasite REST Web Server");
   });
   http_rest_server.on("/printchamber", HTTP_GET, get_chamber);
   http_rest_server.on("/optics", HTTP_GET, get_optics);
   http_rest_server.on("/ambient", HTTP_GET, get_ambient);
   http_rest_server.on("/enclosure", HTTP_GET, get_enclosure);
+  http_rest_server.on("/eeprom", HTTP_GET, get_eeprom);
   // http_rest_server.on("/enclosure", HTTP_POST, post_enclosure); //Not yet implemented
   // http_rest_server.on("/enclosure", HTTP_PUT, post_enclosure);  //Not yet implemented
   Serial.print("HTTP REST config complete!");
@@ -55,14 +58,10 @@ void start_http_server()
 
 void get_chamber()
 {
-
-  read_dht_sensor();
-  read_rtc_data();
-  
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
-  doc["timestamp"] = rtc_timestamp;
+  doc["timestamp"] = timestamp_resource.current_second;
   doc["chmb_temp_c"] = chamber_resource.dht_temp_c;
   doc["chmb_humidity"] = chamber_resource.dht_humidity;
   doc["chmb_dewpoint"] = chamber_resource.dht_dewpoint;
@@ -80,16 +79,10 @@ void get_chamber()
 
 void get_optics()
 {
-
-  read_si_sensor();
-  read_mlx_sensor();
-  read_rtc_data();
-  //create_timestamp(now);
-
   StaticJsonDocument<256> doc;
 
   doc["class"] = "optics";
-  doc["timestamp"] = rtc_timestamp;
+  doc["timestamp"] = timestamp_resource.current_second;
   doc["uvindex"] = optics_resource.si_uvindex;
   doc["visible"] = optics_resource.si_visible;
   doc["infrared"] = optics_resource.si_infrared;
@@ -109,15 +102,10 @@ void get_optics()
 
 void get_ambient()
 {
-
-  read_bme_sensor();
-  read_rtc_data();
-  //create_timestamp(now);
-
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
-  doc["timestamp"] = rtc_timestamp;
+  doc["timestamp"] = timestamp_resource.current_second;
   doc["amb_temp_c"] = ambient_resource.bme_temp_c;
   doc["amb_humidity"] = ambient_resource.bme_humidity;
   doc["amb_pressure"] = ambient_resource.bme_barometer;
@@ -136,20 +124,38 @@ void get_ambient()
 
 void get_enclosure()
 {
-
-  read_rtc_data();
-  //  read_at24_data();   //Placeholder - Not yet Implemented
-  //create_timestamp(now);
-
   StaticJsonDocument<256> doc;
 
   doc["class"] = "enclosure";
-  doc["timestamp"] = rtc_timestamp;
-  doc["case_temp"] = enclosure_resource.case_temp;
-  doc["sec_tot"] = enclosure_resource.total_sec;  //Placeholder - Not yet Implemented
-  doc["sec_scr"] = enclosure_resource.screen_sec; //Placeholder - Not yet Implemented
-  doc["sec_led"] = enclosure_resource.led_sec;    //Placeholder - Not yet Implemented
-  doc["sec_fep"] = enclosure_resource.fep_sec;    //Placeholder - Not yet Implemented
+  doc["timestamp"] = timestamp_resource.current_second;
+  doc["case_temp_c"] = enclosure_resource.case_temp;
+  doc["lifetime_sec"] = enclosure_resource.life_sec;
+  doc["screen_sec"] = enclosure_resource.lcd_sec;
+  doc["led_sec"] = enclosure_resource.led_sec;
+  doc["fep_sec"] = enclosure_resource.fep_sec;
+
+  serializeJson(doc, Serial);
+  Serial.println();
+
+  String output = "JSON = ";
+  serializeJsonPretty(doc, output);
+  http_rest_server.send(200, "application/json", output);
+
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+}
+
+void get_eeprom()
+{
+  StaticJsonDocument<256> doc;
+
+  doc["class"] = "eeprom";
+  doc["timestamp"] = timestamp_resource.current_second;
+  doc["first_on_time64"] = rtc_eeprom_resource.first_on_timestamp;
+  doc["last_write_time64"] = rtc_eeprom_resource.last_write_timestamp;
+  doc["screen_life_sec"] = rtc_eeprom_resource.screen_life_seconds;
+  doc["led_life_sec"] = rtc_eeprom_resource.led_life_seconds;
+  doc["fep_life_sec"] = rtc_eeprom_resource.fep_life_seconds;
 
   serializeJson(doc, Serial);
   Serial.println();
