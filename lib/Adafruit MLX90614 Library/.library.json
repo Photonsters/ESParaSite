@@ -1,0 +1,52 @@
+{
+    "name": "Adafruit MLX90614 Library", 
+    "version": "1.0.1", 
+    "keywords": [
+        "sensors"
+    ], 
+    "description": "Arduino library for the MLX90614 sensors in the Adafruit shop", 
+    "frameworks": [
+        "arduino"
+    ], 
+    "platforms": [
+        "atmelavr", 
+        "atmelsam", 
+        "espressif32", 
+        "espressif8266", 
+        "infineonxmc", 
+        "intel_arc32", 
+        "kendryte210", 
+        "microchippic32", 
+        "nordicnrf51", 
+        "nordicnrf52", 
+        "ststm32", 
+        "ststm8", 
+        "teensy", 
+        "timsp430"
+    ], 
+    "authors": [
+        {
+            "email": "info@adafruit.com", 
+            "url": null, 
+            "maintainer": true, 
+            "name": "Adafruit"
+        }
+    ], 
+    "repository": {
+        "type": "git", 
+        "url": "https://github.com/adafruit/Adafruit-MLX90614-Library"
+    }, 
+    "homepage": null, 
+    "export": {
+        "include": null, 
+        "exclude": [
+            "extras", 
+            "docs", 
+            "tests", 
+            "test", 
+            "*.doxyfile", 
+            "*.pdf"
+        ]
+    }, 
+    "id": 782
+}

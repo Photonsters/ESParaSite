@@ -41,7 +41,7 @@ extern printchamber chamber_resource;
 extern optics optics_resource;
 extern ambient ambient_resource;
 extern enclosure enclosure_resource;
-extern timestamp timestamp_resource;
+extern status status_resource;
 extern eeprom_data rtc_eeprom_resource;
 
 #endif

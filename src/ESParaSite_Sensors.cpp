@@ -217,7 +217,6 @@ void dump_sensors()
   Serial.println();
 
   // Comment this line out for Production
-  delay(2000);
 }
 
 void init_dht_sensor()
@@ -353,7 +352,7 @@ void init_rtc_clock()
 
   Serial.println("");
 
-  timestamp_resource.current_second = (rtc.GetDateTime() + 946684800);
+  status_resource.rtc_current_second = (rtc.GetDateTime() + 946684800);
 
   Serial.println("");
   // never assume the Rtc was last configured by you, so
@@ -538,10 +537,12 @@ void read_rtc_data()
   printDateTime(now);
   Serial.println();
 
-  timestamp_resource.current_second = (rtc.GetDateTime() + 946684800);
+  // Epoch64 Conversion
+  status_resource.rtc_current_second = (rtc.GetDateTime() + 946684800);
   Serial.print("Epoch64:\t\t\t");
-  Serial.println(timestamp_resource.current_second);
+  Serial.println(status_resource.rtc_current_second);
 
+  //
   Serial.print(F("Case Temperature:\t\t"));
   RtcTemperature temp = (rtc.GetTemperature());
   enclosure_resource.case_temp = (temp.AsFloatDegC());
@@ -588,6 +589,7 @@ time_t read_rtc_epoch()
   }
 
   time_t rtc_return = (rtc.GetDateTime() + 946684800);
+
   return rtc_return;
 }
 

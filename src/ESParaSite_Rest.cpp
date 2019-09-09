@@ -61,7 +61,7 @@ void get_chamber()
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
-  doc["timestamp"] = timestamp_resource.current_second;
+  doc["timestamp"] = status_resource.rtc_current_second;
   doc["chmb_temp_c"] = chamber_resource.dht_temp_c;
   doc["chmb_humidity"] = chamber_resource.dht_humidity;
   doc["chmb_dewpoint"] = chamber_resource.dht_dewpoint;
@@ -82,7 +82,7 @@ void get_optics()
   StaticJsonDocument<256> doc;
 
   doc["class"] = "optics";
-  doc["timestamp"] = timestamp_resource.current_second;
+  doc["timestamp"] = status_resource.rtc_current_second;
   doc["uvindex"] = optics_resource.si_uvindex;
   doc["visible"] = optics_resource.si_visible;
   doc["infrared"] = optics_resource.si_infrared;
@@ -105,7 +105,7 @@ void get_ambient()
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
-  doc["timestamp"] = timestamp_resource.current_second;
+  doc["timestamp"] = status_resource.rtc_current_second;
   doc["amb_temp_c"] = ambient_resource.bme_temp_c;
   doc["amb_humidity"] = ambient_resource.bme_humidity;
   doc["amb_pressure"] = ambient_resource.bme_barometer;
@@ -127,7 +127,7 @@ void get_enclosure()
   StaticJsonDocument<256> doc;
 
   doc["class"] = "enclosure";
-  doc["timestamp"] = timestamp_resource.current_second;
+  doc["timestamp"] = status_resource.rtc_current_second;
   doc["case_temp_c"] = enclosure_resource.case_temp;
   doc["lifetime_sec"] = enclosure_resource.life_sec;
   doc["screen_sec"] = enclosure_resource.lcd_sec;
@@ -150,7 +150,7 @@ void get_eeprom()
   StaticJsonDocument<256> doc;
 
   doc["class"] = "eeprom";
-  doc["timestamp"] = timestamp_resource.current_second;
+  doc["timestamp"] = status_resource.rtc_current_second;
   doc["first_on_time64"] = rtc_eeprom_resource.first_on_timestamp;
   doc["last_write_time64"] = rtc_eeprom_resource.last_write_timestamp;
   doc["screen_life_sec"] = rtc_eeprom_resource.screen_life_seconds;
