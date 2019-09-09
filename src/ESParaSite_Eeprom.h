@@ -31,9 +31,7 @@ uint32_t ParseUint32(const char (&buf)[4]);
 extern int ping_sensor();
 
 extern enclosure enclosure_resource;
-extern timestamp rtc_timestamp;
+extern status status_resource;
 extern eeprom_data rtc_eeprom_resource;
-
-//void test_eeprom_usage();
 
 #endif

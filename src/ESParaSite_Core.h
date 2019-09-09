@@ -18,9 +18,9 @@
 #define _ESParaSite_Core_h
 
 int init_wifi();
-void do_sensors();
-void do_eeprom();
+int do_sensors();
 void do_check_printing();
+void do_eeprom();
 
 struct printchamber
 {
@@ -55,15 +55,17 @@ struct enclosure
   uint32_t fep_sec{};
 };
 
-struct timestamp
+struct status
 {
-  time_t current_second{};
+  time_t rtc_current_second{};
+  int is_printing_flag{};
 };
 
 struct eeprom_data
 {
   time_t first_on_timestamp{};
   time_t last_write_timestamp{};
+  int last_segment_address{};
   uint32_t screen_life_seconds{};
   uint32_t led_life_seconds{};
   uint32_t fep_life_seconds{};

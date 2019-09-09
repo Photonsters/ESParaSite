@@ -1,0 +1,43 @@
+{
+    "name": "DHT12", 
+    "keywords": [
+        "temperature", 
+        "humidity", 
+        "dht12", 
+        "i2c"
+    ], 
+    "description": "I2C Library for DHT12", 
+    "authors": [
+        {
+            "email": "Rob.Tillaart@gmail.com", 
+            "url": null, 
+            "maintainer": true, 
+            "name": "Rob Tillaart"
+        }
+    ], 
+    "repository": {
+        "type": "git", 
+        "url": "https://github.com/RobTillaart/Arduino.git"
+    }, 
+    "version": "0.1.2", 
+    "frameworks": [
+        "arduino"
+    ], 
+    "platforms": [
+        "atmelavr", 
+        "atmelsam", 
+        "espressif32", 
+        "espressif8266", 
+        "intel_arc32", 
+        "microchippic32", 
+        "nordicnrf51", 
+        "nordicnrf52", 
+        "ststm32", 
+        "teensy", 
+        "timsp430"
+    ], 
+    "export": {
+        "include": "libraries/DHT12"
+    }, 
+    "id": 5554
+}

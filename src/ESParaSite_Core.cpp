@@ -41,7 +41,7 @@
 
 //+++ Advanced Settings +++
 //VISIBLE_THRESHOLD adjusts the sensitivity of the SI1145 Sensor to Ambient light when used to detect printer actively printing.  Default is (280).
-#define VISIBLE_THRESHOLD (280)
+#define VISIBLE_THRESHOLD (280.00)
 
 //*** It IS STRONGLY RECOMMENDED THAT YOU DO NOT MODIFY THE BELOW VALUES ***
 // POLLING_INTERVAL_SEC determines how often the sensor array should be polled for new data.  Since we cannot poll the DHT12 more often than every 2000ms, The minimum polling interval is 3s.
@@ -58,10 +58,12 @@ printchamber chamber_resource;
 optics optics_resource;
 ambient ambient_resource;
 enclosure enclosure_resource;
-timestamp timestamp_resource;
+status status_resource;
 eeprom_data rtc_eeprom_resource;
 
-time_t rtc_cur_epoch;
+time_t last_poll_sec = 0;
+int is_printing_counter = 0;
+boolean is_new_boot = 0;
 
 void loop(void)
 {
@@ -118,7 +120,16 @@ void setup(void)
   Serial.print("The most recent write address:\t");
   Serial.println(mru_segment_addr);
   Serial.println();
+
   do_eeprom_read(mru_segment_addr);
+
+  last_poll_sec = status_resource.rtc_current_second;
+  is_new_boot = true;
+
+  Serial.println("=========first_read");
+  Serial.print("last_poll_sec \t");
+  Serial.println((int)last_poll_sec);
+  Serial.println();
 
   Serial.println("Startup Complete!");
   Serial.println();
@@ -139,32 +150,81 @@ int init_wifi()
   return WiFi.status(); // return the WiFi connection status
 }
 
-void do_sensors()
+int do_sensors()
 {
-  rtc_cur_epoch = read_rtc_epoch();
+  status_resource.rtc_current_second = read_rtc_epoch();
 
-  if ((rtc_cur_epoch) >= ((timestamp_resource.current_second) + POLLING_INTERVAL_SEC))
+  if ((status_resource.rtc_current_second) >= ((last_poll_sec) + POLLING_INTERVAL_SEC))
   {
-    timestamp_resource.current_second = (rtc_cur_epoch);
-    enclosure_resource.life_sec = rtc_cur_epoch - rtc_eeprom_resource.first_on_timestamp;
+    enclosure_resource.life_sec = (status_resource.rtc_current_second - rtc_eeprom_resource.first_on_timestamp);
+    Serial.print("This Printer has been on for:\t");
+    Serial.print(enclosure_resource.life_sec);
+    Serial.println("  seconds");
     read_dht_sensor();
-    read_si_sensor();
     read_bme_sensor();
     read_mlx_sensor();
     read_rtc_temp();
-    Serial.println();
+    read_si_sensor();
+    do_check_printing();
+
+    last_poll_sec = status_resource.rtc_current_second;
+
+    return 1;
+  }
+  else
+  {
+    return 0;
   }
 }
 
 void do_check_printing()
 {
+  if (optics_resource.si_visible >= VISIBLE_THRESHOLD)
+  {
+    is_printing_counter++;
+  }
 }
+
 void do_eeprom()
 {
-  // We need some code here to detect if printer is on  and update the values before we write to eeprom
-
-  if ((rtc_cur_epoch) >= ((rtc_eeprom_resource.last_write_timestamp) + EEPROM_WRITE_INTERVAL_SEC))
+  if ((status_resource.rtc_current_second) >= ((rtc_eeprom_resource.last_write_timestamp) + EEPROM_WRITE_INTERVAL_SEC) && !is_new_boot)
   {
-    do_eeprom_write();
+    Serial.println();
+    Serial.print("rtc_current_second\t");
+    Serial.println(status_resource.rtc_current_second);
+    Serial.print("last_write_timestamp\t");
+    Serial.println(rtc_eeprom_resource.last_write_timestamp);
+
+    if (is_printing_counter > (EEPROM_WRITE_INTERVAL_SEC / 10))
+    {
+      status_resource.is_printing_flag = 1;
+      is_printing_counter = 0;
+
+      Serial.println();
+      Serial.print("Is Printing Flag\t");
+      Serial.println(status_resource.is_printing_flag);
+
+      rtc_eeprom_resource.screen_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
+      rtc_eeprom_resource.led_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
+      rtc_eeprom_resource.fep_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
+      Serial.print("\nOK, now we are writing\n");
+
+      do_eeprom_write();
+    }
+    else
+    {
+      status_resource.is_printing_flag = 0;
+      //is_printing_counter = 0;
+
+      Serial.print("Is Printing Flag\t");
+      Serial.println(status_resource.is_printing_flag);
+
+      do_eeprom_write();
+    }
+  }
+  else if (is_new_boot)
+  {
+    is_new_boot = false;
+    Serial.print("\nLet's wait to write until Next time\n");
   }
 }

@@ -51,6 +51,6 @@ extern printchamber chamber_resource;
 extern optics optics_resource;
 extern ambient ambient_resource;
 extern enclosure enclosure_resource;
-extern timestamp timestamp_resource;
+extern status status_resource;
 
 #endif
