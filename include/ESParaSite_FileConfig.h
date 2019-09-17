@@ -1,6 +1,6 @@
-//ESParaSite_Util.h
+//ESParaSite_ConfigFile.h
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy  (SolidSt8Dad)Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -12,10 +12,12 @@
 	All Original content is free and unencumbered software released into the public domain.
 */
 
-#ifndef _ESParaSite_Util_h
-#define _ESParaSite_Util_h
+#pragma once
 
-int convertCtoF(int temp_c);
-double dewPoint(double celsius, double humidity);
+#ifndef _ESParaSite_ConfigFile_h
+#define _ESParaSite_ConfigFile_h
+
+bool loadConfig();
+bool saveConfig();
 
 #endif
