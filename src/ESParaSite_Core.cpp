@@ -20,6 +20,7 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h> //Local DNS Server used for redirecting all requests to the configuration portal
 #include <FS.h>
+#include <ESP8266mDNS.h>
 
 #include <WiFiManager.h>
 
@@ -68,8 +69,22 @@ time_t last_poll_sec = 0;
 int is_printing_counter = 0;
 boolean is_new_boot = 0;
 
+const int TRIGGER_PIN = 13; // D7 on NodeMCU and WeMos.
+const int TRIGGER_PIN2 = 13;
 void loop(void)
 {
+  if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW))
+  {
+    WiFi.disconnect(true);
+    WiFi.status();
+    Serial.println("");
+    Serial.println("HALTING LOOP - Configuration Mode Triggered.");
+    Serial.println("");
+    delay(5000);
+    do_config_portal();
+  }
+  MDNS.update();
+
   do_client();
 
   do_sensors();
@@ -81,6 +96,8 @@ void setup(void)
 {
   Serial.begin(115200);
   Serial.println("");
+
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
 
   Serial.println("");
   Serial.println("ESParaSite Data Logging Server");
@@ -105,38 +122,57 @@ void setup(void)
 
     do_config_portal();
   }
+
+  if (!WiFi.getAutoConnect() || init_wifi() != WL_CONNECTED)
+  {
+    Serial.println();
+    Serial.println("Error connecting to WiFi Network - Starting Config Portal");
+
+    do_config_portal();
+  }
+  else if (WiFi.getAutoConnect())
+  {
+    Serial.println();
+    Serial.println("");
+    Serial.print("Using Autoconnect");
+    Serial.println("");
+    Serial.println();
+    Serial.print("Connected to: ");
+    Serial.println(WiFi.SSID());
+  }
   else
   {
-    if (!WiFi.getAutoConnect() || init_wifi() != WL_CONNECTED)
-    {
-      Serial.println();
-      Serial.println("Error connecting to WiFi Network - Starting Config Portal");
-      do_config_portal();
-    }
-    else if (WiFi.getAutoConnect())
-    {
-      Serial.println();
-      Serial.println("");
-      Serial.print("Using Autoconnect");
-      Serial.println("");
-      Serial.println();
-      Serial.print("Connected to: ");
-      Serial.println(WiFi.SSID());
+    Serial.print("Using config.json");
+    Serial.println("");
+    Serial.print("Connected to: ");
+    Serial.println(config_resource.cfg_wifi_ssid);
+  }
+
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.println();
+
+  Serial.print("mDNS Enabled:\t");
+  Serial.println(config_resource.cfg_mdns_enabled);
+  Serial.print("mDNS URL: http://");
+  Serial.print(config_resource.cfg_mdns_name);
+  Serial.println(".local");
+
+  if (config_resource.cfg_mdns_enabled == 1)
+  {
+    const char *mdns_n = config_resource.cfg_mdns_name;
+    if (!MDNS.begin(mdns_n))
+    { // Start the mDNS responder for esp8266.local
+      Serial.println("Error setting up MDNS responder!");
     }
     else
     {
-      Serial.println("");
-      Serial.print("Connected to ");
-      Serial.println(config_resource.cfg_wifi_ssid);
+      Serial.println("mDNS responder started");
     }
-
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
   }
 
   //start http rest server
-  Serial.println();
-
   start_http_server();
   config_rest_server_routing();
   Serial.println("HTTP REST server started");
