@@ -1,2 +1,0 @@
-const char *wifi_ssid = "your_wireless_network";
-const char *wifi_password = "wireless_network_password";

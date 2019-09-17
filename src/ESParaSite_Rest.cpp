@@ -1,6 +1,6 @@
 //ESParaSite_Rest.cpp
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -43,7 +43,7 @@ void config_rest_server_routing()
   http_rest_server.on("/eeprom", HTTP_GET, get_eeprom);
   // http_rest_server.on("/enclosure", HTTP_POST, post_enclosure); //Not yet implemented
   // http_rest_server.on("/enclosure", HTTP_PUT, post_enclosure);  //Not yet implemented
-  Serial.print("HTTP REST config complete!");
+  Serial.println("HTTP REST config complete!");
 }
 
 void do_client()

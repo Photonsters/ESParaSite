@@ -1,6 +1,6 @@
 //ESParaSite_Core.cpp
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -18,7 +18,13 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
+#include <DNSServer.h> //Local DNS Server used for redirecting all requests to the configuration portal
+#include <FS.h>
+
+#include <WiFiManager.h>
+
 #include <ArduinoJson.h>
+
 #include <BlueDot_BME280.h>
 #include <dht12.h>
 #include <Adafruit_Sensor.h>
@@ -31,13 +37,9 @@
 #include "ESParaSite_Eeprom.h"
 #include "ESParaSite_Sensors.h"
 #include "ESParaSite_Util.h"
-
-//Put your WiFi network and WiFi password here:
-
-//const char* wifi_ssid     = "yourwifinetwork";
-//const char* wifi_password = "yourwifipassword";
-
-#include "wifi.ini" //Delete or comment this line if you have input your wifi information above.
+#include "ESParaSite_WiFi.h"
+#include "ESParaSite_FileConfig.h"
+#include "ESParaSite_PortalConfig.h"
 
 //+++ Advanced Settings +++
 //VISIBLE_THRESHOLD adjusts the sensitivity of the SI1145 Sensor to Ambient light when used to detect printer actively printing.  Default is (280).
@@ -60,6 +62,7 @@ ambient ambient_resource;
 enclosure enclosure_resource;
 status status_resource;
 eeprom_data rtc_eeprom_resource;
+config_data config_resource;
 
 time_t last_poll_sec = 0;
 int is_printing_counter = 0;
@@ -88,21 +91,52 @@ void setup(void)
   Serial.println(__TIME__);
   Serial.println("");
 
-  if (init_wifi() == WL_CONNECTED)
+  Serial.println("Mounting FS...");
+
+  if (!SPIFFS.begin())
   {
-    Serial.println("");
-    Serial.print("Connected to ");
-    Serial.println(wifi_ssid);
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
+    Serial.println("Failed to mount file system");
+    return;
+  }
+
+  if (!loadConfig())
+  {
+    Serial.println("Failed to load config. Booting in AP Config Portal mode.");
+
+    do_config_portal();
   }
   else
   {
-    Serial.print("Error connecting to: ");
-    Serial.println(wifi_ssid);
+    if (!WiFi.getAutoConnect() || init_wifi() != WL_CONNECTED)
+    {
+      Serial.println();
+      Serial.println("Error connecting to WiFi Network - Starting Config Portal");
+      do_config_portal();
+    }
+    else if (WiFi.getAutoConnect())
+    {
+      Serial.println();
+      Serial.println("");
+      Serial.print("Using Autoconnect");
+      Serial.println("");
+      Serial.println();
+      Serial.print("Connected to: ");
+      Serial.println(WiFi.SSID());
+    }
+    else
+    {
+      Serial.println("");
+      Serial.print("Connected to ");
+      Serial.println(config_resource.cfg_wifi_ssid);
+    }
+
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
   }
 
   //start http rest server
+  Serial.println();
+
   start_http_server();
   config_rest_server_routing();
   Serial.println("HTTP REST server started");
@@ -133,21 +167,6 @@ void setup(void)
 
   Serial.println("Startup Complete!");
   Serial.println();
-}
-
-int init_wifi()
-{
-  // Connect to WiFi network
-  WiFi.begin(wifi_ssid, wifi_password);
-  Serial.print("\n\r \n\rConnecting to Wifi");
-
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  return WiFi.status(); // return the WiFi connection status
 }
 
 int do_sensors()
@@ -195,29 +214,30 @@ void do_eeprom()
     Serial.print("last_write_timestamp\t");
     Serial.println(rtc_eeprom_resource.last_write_timestamp);
 
-    if (is_printing_counter > (EEPROM_WRITE_INTERVAL_SEC / 10))
+    if (is_printing_counter >= (int(EEPROM_WRITE_INTERVAL_SEC / 7))) //if 4 or more out of our last 10 poll intervals detect light.
     {
       status_resource.is_printing_flag = 1;
-      is_printing_counter = 0;
 
       Serial.println();
       Serial.print("Is Printing Flag\t");
       Serial.println(status_resource.is_printing_flag);
 
+      is_printing_counter = 0;
+
       rtc_eeprom_resource.screen_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
       rtc_eeprom_resource.led_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
       rtc_eeprom_resource.fep_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
-      Serial.print("\nOK, now we are writing\n");
 
       do_eeprom_write();
     }
     else
     {
       status_resource.is_printing_flag = 0;
-      //is_printing_counter = 0;
 
       Serial.print("Is Printing Flag\t");
       Serial.println(status_resource.is_printing_flag);
+
+      is_printing_counter = 0;
 
       do_eeprom_write();
     }
