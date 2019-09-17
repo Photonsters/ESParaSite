@@ -1,6 +1,6 @@
 //ESParaSite_Rest.h
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy  (SolidSt8Dad)Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -27,7 +27,10 @@ void get_chamber();
 void get_optics();
 void get_ambient();
 void get_enclosure();
-void get_eeprom();
+void get_config();
+
+String getContentType(String filename);
+bool handleFileRead(String path);
 
 extern void read_rtc_data();
 extern void read_dht_sensor();
@@ -43,5 +46,6 @@ extern ambient ambient_resource;
 extern enclosure enclosure_resource;
 extern status status_resource;
 extern eeprom_data rtc_eeprom_resource;
+extern config_data config_resource;
 
 #endif
