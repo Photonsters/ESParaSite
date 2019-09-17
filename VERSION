@@ -1,6 +1,6 @@
 //ESParasite VERSION HISTORY
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
 	
 	Please see /ATTRIB for full credits and OSS License Info
@@ -10,6 +10,26 @@
 	All Derived Content is subject to the most restrictive licence of it's source.
 	
 	All Original content is free and unencumbered software released into the public domain.
+*/
+
+/*
+v0.5 - Fifth Release - 
+	- Moved WiFi functions to their own file ESParaSite_Wifi.cpp
+		- Moved init_wifi() from ESParaSite_Core.cpp to ESParaSite_Wifi.cpp
+		- Wifi will attempt autoconnect first, then fall back to Config.json if neither works we will launch the Config Portal.
+	- Added ESParaSite_FileConfig.cpp for config file functions
+		- Implemented SPIFFS for /config.json (Issue #3)
+		- Added loadConfig()
+		- Added saveConfig()
+	- Added initial config via Web Portal (Issue #2)
+		- Added ESParaSite_PortalConfig.cpp for wifiManager/config portal functions
+		- Implemented Ken Taylor's Branch of wifiManager Library for initial configuration https://github.com/kentaylor/WiFiManager
+		- Configuration stored in /config.json on SPIFFS.
+	- Added mDNS function
+		- Defaults to http://esparasite.local
+		- Configure name and enable/disable via Initial config portal.
+	- First release to provide .bin images for ESP-01 and NodeMCU boards.
+
 */
 
 /*

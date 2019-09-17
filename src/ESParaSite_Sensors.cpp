@@ -1,6 +1,6 @@
 //ESParaSite_Sensors.cpp
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -40,8 +40,8 @@
 #define CURRENTAVGTEMP_F (59)
 
 // The values below should be used to define the SDA and SCL pins on the ESP8266. For ESP-01S Pins are SDA (0) SCL(2) for ESP12F you have freedom to choose pins. Defaults are SDA (0) SCL(4).
-#define I2C_SDA (0)
-#define I2C_SCL (4)
+//#define I2C_SDA (0)
+//#define I2C_SCL (4)
 
 // These values control the I2C address of each sensor. Som chips may use different addresses and I recommend utilizing the I2C scanner sketch at:
 // https://gist.github.com/AustinSaintAubin/dc8abb2d168f5f7c27d65bb4829ca870
@@ -71,6 +71,8 @@ int mlxDetected = 0;
 int rtcDetected = 0;
 int siDetected = 0;
 
+extern config_data config_resource;
+
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_SI1145 uv = Adafruit_SI1145();
 RtcDS3231<TwoWire> rtc(Wire);
@@ -84,7 +86,7 @@ DHT12 dht;
 void init_i2c_sensors()
 { // initialize I2C bus
   Serial.print("Init I2C bus...");
-  Wire.begin(I2C_SDA, I2C_SCL);
+  Wire.begin(config_resource.cfg_pin_sda, config_resource.cfg_pin_scl);
   Serial.println("\t\t\t\t\t\t\tOK!");
   Serial.println();
 

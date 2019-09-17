@@ -1,6 +1,6 @@
 //ESParaSite_Rest.cpp
 
-/* ESParasite Data Logger v0.4
+/* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
 
 	Please see /ATTRIB for full credits and OSS License Info
@@ -14,6 +14,7 @@
 
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+#include <FS.h>
 
 #include "ESParaSite_Core.h"
 #include "ESParaSite_Rest.h"
@@ -30,6 +31,9 @@
 
 ESP8266WebServer http_rest_server(HTTP_REST_PORT);
 
+String getContentType(String filename);
+bool handleFileRead(String path);
+
 void config_rest_server_routing()
 {
   http_rest_server.on("/", HTTP_GET, []() {
@@ -40,10 +44,14 @@ void config_rest_server_routing()
   http_rest_server.on("/optics", HTTP_GET, get_optics);
   http_rest_server.on("/ambient", HTTP_GET, get_ambient);
   http_rest_server.on("/enclosure", HTTP_GET, get_enclosure);
-  http_rest_server.on("/eeprom", HTTP_GET, get_eeprom);
+  http_rest_server.on("/config", HTTP_GET, get_config);
   // http_rest_server.on("/enclosure", HTTP_POST, post_enclosure); //Not yet implemented
   // http_rest_server.on("/enclosure", HTTP_PUT, post_enclosure);  //Not yet implemented
-  Serial.print("HTTP REST config complete!");
+  http_rest_server.onNotFound([]() {                              // If the client requests any URI
+    if (!handleFileRead(http_rest_server.uri()))                  // send it if it exists
+      http_rest_server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
+  });
+  Serial.println("HTTP REST config complete!");
 }
 
 void do_client()
@@ -145,9 +153,10 @@ void get_enclosure()
   Serial.println();
 }
 
-void get_eeprom()
+void get_config()
 {
   StaticJsonDocument<256> doc;
+  StaticJsonDocument<256> doc2;
 
   doc["class"] = "eeprom";
   doc["timestamp"] = status_resource.rtc_current_second;
@@ -160,10 +169,41 @@ void get_eeprom()
   serializeJson(doc, Serial);
   Serial.println();
 
+  serializeJson(doc2, Serial);
+  Serial.println();
+
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
+  serializeJsonPretty(doc2, output);
   http_rest_server.send(200, "application/json", output);
+}
 
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
+String getContentType(String filename)
+{ // convert the file extension to the MIME type
+  if (filename.endsWith(".html"))
+    return "text/html";
+  else if (filename.endsWith(".css"))
+    return "text/css";
+  else if (filename.endsWith(".js"))
+    return "application/javascript";
+  else if (filename.endsWith(".ico"))
+    return "image/x-icon";
+  return "text/plain";
+}
+
+bool handleFileRead(String path)
+{ // send the right file to the client (if it exists)
+  Serial.println("handleFileRead: " + path);
+  if (path.endsWith("/"))
+    path += "index.html";                    // If a folder is requested, send the index file
+  String contentType = getContentType(path); // Get the MIME type
+  if (SPIFFS.exists(path))
+  {                                                               // If the file exists
+    File file = SPIFFS.open(path, "r");                           // Open it
+    size_t sent = http_rest_server.streamFile(file, contentType); // And send it to the client
+    file.close();                                                 // Then close the file again
+    return true;
+  }
+  Serial.println("\tFile Not Found");
+  return false; // If the file doesn't exist, return false
 }
