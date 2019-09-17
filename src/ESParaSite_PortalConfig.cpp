@@ -62,16 +62,24 @@ void do_config_portal()
     // After connecting, parameter.getValue() will get you the configured value
     // Format: <ID> <Placeholder text> <default value> <length> <custom HTML> <label placement>
 
+    // Just a quick hint
+    WiFiManagerParameter p_hint("<small>Enter your WiFi credentials above</small>");
+    WiFiManagerParameter p_hint2("<small>Enter the SDA and SCL Pins for your ESParaSite</small>");
+    WiFiManagerParameter p_hint3("<small>If you have multiple ESParaSites, give each a unique name</small>");
+
     // I2C SCL and SDA parameters are integers so we need to convert them to char array but
     // no other special considerations
+
     char convertedValue[3];
     sprintf(convertedValue, "%d", config_resource.cfg_pin_sda);
     WiFiManagerParameter p_pinSda("pinsda", "I2C SDA pin", convertedValue, 3);
     sprintf(convertedValue, "%d", config_resource.cfg_pin_scl);
     WiFiManagerParameter p_pinScl("pinscl", "I2C SCL pin", convertedValue, 3);
 
-    // Just a quick hint
-    WiFiManagerParameter p_hint("<small>Enter your WiFi credentials</small>");
+    char customhtml[24] = "type=\"checkbox\"";
+    strcat(customhtml, " checked");
+    WiFiManagerParameter p_mdnsEnabled("mdnsen", "Enable mDNS", "T", 2, customhtml, WFM_LABEL_AFTER);
+    WiFiManagerParameter p_mdnsName("mdnsname", "mDNSName", "esparasite", 32);
 
     // Initialize WiFIManager
     WiFiManager wifiManager;
@@ -81,6 +89,9 @@ void do_config_portal()
     wifiManager.addParameter(&p_hint);
     wifiManager.addParameter(&p_pinSda);
     wifiManager.addParameter(&p_pinScl);
+    wifiManager.addParameter(&p_hint2);
+    wifiManager.addParameter(&p_mdnsEnabled);
+    wifiManager.addParameter(&p_mdnsName);
 
     // Sets timeout in seconds until configuration portal gets turned off.
     // If not specified device will remain in configuration mode until
@@ -106,6 +117,22 @@ void do_config_portal()
     // Config file is written regardless the connection state
     config_resource.cfg_pin_sda = atoi(p_pinSda.getValue());
     config_resource.cfg_pin_scl = atoi(p_pinScl.getValue());
+
+    if (strncmp(p_mdnsEnabled.getValue(), "T", 1) != 0)
+    {
+        Serial.println("mDNS Disabled");
+        config_resource.cfg_mdns_enabled = false;
+    }
+    else
+    {
+        config_resource.cfg_mdns_enabled = true;
+        //config_resource.cfg_mdns_name = p_mdnsName.getValue();
+        char str1[32] = "";
+        strcpy(config_resource.cfg_mdns_name, p_mdnsName.getValue());
+        //config_resource.cfg_mdns_name = *str1;
+
+        Serial.println("mDNS Enabled");
+    }
 
     if (!saveConfig())
     {

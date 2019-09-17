@@ -76,6 +76,8 @@ struct config_data
   const char *cfg_wifi_password{};
   int cfg_pin_sda{};
   int cfg_pin_scl{};
+  bool cfg_mdns_enabled{};
+  char cfg_mdns_name[32];
 };
 
 #ifndef _ESParaSite_Util_h
