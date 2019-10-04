@@ -1,4 +1,4 @@
-//ESParaSite_ConfigFile.h
+// ESParaSite_ConfigFile.h
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
@@ -12,12 +12,10 @@
 	All Original content is free and unencumbered software released into the public domain.
 */
 
-#pragma once
-
-#ifndef _ESParaSite_ConfigFile_h
-#define _ESParaSite_ConfigFile_h
+#ifndef INCLUDE_ESPARASITE_FILECONFIG_H_
+#define INCLUDE_ESPARASITE_FILECONFIG_H_
 
 bool loadConfig();
 bool saveConfig();
 
-#endif
+#endif // INCLUDE_ESPARASITE_FILECONFIG_H_

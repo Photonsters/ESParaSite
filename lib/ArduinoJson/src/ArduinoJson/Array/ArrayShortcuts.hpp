@@ -26,7 +26,7 @@ class ArrayShortcuts {
   //
   // bool add(TValue);
   // TValue = bool, long, int, short, float, double, serialized, VariantRef,
-  //          std::string, String, ObjectRef
+  //         std::string, String, ObjectRef
   template <typename T>
   FORCE_INLINE bool add(const T &value) const {
     return impl()->addElement().set(value);

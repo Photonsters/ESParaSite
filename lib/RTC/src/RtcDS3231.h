@@ -344,17 +344,17 @@ public:
         }
 
         // Temperature is represented as a 10-bit code with a resolution
-        // of 1/4th °C and is accessable as a signed 16-bit integer at
+        // of 1/4th ï¿½C and is accessable as a signed 16-bit integer at
         // locations 11h and 12h.
         //
-        //       |         r11h          | DP |         r12h         |
+        //      |         r11h          | DP |         r12h         |
         // Bit:   15 14 13 12 11 10  9  8   .  7  6  5  4  3  2  1  0  -1 -2
-        //         s  i  i  i  i  i  i  i   .  f  f  0  0  0  0  0  0
+        //        s  i  i  i  i  i  i  i   .  f  f  0  0  0  0  0  0
         //
         // As it takes (8) right-shifts to register the decimal point (DP) to
         // the right of the 0th bit, the overall word scaling equals 256.
         //
-        // For example, at +/- 25.25°C, concatenated registers <r11h:r12h> =
+        // For example, at +/- 25.25ï¿½C, concatenated registers <r11h:r12h> =
         // 256 * (+/- 25+(1/4)) = +/- 6464, or 1940h / E6C0h.
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);

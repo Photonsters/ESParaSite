@@ -1,4 +1,4 @@
-//ESParaSite_Util.cpp
+// ESParaSite_Util.cpp
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
@@ -16,8 +16,7 @@
 
 int convertCtoF(int temp_c)
 {
-  int temp_f;
-  temp_f = ((int)round(1.8 * temp_c + 32));
+  int temp_f = (static_cast<int>(round(1.8 * temp_c + 32)));
   return temp_f;
 }
 
@@ -35,6 +34,6 @@ double dewPoint(double celsius, double humidity)
   double VP = pow(10, RHS - 3) * humidity;
 
   // (2) DEWPOINT = F(Vapor Pressure)
-  double T = log(VP / 0.61078); // temp var
+  double T = log(VP / 0.61078);
   return (241.88 * T) / (17.558 - T);
 }

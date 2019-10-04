@@ -1,4 +1,4 @@
-//ESParaSite_Util.h
+// ESParaSite_Util.h
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
@@ -12,10 +12,10 @@
 	All Original content is free and unencumbered software released into the public domain.
 */
 
-#ifndef _ESParaSite_Util_h
-#define _ESParaSite_Util_h
+#ifndef INCLUDE_ESPARASITE_UTIL_H_
+#define INCLUDE_ESPARASITE_UTIL_H_
 
 int convertCtoF(int temp_c);
 double dewPoint(double celsius, double humidity);
 
-#endif
+#endif // INCLUDE_ESPARASITE_UTIL_H_

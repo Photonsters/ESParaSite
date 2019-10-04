@@ -1,4 +1,4 @@
-//ESParaSite_ConfigPortal.cpp
+// ESParaSite_ConfigPortal.cpp
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
@@ -12,14 +12,12 @@
 	All Original content is free and unencumbered software released into the public domain.
 */
 
-#pragma once
-
-#ifndef _ESParaSite_ConfigPortal_h
-#define _ESParaSite_ConfigPortal_h
+#ifndef INCLUDE_ESPARASITE_PORTALCONFIG_H_
+#define INCLUDE_ESPARASITE_PORTALCONFIG_H_
 
 void do_config_portal();
 
 extern bool loadConfig();
 extern bool saveConfig();
 
-#endif
+#endif // INCLUDE_ESPARASITE_PORTALCONFIG_H_
