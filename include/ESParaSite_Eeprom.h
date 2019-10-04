@@ -1,4 +1,4 @@
-//ESParaSite_Eeprom.h
+// ESParaSite_Eeprom.h
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy  (SolidSt8Dad)Eakin
@@ -12,8 +12,8 @@
 	All Original content is free and unencumbered software released into the public domain.
 */
 
-#ifndef _ESParaSite_Eeprom_h
-#define _ESParaSite_Eeprom_h
+#ifndef INCLUDE_ESPARASITE_EEPROM_H_
+#define INCLUDE_ESPARASITE_EEPROM_H_
 
 void init_rtc_eeprom(int);
 
@@ -34,4 +34,4 @@ extern enclosure enclosure_resource;
 extern status status_resource;
 extern eeprom_data rtc_eeprom_resource;
 
-#endif
+#endif // INCLUDE_ESPARASITE_EEPROM_H_

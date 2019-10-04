@@ -17,8 +17,8 @@ namespace ARDUINOJSON_NAMESPACE {
 // +-------------+--------------+-----------+
 // | strings...  |   (free)     |  ...slots |
 // +-------------+--------------+-----------+
-//               ^              ^
-//             _left          _right
+//              ^              ^
+//            _left          _right
 
 class MemoryPool {
  public:

@@ -9,15 +9,15 @@ class RtcTemperature
 public:
     // Constructor
 	// a) Merge RTC registers into signed scaled temperature (x256),
-	//    then bind to RTC resolution.
-	//         |         r11h          | DP |         r12h         |
+	//   then bind to RTC resolution.
+	//        |         r11h          | DP |         r12h         |
 	// Bit:     15 14 13 12 11 10  9  8   .  7  6  5  4  3  2  1  0  -1 -2
-	//           s  i  i  i  i  i  i  i   .  f  f  0  0  0  0  0  0
+	//          s  i  i  i  i  i  i  i   .  f  f  0  0  0  0  0  0
 	//
 	// b) Rescale to (x4) by right-shifting (6) bits
-	//         |                                         | DP |    |
+	//        |                                         | DP |    |
 	// Bit:     15 14 13 12 11 10  9  8  7  6  5  4  3  2   .  1  0  -1 -2
-	//           s  s  s  s  s  s  s  i  i  i  i  i  i  i      f  f   0  0
+	//          s  s  s  s  s  s  s  i  i  i  i  i  i  i      f  f   0  0
     RtcTemperature(int8_t highByteDegreesC, uint8_t lowByteDegreesC)
     {
         int16_t scaledDegC = ((highByteDegreesC << 8) | (lowByteDegreesC & 0xC0)) >> 6;

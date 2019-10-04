@@ -1,4 +1,4 @@
-//ESParaSite_Sensors.cpp
+// ESParaSite_Sensors.cpp
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy  (SolidSt8Dad)Eakin
@@ -32,18 +32,16 @@
 
 //+++ Advanced Settings +++
 // For precise altitude measurements please put in the current pressure corrected for the sea level
-// Otherwise leave the standard pressure as default (1013.25 hPa);
+// Otherwise leave the standard pressure as default (1013.25 hPa)
+
 // Also put in the current average temperature outside (yes, really outside!)
 // For slightly less precise altitude measurements, just leave the standard temperature as default (15°C and 59°F);
 #define SEALEVELPRESSURE_HPA (1013.25)
 #define CURRENTAVGTEMP_C (15)
 #define CURRENTAVGTEMP_F (59)
 
-// The values below should be used to define the SDA and SCL pins on the ESP8266. For ESP-01S Pins are SDA (0) SCL(2) for ESP12F you have freedom to choose pins. Defaults are SDA (0) SCL(4).
-//#define I2C_SDA (0)
-//#define I2C_SCL (4)
-
-// These values control the I2C address of each sensor. Som chips may use different addresses and I recommend utilizing the I2C scanner sketch at:
+// These values control the I2C address of each sensor. Some chips may use different addresses and it is recommend
+// to utilize the I2C scanner sketch at:
 // https://gist.github.com/AustinSaintAubin/dc8abb2d168f5f7c27d65bb4829ca870
 // to scan for your sensors if you are having any issues with communication.
 
@@ -58,13 +56,14 @@
 #define BME_ADDR_B (0x77)
 // DS3231 Real Time Clock Address. Default (0x68)
 #define RTC_ADDR (0x68)
-// AT24C32 EEPROM Address. Default (0x50)
-#define RTC_EEPROM_ADDR (0x57)
+// AT24C32 EEPROM Address. Default (0x50 to 0x57)
+#define RTC_EEPROM_BASE_ADDR (0x50)
+#define RTC_EEPROM_MAX_ADDR (0x57)
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-unsigned long delayTime;
 int bme_i2c_address;
+int eeprom_i2c_address;
 int bmeDetected = 0;
 int dhtDetected = 0;
 int mlxDetected = 0;
@@ -80,18 +79,20 @@ BlueDot_BME280 bme;
 DHT12 dht;
 
 // Since we use libraries by different authors, not all libraries talk to sensors in the same way.
-// init_i2c_sensors and ping_sensor give us a cleaner format before calling the init_xyz_sensor methods which are unique to the sensor and library chosen.
+// init_i2c_sensors and ping_sensor give us a cleaner, abstracted format to check fo rthe sensors before calling the
+// init_xyz_sensor() methods which are unique to the sensor and library chosen.
 // This will allow us to extend sensor support over time in a more elegant fashion.
 
 void init_i2c_sensors()
-{ // initialize I2C bus
+{
+  // initialize I2C bus
   Serial.print("Init I2C bus...");
   Wire.begin(config_resource.cfg_pin_sda, config_resource.cfg_pin_scl);
   Serial.println("\t\t\t\t\t\t\tOK!");
   Serial.println();
 
-  // initialize DHT12 sensor
-  Serial.print("Init DHT12 Sensor...");
+  // initialize Print Chamber sensor
+  Serial.print("Init Print Chamber Sensor...");
   int error = ping_sensor(DHT_ADDR);
   if (error == 0)
   {
@@ -99,8 +100,8 @@ void init_i2c_sensors()
   }
   Serial.println();
 
-  // initialize SI1145 UV sensor
-  Serial.print("Init SI1145 sensor...");
+  // initialize UV Light sensor
+  Serial.print("Init UV Light sensor...");
   error = ping_sensor(SI_ADDR);
   if (error == 0)
   {
@@ -108,8 +109,8 @@ void init_i2c_sensors()
   }
   Serial.println();
 
-  // initialize MLX90614 temperature sensor
-  Serial.print("Init MLX90614 sensor...");
+  // initialize Non-Contact temperature sensor
+  Serial.print("Init Non-Contact temperature sensor...");
   error = ping_sensor(MLX_ADDR);
   if (error == 0)
   {
@@ -145,14 +146,22 @@ void init_i2c_sensors()
     init_rtc_clock();
   }
 
-  //initialize AR24C32 EEPROM
-  Serial.print("Init AT24C32 EEPROM...");
-  error = ping_sensor(RTC_EEPROM_ADDR);
-  if (error == 0)
+  // initialize AR24C32 EEPROM
+  Serial.println("Init AT24C32 EEPROM...");
+
+  for (eeprom_i2c_address = RTC_EEPROM_BASE_ADDR; eeprom_i2c_address <= RTC_EEPROM_MAX_ADDR; eeprom_i2c_address++)
   {
-    Serial.println("OK!");
-    init_rtc_eeprom();
+    error = ping_sensor(eeprom_i2c_address);
+    if (error == 0)
+    {
+      Serial.println("OK!");
+      Serial.println();
+      init_rtc_eeprom();
+      return;
+    }
+    Serial.println();
   }
+  Serial.println("NO EEPROM FOUND!");
   Serial.println();
 }
 
@@ -189,10 +198,9 @@ int ping_sensor(int address)
   return error;
 }
 
-// This gives us a nicely formatted dump of all sensor data to Serial Console for Troubleshooting.
+// This gives us a nicely formatted dump of all sensor data to Serial console.
 void dump_sensors()
 {
-  //Dump all Sensor data to Serial
   Serial.println();
   Serial.println("Current Sensor Readings");
   Serial.println("============================================================");
@@ -318,8 +326,8 @@ void init_rtc_clock()
     else
     {
       // Common Cuases:
-      //    1) first time you ran and the device wasn't running yet
-      //    2) the battery on the device is low or even missing
+      //  1) first time you ran and the device wasn't running yet
+      //  2) the battery on the device is low or even missing
 
       Serial.println("RTC lost confidence in the DateTime!");
 
@@ -367,7 +375,7 @@ void read_dht_sensor()
 {
   Serial.println("==========Print Chamber==========");
 
-  //First dht measurement is stale, so we measure, wait ~2 seconds, then measure again.
+  // First dht measurement is stale, so we measure, wait ~2 seconds, then measure again.
   if (dhtDetected == 1)
   {
     int status = dht.read();
@@ -409,7 +417,7 @@ void read_dht_sensor()
 
       Serial.print(F("Dew Point:\t\t\t"));
       chamber_resource.dht_dewpoint = (dewPoint(chamber_resource.dht_temp_c, chamber_resource.dht_humidity));
-      Serial.print(((int)chamber_resource.dht_dewpoint));
+      Serial.print(static_cast<int>(chamber_resource.dht_dewpoint));
       Serial.print("°C / ");
       Serial.print(convertCtoF(chamber_resource.dht_dewpoint));
       Serial.println("°F");
@@ -445,7 +453,7 @@ void read_si_sensor()
   optics_resource.si_uvindex = uv.readUV();
   optics_resource.si_uvindex /= 100.0;
   Serial.print("UV Index:\t\t\t");
-  Serial.println((int)optics_resource.si_uvindex);
+  Serial.println(static_cast<int>(optics_resource.si_uvindex));
 
   optics_resource.si_visible = uv.readVisible();
   Serial.print("Visible:\t\t\t");
@@ -530,7 +538,7 @@ void read_rtc_data()
     else
     {
       // Common Cuases:
-      //    1) the battery on the device is low or even missing and the power line was disconnected
+      //  1) the battery on the device is low or even missing and the power line was disconnected
       Serial.println("RTC lost confidence in the DateTime!");
     }
   }

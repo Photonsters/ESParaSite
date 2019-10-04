@@ -5,18 +5,19 @@
 
 extern config_data config_resource;
 
-const char *ap_ssid = "ESParaSite";      // The name of the Wi-Fi network that will be created
-const char *ap_password = "thisbugsme!"; // The password required to connect to it, leave blank for an open network
-
+// Start the access point
 void do_wifi_ap()
 {
-    WiFi.softAP(ap_ssid, ap_password); // Start the access point
+    const char *ap_ssid = "ESParaSite";
+    const char *ap_password = "thisbugsme!";
+
+    WiFi.softAP(ap_ssid, ap_password);
     Serial.print("Access Point \"");
     Serial.print(ap_ssid);
     Serial.println("\" started");
 
     Serial.print("IP address:\t");
-    Serial.println(WiFi.softAPIP()); // Send the IP address of the ESP8266 to the computer
+    Serial.println(WiFi.softAPIP());
 }
 
 int init_wifi()
@@ -26,7 +27,7 @@ int init_wifi()
     Serial.print("\n\r \n\rConnecting to Wifi");
 
     // Wait for connection
-    unsigned long startedAt = millis();
+    uint16_t startedAt = millis();
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
@@ -38,5 +39,6 @@ int init_wifi()
             break;
         }
     }
-    return WiFi.status(); // return the WiFi connection status
+    // return the WiFi connection status
+    return WiFi.status();
 }

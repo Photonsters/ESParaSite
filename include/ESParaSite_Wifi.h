@@ -1,11 +1,22 @@
 
+// ESParaSite_Wifi.h
 
-#pragma once
+/* ESParasite Data Logger v0.5
+	Authors: Andy  (SolidSt8Dad)Eakin
 
-#ifndef _ESParaSite_ConfigFile_h
-#define _ESParaSite_ConfigFile_h
+	Please see /ATTRIB for full credits and OSS License Info
+  	Please see /LIBRARIES for necessary libraries
+  	Please see /VERSION for Hstory
+
+	All Derived Content is subject to the most restrictive licence of it's source.
+
+	All Original content is free and unencumbered software released into the public domain.
+*/
+
+#ifndef INCLUDE_ESPARASITE_WIFI_H_
+#define INCLUDE_ESPARASITE_WIFI_H_
 
 void do_wifi_ap();
 int init_wifi();
 
-#endif
+#endif // INCLUDE_ESPARASITE_WIFI_H_
