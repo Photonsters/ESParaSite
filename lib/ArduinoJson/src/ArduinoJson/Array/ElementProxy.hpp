@@ -33,7 +33,7 @@ class ElementProxy : public VariantOperators<ElementProxy<TArray> >,
   //
   // operator=(const TValue&)
   // TValue = bool, long, int, short, float, double, serialized, VariantRef,
-  //          std::string, String, ArrayRef, ObjectRef
+  //         std::string, String, ArrayRef, ObjectRef
   template <typename T>
   FORCE_INLINE this_type& operator=(const T& src) {
     getUpstreamElement().set(src);
@@ -83,7 +83,7 @@ class ElementProxy : public VariantOperators<ElementProxy<TArray> >,
   //
   // bool set(const TValue&)
   // TValue = bool, long, int, short, float, double, serialized, VariantRef,
-  //          std::string, String, ArrayRef, ObjectRef
+  //         std::string, String, ArrayRef, ObjectRef
   template <typename TValue>
   FORCE_INLINE bool set(const TValue& value) const {
     return getUpstreamElement().set(value);

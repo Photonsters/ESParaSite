@@ -13,6 +13,22 @@
 */
 
 /*
+v0.6 - Fifth Release - 
+	- Fixed a bug in ESParaSite_Eeprom.cpp where we issued a return prior to setting a variable in 2 places.
+	- Added for() loop to scan all 8 I2C addresses of an AT24Cx EEPROM
+	- Added Magic number warning comments in ESParaSite_Eeprom.cpp for the functions that assume an eeprom layout (we will go back and fix that IF a different chip becomes common)
+	- cppcheck/cpplint work to clean up code
+		- 120 char max lines (I had 80 columns in 1982, lets move on, folks /me ducks)
+		- replaced less secure string (strcat, sprintf, etc) functions with 'snprintf' (Security/Modern Semantics)
+		- reduced scope of a number of variables.
+		- removed a couple of extraneous variables
+		- changed to modern c++ variable casting (const_cast, static_cast)
+		- added newline to end of several files
+		- Changed header guard syntax to "INCLUDE_ESPARASITE_FILENAME_H_"
+	- Improved web services to allow service of files and gzipped files.
+
+
+/*
 v0.5 - Fifth Release - 
 	- Moved WiFi functions to their own file ESParaSite_Wifi.cpp
 		- Moved init_wifi() from ESParaSite_Core.cpp to ESParaSite_Wifi.cpp

@@ -1,4 +1,4 @@
-//ESParaSite_Core.cpp
+// ESParaSite_Core.cpp
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy (DocMadmag) Eakin
@@ -13,25 +13,9 @@
 */
 
 #include <Arduino.h>
-#include <Wire.h>
-#include <Time.h>
-#include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <DNSServer.h> //Local DNS Server used for redirecting all requests to the configuration portal
 #include <FS.h>
 #include <ESP8266mDNS.h>
-
-#include <WiFiManager.h>
-
-#include <ArduinoJson.h>
-
-#include <BlueDot_BME280.h>
-#include <dht12.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_SI1145.h>
-#include <Adafruit_MLX90614.h>
-#include <RtcDS3231.h>
 
 #include "ESParaSite_Core.h"
 #include "ESParaSite_Rest.h"
@@ -42,20 +26,29 @@
 #include "ESParaSite_FileConfig.h"
 #include "ESParaSite_PortalConfig.h"
 
-//+++ Advanced Settings +++
-//VISIBLE_THRESHOLD adjusts the sensitivity of the SI1145 Sensor to Ambient light when used to detect printer actively printing.  Default is (280).
+// +++ Advanced Settings +++
+// VISIBLE_THRESHOLD adjusts the sensitivity of the SI1145 Sensor to Ambient light when used to detect print activity.
+// Default is (280).
 #define VISIBLE_THRESHOLD (280.00)
 
-//*** It IS STRONGLY RECOMMENDED THAT YOU DO NOT MODIFY THE BELOW VALUES ***
-// POLLING_INTERVAL_SEC determines how often the sensor array should be polled for new data.  Since we cannot poll the DHT12 more often than every 2000ms, The minimum polling interval is 3s.
-// Increasing the polling interval will reduce the performance requirement, however it will decrease the resolution of the lifetime counter.
+// *** It IS STRONGLY RECOMMENDED THAT YOU DO NOT MODIFY THE BELOW VALUES ***
+// POLLING_INTERVAL_SEC determines how often the sensor array should be polled for new data.
+// Since we cannot poll the DHT12 more often than every 2000ms, the minimum polling interval is 3s.
+
+// Increasing the polling interval will reduce the performance requirement, however it will decrease the resolution
+// of the lifetime counter.
 #define POLLING_INTERVAL_SEC (3)
-// EEPROM_WRITE_INTERVAL_SEC determines how often we update the EEPROM that contains the various lifetime counters. The value of 30s gives us over 13 years of EEPROM life.
-// Reducing this value will burn out the EEPROM chip faster. Increasing it will increase the EEPROM life, but at the cost of a higher margin of error for the lifetime counters.
+
+// EEPROM_WRITE_INTERVAL_SEC determines how often we update the EEPROM that contains the various lifetime counters.
+// The value of 30s gives us over 13 years of EEPROM life.
+
+// Reducing this value will burn out the EEPROM chip faster. Increasing it will increase the EEPROM life, but at the
+// cost of a higher margin of error for the lifetime counters.
+
 // The margin of error for the DEFAULT 30s Interval is ~2.5hours/year.
 #define EEPROM_WRITE_INTERVAL_SEC (30)
 
-//*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
+// *** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
 printchamber chamber_resource;
 optics optics_resource;
@@ -69,8 +62,17 @@ time_t last_poll_sec = 0;
 int is_printing_counter = 0;
 boolean is_new_boot = 0;
 
-const int TRIGGER_PIN = 13; // D7 on NodeMCU and WeMos.
+// Trigger for inititating config mode is Pin D3 and also flash button on NodeMCU.  Flash button is convenient to
+// use but if it is pressed it will hang the serial port device driver until the computer is rebooted on
+// windows machines.
+
+// D3 on NodeMCU and WeMos.
+const int TRIGGER_PIN = 0;
+
+// Alternate button, if an external button is desired.
+// D7 on NodeMCU and WeMos.
 const int TRIGGER_PIN2 = 13;
+
 void loop(void)
 {
   if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW))
@@ -163,7 +165,8 @@ void setup(void)
   {
     const char *mdns_n = config_resource.cfg_mdns_name;
     if (!MDNS.begin(mdns_n))
-    { // Start the mDNS responder for esp8266.local
+    {
+      // Start the mDNS responder <cfg_mdns_name>.local
       Serial.println("Error setting up MDNS responder!");
     }
     else
@@ -172,19 +175,19 @@ void setup(void)
     }
   }
 
-  //start http rest server
+  // Start http rest server
   start_http_server();
   config_rest_server_routing();
   Serial.println("HTTP REST server started");
   Serial.println();
 
-  //initialize i2c bus, sensors, rtc and eeprom
+  // Initialize i2c bus, sensors, rtc and eeprom
   init_i2c_sensors();
 
-  //dump all sensor data to serial console
+  // Dump all sensor data to serial console
   dump_sensors();
 
-  //Find the most recent EEPROM segment and populate our eeprom_data struct.
+  // Find the most recent EEPROM segment and populate our eeprom_data struct.
   int mru_segment_addr = do_eeprom_first_read();
 
   Serial.print("The most recent write address:\t");
@@ -198,7 +201,7 @@ void setup(void)
 
   Serial.println("=========first_read");
   Serial.print("last_poll_sec \t");
-  Serial.println((int)last_poll_sec);
+  Serial.println(static_cast<int>(last_poll_sec));
   Serial.println();
 
   Serial.println("Startup Complete!");
@@ -242,7 +245,9 @@ void do_check_printing()
 
 void do_eeprom()
 {
-  if ((status_resource.rtc_current_second) >= ((rtc_eeprom_resource.last_write_timestamp) + EEPROM_WRITE_INTERVAL_SEC) && !is_new_boot)
+  if ((status_resource.rtc_current_second) >=
+          ((rtc_eeprom_resource.last_write_timestamp) + EEPROM_WRITE_INTERVAL_SEC) &&
+      !is_new_boot)
   {
     Serial.println();
     Serial.print("rtc_current_second\t");
@@ -250,7 +255,8 @@ void do_eeprom()
     Serial.print("last_write_timestamp\t");
     Serial.println(rtc_eeprom_resource.last_write_timestamp);
 
-    if (is_printing_counter >= (int(EEPROM_WRITE_INTERVAL_SEC / 7))) //if 4 or more out of our last 10 poll intervals detect light.
+    // if 4 or more out of our last 10 poll intervals detect light we will set our flag for the full Interval.
+    if (is_printing_counter >= (static_cast<int>((EEPROM_WRITE_INTERVAL_SEC / 7))))
     {
       status_resource.is_printing_flag = 1;
 
