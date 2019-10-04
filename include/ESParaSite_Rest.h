@@ -11,10 +11,9 @@
 
 	All Original content is free and unencumbered software released into the public domain.
 */
-#pragma once
 
-#ifndef _ESParaSite_Rest_h
-#define _ESParaSite_Rest_h
+#ifndef INCLUDE_ESPARASITE_REST_H_
+#define INCLUDE_ESPARASITE_REST_H_
 
 class http_rest_server;
 
@@ -29,8 +28,9 @@ void get_ambient();
 void get_enclosure();
 void get_config();
 
+boolean do_web_gui(String path);
 String getContentType(String filename);
-bool handleFileRead(String path);
+void handleFileUpload();
 
 extern void read_rtc_data();
 extern void read_dht_sensor();
@@ -48,4 +48,4 @@ extern status status_resource;
 extern eeprom_data rtc_eeprom_resource;
 extern config_data config_resource;
 
-#endif
+#endif // INCLUDE_ESPARASITE_REST_H_

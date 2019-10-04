@@ -1,4 +1,4 @@
-//ESParaSite_ConfigPortal.cpp
+// ESParaSite_ConfigPortal.cpp
 
 /* ESParasite Data Logger v0.5
 	Authors: Andy  (SolidSt8Dad)Eakin
@@ -14,8 +14,9 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <DNSServer.h>   //Local DNS Server used for redirecting all requests to the configuration portal
-#include <WiFiManager.h> //https://github.com/kentaylor/WiFiManager
+#include <DNSServer.h>
+
+#include <WiFiManager.h>
 
 #include "ESParaSite_Core.h"
 #include "ESParaSite_PortalConfig.h"
@@ -24,7 +25,8 @@
 extern config_data config_resource;
 
 // Onboard LED I/O pin on NodeMCU board
-const int PIN_LED = 2; // D4 on NodeMCU and WeMos. Controls the onboard LED.
+// D4 on NodeMCU and WeMos. Controls the onboard LED.
+const int PIN_LED = 2;
 
 void do_config_portal()
 {
@@ -32,15 +34,7 @@ void do_config_portal()
     WiFi.macAddress(macAddr);
 
     char ap_name[18];
-    char hexvalue[2];
-    strcpy(ap_name, "ESParaSite");
-
-    itoa(macAddr[3], hexvalue, 16);
-    strcat(ap_name, hexvalue);
-    itoa(macAddr[4], hexvalue, 16);
-    strcat(ap_name, hexvalue);
-    itoa(macAddr[5], hexvalue, 16);
-    strcat(ap_name, hexvalue);
+    snprintf(ap_name, sizeof(ap_name), "%s_%02x%02x%02x\n", "ESParaSite", macAddr[3], macAddr[4], macAddr[5]);
 
     // Default configuration values
     config_resource.cfg_pin_sda = 0;
@@ -49,20 +43,23 @@ void do_config_portal()
     pinMode(PIN_LED, OUTPUT);
 
     Serial.println("before calling printdiag");
-    WiFi.printDiag(Serial); //Remove this line if you do not want to see WiFi password printed
+    // WiFi.printDiag(Serial);  // Remove this line if you do not want to see WiFi password printed
 
-    digitalWrite(PIN_LED, HIGH); // Turn led off as we are not in configuration mode.
+    // Turn led off as we are not in configuration mode.
+    digitalWrite(PIN_LED, HIGH);
+
     // For some unknown reason webserver can only be started once per boot up
     // so webserver can not be used again in the sketch.
 
     Serial.println("Configuration portal requested");
-    digitalWrite(PIN_LED, LOW); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
+    // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
+    digitalWrite(PIN_LED, LOW);
 
     // Extra parameters to be configured
     // After connecting, parameter.getValue() will get you the configured value
     // Format: <ID> <Placeholder text> <default value> <length> <custom HTML> <label placement>
 
-    // Just a quick hint
+    // Hints for each section
     WiFiManagerParameter p_hint("<small>Enter your WiFi credentials above</small>");
     WiFiManagerParameter p_hint2("<small>Enter the SDA and SCL Pins for your ESParaSite</small>");
     WiFiManagerParameter p_hint3("<small>If you have multiple ESParaSites, give each a unique name</small>");
@@ -71,20 +68,22 @@ void do_config_portal()
     // no other special considerations
 
     char convertedValue[3];
-    sprintf(convertedValue, "%d", config_resource.cfg_pin_sda);
+    snprintf(convertedValue, sizeof(convertedValue), "%d", config_resource.cfg_pin_sda);
     WiFiManagerParameter p_pinSda("pinsda", "I2C SDA pin", convertedValue, 3);
-    sprintf(convertedValue, "%d", config_resource.cfg_pin_scl);
+    snprintf(convertedValue, sizeof(convertedValue), "%d", config_resource.cfg_pin_scl);
     WiFiManagerParameter p_pinScl("pinscl", "I2C SCL pin", convertedValue, 3);
 
-    char customhtml[24] = "type=\"checkbox\"";
-    strcat(customhtml, " checked");
+    char customhtml[24];
+    snprintf(customhtml, sizeof(customhtml), "%s", "type=\"checkbox\"");
+    int len = strlen(customhtml);
+    snprintf(customhtml + len, (sizeof customhtml) - len, "%s", " checked");
     WiFiManagerParameter p_mdnsEnabled("mdnsen", "Enable mDNS", "T", 2, customhtml, WFM_LABEL_AFTER);
     WiFiManagerParameter p_mdnsName("mdnsname", "mDNSName", "esparasite", 32);
 
     // Initialize WiFIManager
     WiFiManager wifiManager;
 
-    //add all parameters here
+    // add all parameters here
 
     wifiManager.addParameter(&p_hint);
     wifiManager.addParameter(&p_pinSda);
@@ -126,10 +125,8 @@ void do_config_portal()
     else
     {
         config_resource.cfg_mdns_enabled = true;
-        //config_resource.cfg_mdns_name = p_mdnsName.getValue();
-        char str1[32] = "";
-        strcpy(config_resource.cfg_mdns_name, p_mdnsName.getValue());
-        //config_resource.cfg_mdns_name = *str1;
+
+        snprintf(config_resource.cfg_mdns_name, sizeof(config_resource.cfg_mdns_name), "%s\n", p_mdnsName.getValue());
 
         Serial.println("mDNS Enabled");
     }
@@ -142,8 +139,10 @@ void do_config_portal()
     {
         Serial.println("Config saved");
 
-        digitalWrite(PIN_LED, HIGH); // Turn LED off as we are not in configuration mode.
+        // Turn LED off as we are not in configuration mode.
+        digitalWrite(PIN_LED, HIGH);
 
-        ESP.reset(); // We restart the ESP8266 to reload with changes.
+        // We restart the ESP8266 to reload with changes.
+        ESP.reset();
     }
 }
