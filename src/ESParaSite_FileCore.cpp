@@ -32,44 +32,88 @@
 extern ESParaSite::config_data config_resource;
 
 bool ESParaSite::FileCore::loadConfig() {
+  //  Serial.println(F("Inside loadconfig()"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
   File configFile = SPIFFS.open("/config.json", "r");
   if (!configFile) {
-    Serial.println("Failed to open config file.");
+
+  //  Serial.println(F("Inside if(!configFile)"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
+    Serial.println(F("Failed to open config file."));
     return false;
   }
 
+  //  Serial.println(F("About to check filesize"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
   size_t size = configFile.size();
+
+  //  Serial.println(F("Inside just checked config file size"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
   if (size > 1024) {
-    Serial.println("Config file size is too large.");
+    Serial.println(F("Config file size is too large."));
     return false;
   }
 
   // Allocate a buffer to store contents of the file.
+  //  Serial.println(F("Allocate a buffer to store contents of the file"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
   std::unique_ptr<char[]> buf(new char[size]);
+
+  //  Serial.println(F("Aabout to byte read the file"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
 
   // We don't use String here because ArduinoJson library requires the input
   // buffer to be mutable.
+
   configFile.readBytes(buf.get(), size);
 
-  StaticJsonDocument<200> doc;
+  //  Serial.println(F("about to serialize JSON"));
+  //  Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
+  StaticJsonDocument<1024> doc;
   auto error = deserializeJson(doc, buf.get());
   if (error) {
-    Serial.println("Failed to parse config file");
+    Serial.println(F("Failed to parse config file"));
     return false;
   }
 
+  //  Serial.println(F("JSON deserialized about to place values in
+  //  config_resource")); Serial.println(F("Waiting 3 Seconds..."));
+  //  delay(3000);
+
   config_resource.cfg_wifi_ssid = doc["wifi_ssid"];
+  //  Serial.println(F("wifi_ssid"));
   config_resource.cfg_wifi_password = doc["wifi_password"];
+  //  Serial.println(F("wifi_password"));
   config_resource.cfg_pin_sda = doc["sda_pin"];
+  //  Serial.println(F("sda_pin"));
   config_resource.cfg_pin_scl = doc["scl_pin"];
+  //  Serial.println(F("scl_pin"));
   config_resource.cfg_mdns_enabled = doc["mdns_enabled"];
+  //  Serial.println(F("mdns_enabled"));
   strncpy(config_resource.cfg_mdns_name, doc["mdns_name"], 32);
   int len = strlen(config_resource.cfg_mdns_name);
-  if (len > 0 && config_resource.cfg_mdns_name[len - 1] == '\n') {
+    if (len > 0 && config_resource.cfg_mdns_name[len - 1] == '\n') {
     config_resource.cfg_mdns_name[len - 1] = '\0';
   }
+  //  Serial.println(F("mdns_name"));
 
-  if (strcmp(config_resource.cfg_wifi_ssid, "") == 0) {
+  // This if statement currently crashes the system due to an interaction between strncmp and Null vlaues.
+  // We need to clean this up when we fully implement backing up wifi config to config.json.
+  /*
+  if (!strncmp(config_resource.cfg_wifi_ssid, "", 32 )) {
     Serial.println("No Wifi config set in config.json");
     Serial.println("");
   } else {
@@ -80,18 +124,19 @@ bool ESParaSite::FileCore::loadConfig() {
     Serial.println(config_resource.cfg_wifi_password);
     Serial.println("");
   }
+  */
 
   if (config_resource.cfg_mdns_enabled == 1) {
-    Serial.println("mDNS enabled on URL:");
-    Serial.print("http://");
+    Serial.println(F("mDNS enabled on URL:"));
+    Serial.print(F("http://"));
     Serial.print(config_resource.cfg_mdns_name);
-    Serial.println(".local");
-    Serial.println("");
+    Serial.println(F(".local"));
+    Serial.println();
   }
 
-  Serial.print("I2C Bus on Pins (SDA,SCL): ");
+  Serial.print(F("I2C Bus on Pins (SDA,SCL): "));
   Serial.print(config_resource.cfg_pin_sda);
-  Serial.print(", ");
+  Serial.print(F(", "));
   Serial.println(config_resource.cfg_pin_scl);
 
   return true;
@@ -111,7 +156,7 @@ bool ESParaSite::FileCore::saveConfig() {
 
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
-    Serial.println("Failed to open config file for writing");
+    Serial.println(F("Failed to open config file for writing"));
     return false;
   }
 

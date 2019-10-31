@@ -33,6 +33,8 @@ void get_optics();
 void get_ambient();
 void get_enclosure();
 void get_config();
+void handleRoot();
+void handleNotFound();
 
 String getContentType(String filename);
 void handleFileUpload();

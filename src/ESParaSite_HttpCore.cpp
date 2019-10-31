@@ -16,8 +16,11 @@
 
 #include <ArduinoJson.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <ESP8266mDNS.h>
 #include <FS.h>
-
+#include <WiFiClient.h>
 
 #include "ESParaSite.h"
 #include "ESParaSite_HttpCore.h"
@@ -32,7 +35,7 @@ using namespace ESParaSite;
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-ESP8266WebServer http_rest_server(HTTP_REST_PORT);
+ESP8266WebServer http_server(HTTP_REST_PORT);
 
 extern printchamber chamber_resource;
 extern optics optics_resource;
@@ -49,54 +52,77 @@ const char *htmlfile = "/index.html";
 File fsUploadFile; // a File object to temporarily store the received file
 
 void HttpCore::config_rest_server_routing() {
-  http_rest_server.on("/printchamber", HTTP_GET, get_chamber);
-  http_rest_server.on("/optics", HTTP_GET, get_optics);
-  http_rest_server.on("/ambient", HTTP_GET, get_ambient);
-  http_rest_server.on("/enclosure", HTTP_GET, get_enclosure);
-  http_rest_server.on("/config", HTTP_GET, get_config);
+  /*
+  http_server.on("/", handleRoot); // Call the 'handleRoot' function when a
+                                   // client requests URI "/"
+  http_server.onNotFound(
+      handleNotFound); // When a client requests an unknown URI (i.e. something
+                       // other than "/"), call function "handleNotFound"
+  */
 
-  http_rest_server.on(
+  http_server.on("/printchamber", HTTP_GET, get_chamber);
+  http_server.on("/optics", HTTP_GET, get_optics);
+  http_server.on("/ambient", HTTP_GET, get_ambient);
+  http_server.on("/enclosure", HTTP_GET, get_enclosure);
+  http_server.on("/config", HTTP_GET, get_config);
+  /*
+  http_server.on(
       "/upload", HTTP_GET, []() { // if the client requests the upload page
         if (!do_web_gui("/upload.html")) // send it if it exists
-          http_rest_server.send(
+          http_server.send(
               200, "text/html",
               "<form method=\"post\" enctype=\"multipart/form-data\"><input "
               "type=\"file\" name=\"name\"><input class=\"button\" "
               "type=\"submit\" value=\"Upload\"></form>");
-        http_rest_server.send(404, "text/plain",
+        http_server.send(404, "text/plain",
                               "404: Not Found"); // otherwise, respond with a
                                                  // 404 (Not Found) error
       });
 
-  http_rest_server.on(
+  http_server.on(
       "/upload", HTTP_POST, // if the client posts to the upload page
       []() {
-        http_rest_server.send(200);
+        http_server.send(200);
       }, // Send status 200 (OK) to tell the client we are ready to receive
       handleFileUpload); // Receive and save the file
 
-  http_rest_server.on("/", HTTP_GET, []() {
-    http_rest_server.sendHeader("Location", "/index.html", true);
-    http_rest_server.send(302, "text/plain", "");
+  http_server.on("/", HTTP_GET, []() {
+    http_server.sendHeader("Location", "/index.html", true);
+    http_server.send(302, "text/plain", "");
   });
 
-  // http_rest_server.on("/enclosure", HTTP_POST, post_enclosure); //Not yet
-  // implemented http_rest_server.on("/enclosure", HTTP_PUT, post_enclosure);
+  // http_server.on("/enclosure", HTTP_POST, post_enclosure); //Not yet
+  // implemented http_server.on("/enclosure", HTTP_PUT, post_enclosure);
   // //Not yet implemented
 
   // If the client requests any URI, send it if it exists, otherwise, respond
   // with a 404 (Not Found) error
-  http_rest_server.onNotFound([]() {
-    if (!do_web_gui(http_rest_server.uri()))
-      http_rest_server.send(404, "text/plain", "404: Not Found");
+  http_server.onNotFound([]() {
+    if (!do_web_gui(http_server.uri()))
+      http_server.send(404, "text/plain", "404: Not Found");
   });
+    */
   Serial.println("HTTP REST config complete!");
 }
 
-void HttpCore::serve_http_client() { http_rest_server.handleClient(); }
+void handleRoot() {
+  http_server.send(200, "text/plain",
+                   "Hello world!"); // Send HTTP status 200 (Ok) and send some
+                                    // text to the browser/client
+}
 
-void HttpCore::start_http_server() { http_rest_server.begin(); }
+void handleNotFound() {
+  http_server.send(
+      404, "text/plain",
+      "404: Not found"); // Send HTTP status 404 (Not Found) when there's no
+                         // handler for the URI in the request
+}
 
+void HttpCore::serve_http_client() { http_server.handleClient(); }
+
+void HttpCore::start_http_server() { http_server.begin(); }
+
+/*
 bool HttpCore::do_web_gui(
     String path) { // send the right file to the client (if it exists)
   Serial.println("handleFileRead: " + path);
@@ -116,7 +142,7 @@ bool HttpCore::do_web_gui(
     // Open the file
     File file = SPIFFS.open(path, "r");
     // Send it to the client
-    http_rest_server.streamFile(file, contentType);
+    http_server.streamFile(file, contentType);
     // Close the file again
     file.close();
     Serial.println(String("\tSent file: ") + path);
@@ -126,6 +152,7 @@ bool HttpCore::do_web_gui(
   Serial.println(String("\tFile Not Found: ") + path);
   return false;
 }
+*/
 
 void get_chamber() {
   StaticJsonDocument<256> doc;
@@ -141,7 +168,7 @@ void get_chamber() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_rest_server.send(200, "application/json", output);
+  http_server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
@@ -163,7 +190,7 @@ void get_optics() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_rest_server.send(200, "application/json", output);
+  http_server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
@@ -184,7 +211,7 @@ void get_ambient() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_rest_server.send(200, "application/json", output);
+  http_server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
@@ -206,7 +233,7 @@ void get_enclosure() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_rest_server.send(200, "application/json", output);
+  http_server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
@@ -233,7 +260,7 @@ void get_config() {
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
   serializeJsonPretty(doc2, output);
-  http_rest_server.send(200, "application/json", output);
+  http_server.send(200, "application/json", output);
 }
 
 String getContentType(String filename) {
@@ -251,7 +278,7 @@ String getContentType(String filename) {
 }
 
 void handleFileUpload() { // upload a new file to the SPIFFS
-  HTTPUpload &upload = http_rest_server.upload();
+  HTTPUpload &upload = http_server.upload();
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
     if (!filename.startsWith("/"))
@@ -272,12 +299,12 @@ void handleFileUpload() { // upload a new file to the SPIFFS
       fsUploadFile.close(); // Close the file again
       Serial.print("handleFileUpload Size: ");
       Serial.println(upload.totalSize);
-      http_rest_server.sendHeader(
+      http_server.sendHeader(
           "Location",
           "/success.html"); // Redirect the client to the success page
-      http_rest_server.send(303);
+      http_server.send(303);
     } else {
-      http_rest_server.send(500, "text/plain", "500: couldn't create file");
+      http_server.send(500, "text/plain", "500: couldn't create file");
     }
   }
 }
