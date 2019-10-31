@@ -1,4 +1,5 @@
-// ESParaSite_Core.h
+
+// ESParaSite_Wifi.h
 
 /* ESParasite Data Logger v0.5
         Authors: Andy (DocMadmag) Eakin
@@ -14,22 +15,14 @@
    public domain.
 */
 
-#ifndef INCLUDE_ESPARASITE_CORE_H_
-#define INCLUDE_ESPARASITE_CORE_H_
-
-#include <stdint.h>
-
+#ifndef INCLUDE_ESPARASITE_WIFICORE_H_
+#define INCLUDE_ESPARASITE_WIFICORE_H_
 
 namespace ESParaSite {
-namespace Core {
-uint16_t do_read_sensors(uint16_t, uint16_t);
-uint16_t do_handle_eeprom(uint16_t, uint16_t);
-uint16_t do_read_dht(uint16_t, uint16_t);
-void do_config_trigger_check();
-} // namespace Core
+namespace Network {
+void do_wifi_ap();
+int do_init_wifi();
+} // namespace Network
 } // namespace ESParaSite
 
-void do_check_printing();
-bool is_printing();
-
-#endif // INCLUDE_ESPARASITE_CORE_H_
+#endif // INCLUDE_ESPARASITE_WIFICORE_H_

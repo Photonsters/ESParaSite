@@ -1,4 +1,4 @@
-// ESParaSite_Core.h
+// ESParaSite_Eeprom.h
 
 /* ESParasite Data Logger v0.5
         Authors: Andy (DocMadmag) Eakin
@@ -14,22 +14,20 @@
    public domain.
 */
 
-#ifndef INCLUDE_ESPARASITE_CORE_H_
-#define INCLUDE_ESPARASITE_CORE_H_
-
-#include <stdint.h>
-
+#ifndef INCLUDE_ESPARASITE_EEPROM_H_
+#define INCLUDE_ESPARASITE_EEPROM_H_
 
 namespace ESParaSite {
-namespace Core {
-uint16_t do_read_sensors(uint16_t, uint16_t);
-uint16_t do_handle_eeprom(uint16_t, uint16_t);
-uint16_t do_read_dht(uint16_t, uint16_t);
-void do_config_trigger_check();
-} // namespace Core
-} // namespace ESParaSite
+namespace RtcEeprom {
+void init_rtc_eeprom();
+void dumpEEPROM(uint16_t, uint16_t);
+int do_eeprom_first_read();
+uint8_t do_eeprom_read(uint16_t);
+uint8_t do_eeprom_write();
 
-void do_check_printing();
-bool is_printing();
+}; // namespace RtcEeprom
+}; // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_CORE_H_
+void do_eeprom_format(uint8_t);
+
+#endif // INCLUDE_ESPARASITE_EEPROM_H_
