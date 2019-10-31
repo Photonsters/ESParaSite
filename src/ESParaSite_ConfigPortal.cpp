@@ -99,8 +99,6 @@ void ESParaSite::ConfigPortal::do_config_portal() {
                                      customhtml, WFM_LABEL_AFTER);
   WiFiManagerParameter p_mdnsName("mdnsname", "mDNSName", "esparasite", 32);
 
-
-
   // add all parameters here
 
   wifiManager.addParameter(&p_hint);
@@ -124,7 +122,7 @@ void ESParaSite::ConfigPortal::do_config_portal() {
     Serial.println(F("Not connected to WiFi but continuing anyway."));
   } else {
     // If you get here you have connected to the WiFi
-    Serial.println(F("Connected...yeey :)"));
+    Serial.println(F("Connected..."));
   }
 
   // Getting posted form values and overriding local variables parameters
@@ -133,7 +131,7 @@ void ESParaSite::ConfigPortal::do_config_portal() {
   config_resource.cfg_pin_scl = atoi(p_pinScl.getValue());
 
   if (strncmp(p_mdnsEnabled.getValue(), "T", 1) != 0) {
-    Serial.println(F("mDNS Disabled");
+    Serial.println(F("mDNS Disabled"));
     config_resource.cfg_mdns_enabled = false;
   } else {
     config_resource.cfg_mdns_enabled = true;
@@ -142,7 +140,7 @@ void ESParaSite::ConfigPortal::do_config_portal() {
              sizeof(config_resource.cfg_mdns_name), "%s\n",
              p_mdnsName.getValue());
 
-    Serial.println(F("mDNS Enabled");
+    Serial.println(F("mDNS Enabled"));
   }
 
   if (!(ESParaSite::FileCore::saveConfig())) {
@@ -200,6 +198,7 @@ void ESParaSite::ConfigPortal::do_error_portal(int8_t error_condition) {
     delay(500);
     digitalWrite(PIN_LED, HIGH);
     delay(500);
+
   }
   */
 }

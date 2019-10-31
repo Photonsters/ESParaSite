@@ -92,13 +92,13 @@ DHT12 dht;
 
 void ESParaSite::Sensors::init_i2c_sensors() {
   // initialize I2C bus
-  Serial.print("Init I2C bus...");
+  Serial.print(F("Init I2C bus..."));
   Wire.begin(config_resource.cfg_pin_sda, config_resource.cfg_pin_scl);
-  Serial.println("\t\t\t\tOK!");
+  Serial.println(F("\t\t\t\tOK!"));
   Serial.println();
 
   // initialize Print Chamber sensor
-  Serial.println("Init Print Chamber Sensor...");
+  Serial.println(F("Init Print Chamber Sensor..."));
   int error = ping_sensor(DHT_ADDR);
   if (error == 0) {
     Sensors::init_dht_sensor();
@@ -109,7 +109,7 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   Serial.println();
 
   // initialize UV Light sensor
-  Serial.println("Init UV Light sensor...");
+  Serial.println(F("Init UV Light sensor..."));
   error = ping_sensor(SI_ADDR);
   if (error == 0) {
     Sensors::init_si_sensor();
@@ -117,7 +117,7 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   Serial.println();
 
   // initialize Non-Contact temperature sensor
-  Serial.println("Init Non-Contact temperature sensor...");
+  Serial.println(F("Init Non-Contact temperature sensor..."));
   error = ping_sensor(MLX_ADDR);
   if (error == 0) {
     init_mlx_sensor();
@@ -125,7 +125,7 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   Serial.println();
 
   // initialize BME280 temperature sensor
-  Serial.println("Init BME280 sensor...");
+  Serial.println(F("Init BME280 sensor..."));
   error = ping_sensor(BME_ADDR_A);
   if (error == 0) {
     bme_i2c_address = (BME_ADDR_A);
@@ -140,99 +140,97 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   Serial.println();
 
   // initialize DS3231 RTC
-  Serial.println("Init DS3231 RTC...");
+  Serial.println(F("Init DS3231 RTC..."));
   error = ping_sensor(RTC_ADDR);
   if (error == 0) {
-    Serial.println("OK!");
+    Serial.println(F("OK!"));
     init_rtc_clock();
   }
 
   // initialize AR24C32 EEPROM
-  Serial.println("Init AT24C32 EEPROM...");
+  Serial.println(F("Init AT24C32 EEPROM..."));
 
   for (eeprom_i2c_address = RTC_EEPROM_BASE_ADDR;
        eeprom_i2c_address <= RTC_EEPROM_MAX_ADDR; eeprom_i2c_address++) {
     error = ping_sensor(eeprom_i2c_address);
     if (error == 0) {
-      Serial.println("OK!");
+      Serial.println(F("OK!"));
       Serial.println();
       RtcEeprom::init_rtc_eeprom();
       return;
     }
     Serial.println();
   }
-  Serial.println("NO EEPROM FOUND!");
+  Serial.println(F("NO EEPROM FOUND!"));
   Serial.println();
 }
 
 // This gives us a nicely formatted dump of all sensor data to Serial console.
 void ESParaSite::Sensors::dump_sensors() {
   Serial.println();
-  Serial.println("Current Sensor Readings");
-  Serial.println(
-      "============================================================");
+  Serial.println(F("Current Sensor Readings"));
+  Serial.println(F(
+      "============================================================"));
   Serial.println();
 
-  Serial.println("DS3231 Real-Time Clock Timestamp and Temperature:");
+  Serial.println(F("DS3231 Real-Time Clock Timestamp and Temperature:"));
   read_rtc_data();
   Serial.println();
 
-  Serial.println("dht12 Print Chamber Environmental Data:");
+  Serial.println(F("DHT12 Print Chamber Environmental Data:"));
   read_dht_sensor(false);
   Serial.println();
 
-  Serial.println("SI1145 UV and Light Sensor Data:");
+  Serial.println(F("SI1145 UV and Light Sensor Data:"));
   read_si_sensor();
   Serial.println();
 
-  Serial.println("MLX90614 LED Temp Sensor Data:");
+  Serial.println(F("MLX90614 LED Temp Sensor Data:"));
   read_mlx_sensor();
   Serial.println();
 
-  Serial.println("BME280 Ambient Temp Sensor Data:");
+  Serial.println(F("BME280 Ambient Temp Sensor Data:"));
   read_bme_sensor();
   Serial.println();
-
-  // Comment this line out for Production
 }
 
 void ESParaSite::Sensors::init_dht_sensor() {
   int status = dht.read();
   switch (status) {
   case DHT12_OK:
-    Serial.print("OK!\t");
+    Serial.print(F("OK!\t"));
     exists_resource.dhtDetected = 1;
     break;
   case DHT12_ERROR_CHECKSUM:
-    Serial.print("Checksum error,\t");
+    Serial.print(F("Checksum error,\t"));
     break;
   case DHT12_ERROR_CONNECT:
-    Serial.print("Connect error,\t");
+    Serial.print(F("Connect error,\t"));
     break;
   case DHT12_MISSING_BYTES:
-    Serial.print("Missing bytes,\t");
+    Serial.print(F("Missing bytes,\t"));
     break;
   default:
-    Serial.print("Unknown error,\t");
+    Serial.print(F("Unknown error,\t"));
     break;
   }
 }
 
 void ESParaSite::Sensors::init_si_sensor() {
   if (!uv.begin()) {
-    Serial.print("SI1145 Initialization Failure!");
+    Serial.print(F("SI1145 Initialization Failure!"));
   } else {
     exists_resource.siDetected = 1;
-    Serial.print("OK!");
+    Serial.print(F("OK!"));
   }
 }
 
 void ESParaSite::Sensors::init_mlx_sensor() {
   if (!mlx.begin()) {
-    Serial.print("MLX90614 Initialization Failure");
+    Serial.print(F("MLX90614 Initialization Failure"));
   } else {
     exists_resource.mlxDetected = 1;
-    Serial.print("OK!");
+    Serial.print(F("OK!"));
   }
 }
 
@@ -270,14 +268,14 @@ void ESParaSite::Sensors::init_rtc_clock() {
       // we have a communications error
       // see https://www.arduino.cc/en/Reference/WireEndTransmission for
       // what the number means
-      Serial.print("RTC communications error = ");
+      Serial.print(F("RTC communications error = "));
       Serial.println(rtc.LastError());
     } else {
       // Common Cuases:
       //  1) first time you ran and the device wasn't running yet
       //  2) the battery on the device is low or even missing
 
-      Serial.println("RTC lost confidence in the DateTime!");
+      Serial.println(F("RTC lost confidence in the DateTime!"));
 
       // following line sets the RTC to the date & time this sketch was compiled
       // it will also reset the valid flag internally unless the Rtc device is
@@ -288,7 +286,7 @@ void ESParaSite::Sensors::init_rtc_clock() {
   }
 
   if (!rtc.GetIsRunning()) {
-    Serial.println("RTC was not actively running, starting now");
+    Serial.println(F("RTC was not actively running, starting now"));
     rtc.SetIsRunning(true);
   }
 
@@ -390,7 +388,7 @@ void ESParaSite::Sensors::read_dht_sensor(bool in_seq_read) {
 }
 
 void ESParaSite::Sensors::read_si_sensor() {
-  Serial.println("==========LED Light Sensor==========");
+  Serial.println(F("==========LED Light Sensor=========="));
 
   optics_resource.si_uvindex = uv.readUV();
   optics_resource.si_uvindex /= 100.0;

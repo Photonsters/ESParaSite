@@ -89,8 +89,8 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
                                            uint16_t prev_sensor_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
       sensors_read_msec) {
-    Serial.println(F("Reading the sensors"));
-    Serial.println();
+    //  Serial.println(F("Reading the sensors"));
+    //  Serial.println();
 
     status_resource.rtc_current_second = Sensors::read_rtc_epoch();
     enclosure_resource.life_sec = (status_resource.rtc_current_second -
@@ -110,8 +110,8 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
 
     return millis();
   } else {
-    Serial.println(F("We did NOT read the sensors"));
-    Serial.println();
+    //  Serial.println(F("We did NOT read the sensors"));
+    //  Serial.println();
     return (prev_sensor_msec);
   }
 }
@@ -119,15 +119,14 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
 uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
                                        uint16_t prev_dht_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_dht_msec) >= dht_read_msec) {
-    Serial.println(F("Reading the DHT sensor"));
-    Serial.println();
+    //  Serial.println(F("Reading the DHT sensor"));
+    //  Serial.println();
 
     ESParaSite::Sensors::read_dht_sensor(true);
-    
     return millis();
   } else {
-    Serial.println(F("We did NOT read the DHT sensor"));
-    Serial.println();
+    //  Serial.println(F("We did NOT read the DHT sensor"));
+    //  Serial.println();
     return (prev_dht_msec);
   }
 }
@@ -136,23 +135,23 @@ uint16_t ESParaSite::Core::do_handle_eeprom(uint16_t cur_loop_msec,
                                             uint16_t prev_eeprom_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_eeprom_msec) >=
       eeprom_write_msec) {
-    Serial.println(F("Checking printing status before writing EEPROM"));
-    Serial.println();
+    //  Serial.println(F("Checking printing status before writing EEPROM"));
+    //  Serial.println();
 
     status_resource.is_printing_flag = static_cast<uint8_t>(is_printing());
-    Serial.print(F("Printing Status:\t"));
+    //  Serial.print(F("Printing Status:\t"));
     Serial.println(status_resource.is_printing_flag);
     Serial.println();
 
-    Serial.println(F("Writing the EEPROM"));
+    //  Serial.println(F("Writing the EEPROM"));
     Serial.println();
 
     ESParaSite::RtcEeprom::do_eeprom_write();
 
     return millis();
   } else {
-    Serial.println(F("we did NOT write the EEPROM"));
-    Serial.println();
+    //  Serial.println(F("we did NOT write the EEPROM"));
+    //  Serial.println();
     return (prev_eeprom_msec);
   }
 }
