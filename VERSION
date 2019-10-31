@@ -13,7 +13,11 @@
 */
 
 /*
-v0.6 - Fifth Release - 
+v0.7 - Seventh Release - 
+
+
+
+v0.6 - Sixth Release - 
 	- Fixed a bug in ESParaSite_Eeprom.cpp where we issued a return prior to setting a variable in 2 places.
 	- Added for() loop to scan all 8 I2C addresses of an AT24Cx EEPROM
 	- Added Magic number warning comments in ESParaSite_Eeprom.cpp for the functions that assume an eeprom layout (we will go back and fix that IF a different chip becomes common)
@@ -26,9 +30,17 @@ v0.6 - Fifth Release -
 		- added newline to end of several files
 		- Changed header guard syntax to "INCLUDE_ESPARASITE_FILENAME_H_"
 	- Improved web services to allow service of files and gzipped files.
+	- Removed all blocking delay() calls from main loop in favor of millis() based isosynchronous triggers
+	- Changed Config Portal button handling to be interrupt driven.
+	- Substantial and continuing code work to properly lay scalable foundation
+		- 80 char max lines (I fought the tools and the tools won)
+		- Rename and standardize content across *.cpp files
+		- Implement Namespaces
+		- Continued code formatting and linting
+		- Use most efficient data type for each variable
+		- Standardize variable and function names 
+		- Optimized Text strings to move them out of the DATA RAM 
 
-
-/*
 v0.5 - Fifth Release - 
 	- Moved WiFi functions to their own file ESParaSite_Wifi.cpp
 		- Moved init_wifi() from ESParaSite_Core.cpp to ESParaSite_Wifi.cpp
@@ -46,9 +58,7 @@ v0.5 - Fifth Release -
 		- Configure name and enable/disable via Initial config portal.
 	- First release to provide .bin images for ESP-01 and NodeMCU boards.
 
-*/
 
-/*
 v0.4 - Fourth Release - Diphyllobothriasis - 2019-09-05
 	- Added support for DHT12 Sensor and AT24C32 EEPROM.
 	- ESParaSite now records the following values to EEPROM - first_on_timestamp (immutable), eeprom_format_version, last_write_timestamp, lcd_screen_life, led_life, fep_life.
@@ -59,14 +69,14 @@ v0.4 - Fourth Release - Diphyllobothriasis - 2019-09-05
 	- Lots of refactoring to make code more modular. This will make adding support for other sensors, RTCs and EEPROM chips much easier in the future.
 	- Refactored initialization routines to standardize call to init routine for a given sensor and abstract the various routines created by different libraries and authors.
 	- Added error handling to many sensor routines.
-*/
-/*
+
+
 v0.3 - Third Release - Crabs - 2019-04-07
 	- Removed DHT12 Support, temporarily, while I find a better library.
 	- Migrated to Platform.IO for substantially better development experience.
 		- Required refactoring code to make it fully C++ complaint. (I'm a Real Boy!)
-*/
-/*
+
+
 v0.2 - Second Release - Bed Bugs - 2019-04-07
 	- Adds support for the BME280 Sensor (For Ambient Temperature, Temperature, Humidity and Altitude.)
 	- Nearly all code has been refactored! (I just love saying that) Since we are relying on 3rd party open source libraries, 
@@ -79,8 +89,8 @@ v0.2 - Second Release - Bed Bugs - 2019-04-07
 		- Optics - The LCD Screen and UV LED (UV, Visible light, IR light, LED Temp and LCD Temp)
 		- Enclosure - The base of the printer that contains the MainBoard and Optics (Temperature)
 		- All classes have a timestamp as part of the return value.	
-*/
-/*
+
+
 v0.1 - Initial release! - Amebiasis - 2019-04-03
 	- What it does:
 		- Connects to Wifi
