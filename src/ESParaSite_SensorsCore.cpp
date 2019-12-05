@@ -23,7 +23,7 @@
 #include <RtcDS3231.h>
 #include <Time.h>
 #include <Wire.h>
-#include <dht12.h>
+#include <DHT12.h>
 
 #include "ESParaSite.h"
 #include "ESParaSite_RtcEepromCore.h"
