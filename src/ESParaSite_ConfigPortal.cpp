@@ -1,6 +1,6 @@
 // ESParaSite_ConfigPortal.cpp
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -26,6 +26,7 @@
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
 #include "ESParaSite_FileCore.h"
+#include "ESParaSite_HttpCore.h"
 
 extern ESParaSite::config_data config_resource;
 
@@ -33,10 +34,16 @@ extern ESParaSite::config_data config_resource;
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
 const int PIN_LED = 2;
 
-// Initialize WiFIManager
-WiFiManager wifiManager;
 
 void ESParaSite::ConfigPortal::do_config_portal() {
+  Serial.println(F("Configuration portal requested"));
+  Serial.println();
+
+  // Stop existing HTTP server. This is required in order to start a new HTTP
+  // server for the captive portal.
+  ESParaSite::HttpCore::stop_http_server();
+
+  // We will give our Access Point a unique name based on the last 3 
   uint8_t macAddr[6];
   WiFi.macAddress(macAddr);
 
@@ -50,35 +57,18 @@ void ESParaSite::ConfigPortal::do_config_portal() {
 
   pinMode(PIN_LED, OUTPUT);
 
-  // Remove this line if you do not want to see WiFi password printed
-  WiFi.printDiag(Serial);
+  // WiFiManager
+  // Local intialization. Once its business is done, there is no need to keep it
+  // around
+  WiFiManager wifiManager;
 
-  // Turn led off as we are not in configuration mode.
-  digitalWrite(PIN_LED, HIGH);
+  // reset settings - for testing
+  // wifiManager.resetSettings();
 
-  // For some unknown reason webserver can only be started once per boot up
-  // so webserver can not be used again in the sketch.
-
-  Serial.println(F("Configuration portal requested"));
-  // turn the LED on by making the voltage LOW to tell us we are in
-  // configuration mode.
-  digitalWrite(PIN_LED, LOW);
-
-  // Extra parameters to be configured
-  // After connecting, parameter.getValue() will get you the configured
-  // value.
-  // Format:
-  // <ID> <Placeholder text> <default value> <length> <custom HTML>
-  //  <label placement>
-
-
-  // Hints for each section
-  WiFiManagerParameter p_hint("<small>Enter your WiFi credentials above"
-                              "</small>");
-  WiFiManagerParameter p_hint2("<small>Enter the SDA and SCL Pins for your"
-                               "ESParaSite</small>");
-  WiFiManagerParameter p_hint3("<small>If you have multiple ESParaSites,"
-                               " give each a unique name</small>");
+  // sets timeout until configuration portal gets turned off
+  // useful to make it all retry or go to sleep
+  // in seconds
+  wifiManager.setTimeout(120);
 
   // I2C SCL and SDA parameters are integers so we need to convert them to
   // char array but no other special considerations
@@ -91,38 +81,50 @@ void ESParaSite::ConfigPortal::do_config_portal() {
            config_resource.cfg_pin_scl);
   WiFiManagerParameter p_pinScl("pinscl", "I2C SCL pin", convertedValue, 3);
 
+  // Extra parameters to be configured
+  // After connecting, parameter.getValue() will get you the configured
+  // value.
+  // Format:
+  // <ID> <Placeholder text> <default value> <length> <custom HTML>
+  //  <label placement>
+
+  // Hints for each section
+  WiFiManagerParameter p_hint("<small>Enter your WiFi credentials above"
+                              "</small>");
+  WiFiManagerParameter p_hint2("<small>Enter the SDA and SCL Pins for your"
+                               "ESParaSite</small>");
+  WiFiManagerParameter p_hint3("</br><small>If you have multiple ESParaSites,"
+                               " give each a unique name</small>");
+  WiFiManagerParameter p_hint4("<small>Enable mDNS</small>");
+
   char customhtml[24];
   snprintf(customhtml, sizeof(customhtml), "%s", "type=\"checkbox\"");
   int len = strlen(customhtml);
   snprintf(customhtml + len, (sizeof customhtml) - len, "%s", " checked");
   WiFiManagerParameter p_mdnsEnabled("mdnsen", "Enable mDNS", "T", 2,
-                                     customhtml, WFM_LABEL_AFTER);
+                                     customhtml);
   WiFiManagerParameter p_mdnsName("mdnsname", "mDNSName", "esparasite", 32);
 
   // add all parameters here
 
   wifiManager.addParameter(&p_hint);
+  wifiManager.addParameter(&p_hint2);
   wifiManager.addParameter(&p_pinSda);
   wifiManager.addParameter(&p_pinScl);
-  wifiManager.addParameter(&p_hint2);
+  wifiManager.addParameter(&p_hint4);
   wifiManager.addParameter(&p_mdnsEnabled);
+  wifiManager.addParameter(&p_hint3);
   wifiManager.addParameter(&p_mdnsName);
 
-  // Sets timeout in seconds until configuration portal gets turned off.
-  // If not specified device will remain in configuration mode until
-  // switched off via webserver or device is restarted.
-  // wifiManager.setConfigPortalTimeout(600);
-
-  // It starts an access point
-  // and goes into a blocking loop awaiting configuration.
-  // Once the user leaves the portal with the exit button
-  // processing will continue
-
-  if (!wifiManager.startConfigPortal(ap_name, "thisbugsme!")) {
-    Serial.println(F("Not connected to WiFi but continuing anyway."));
+  if (!wifiManager.startConfigPortal(ap_name,"thisbugsme")) {
+    Serial.println("failed to connect and hit timeout");
+    delay(3000);
+    // reset and try again, or maybe put it to deep sleep
+    ESP.reset();
+    delay(5000);
   } else {
-    // If you get here you have connected to the WiFi
-    Serial.println(F("Connected..."));
+  // if you get here you have connected to the WiFi
+  Serial.println(F("Connected..."));
   }
 
   // Getting posted form values and overriding local variables parameters
@@ -141,12 +143,17 @@ void ESParaSite::ConfigPortal::do_config_portal() {
              p_mdnsName.getValue());
 
     Serial.println(F("mDNS Enabled"));
-  }
+    }
 
   if (!(ESParaSite::FileCore::saveConfig())) {
     Serial.println(F("Failed to save config"));
   } else {
     Serial.println(F("Config saved"));
+    Serial.println();
+
+    Serial.println(F("Resetting ESParaSite"));
+    Serial.println();
+    delay(5000);
 
     // Turn LED off as we are not in configuration mode.
     digitalWrite(PIN_LED, HIGH);
@@ -154,51 +161,4 @@ void ESParaSite::ConfigPortal::do_config_portal() {
     // We restart the ESP8266 to reload with changes.
     ESP.reset();
   }
-}
-
-void ESParaSite::ConfigPortal::do_error_portal(int8_t error_condition) {
-  /*
-  // Currently we flash an SOS in an infinite loop
-  pinMode(PIN_LED, OUTPUT);
-  Serial.println(F("SPIFFS FAILURE YOU MUST REIMAGE YOUR ESP8266");
-  while (1) {
-    digitalWrite(PIN_LED, LOW);
-    delay(500);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(500);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(500);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(2000);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(2000);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(2000);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(500);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(500);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-    digitalWrite(PIN_LED, LOW);
-    delay(500);
-    digitalWrite(PIN_LED, HIGH);
-    delay(500);
-
-  }
-  */
 }
