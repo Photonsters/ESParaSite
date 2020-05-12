@@ -1,6 +1,6 @@
 // ESParaSite_Core.cpp
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -89,8 +89,11 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
                                            uint16_t prev_sensor_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
       sensors_read_msec) {
-    //  Serial.println(F("Reading the sensors"));
-    //  Serial.println();
+
+#ifdef DEBUG_L1
+    Serial.println(F("Reading the sensors"));
+    Serial.println();
+#endif
 
     status_resource.rtc_current_second = Sensors::read_rtc_epoch();
     enclosure_resource.life_sec = (status_resource.rtc_current_second -
@@ -110,8 +113,12 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
 
     return millis();
   } else {
-    //  Serial.println(F("We did NOT read the sensors"));
-    //  Serial.println();
+
+#ifdef DEBUG_L1
+    Serial.println(F("We did NOT read the sensors"));
+    Serial.println();
+#endif
+
     return (prev_sensor_msec);
   }
 }
@@ -119,14 +126,21 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
 uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
                                        uint16_t prev_dht_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_dht_msec) >= dht_read_msec) {
-    //  Serial.println(F("Reading the DHT sensor"));
-    //  Serial.println();
+
+#ifdef DEBUG_L1
+    Serial.println(F("Reading the DHT sensor"));
+    Serial.println();
+#endif
 
     ESParaSite::Sensors::read_dht_sensor(true);
     return millis();
   } else {
-    //  Serial.println(F("We did NOT read the DHT sensor"));
-    //  Serial.println();
+
+#ifdef DEBUG_L1
+    Serial.println(F("We did NOT read the DHT sensor"));
+    Serial.println();
+#endif
+
     return (prev_dht_msec);
   }
 }
@@ -135,39 +149,52 @@ uint16_t ESParaSite::Core::do_handle_eeprom(uint16_t cur_loop_msec,
                                             uint16_t prev_eeprom_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_eeprom_msec) >=
       eeprom_write_msec) {
-    //  Serial.println(F("Checking printing status before writing EEPROM"));
-    //  Serial.println();
+
+#ifdef DEBUG_L1
+    Serial.println(F("Checking printing status before writing EEPROM"));
+    Serial.println();
+#endif
 
     status_resource.is_printing_flag = static_cast<uint8_t>(is_printing());
-    //  Serial.print(F("Printing Status:\t"));
+
+#ifdef DEBUG_L1
+    Serial.print(F("Printing Status:\t"));
     Serial.println(status_resource.is_printing_flag);
     Serial.println();
-
-    //  Serial.println(F("Writing the EEPROM"));
+    Serial.println(F("Writing the EEPROM"));
     Serial.println();
+#endif
 
     ESParaSite::RtcEeprom::do_eeprom_write();
 
     return millis();
   } else {
-    //  Serial.println(F("we did NOT write the EEPROM"));
-    //  Serial.println();
+
+#ifdef DEBUG_L1
+    Serial.println(F("We did NOT write to the EEPROM"));
+    Serial.println();
+#endif
+
     return (prev_eeprom_msec);
   }
 }
 
-void ESParaSite::Core::do_config_trigger_check() {
-  WiFi.disconnect(true);
-  Serial.print(WiFi.status());
-  Serial.println();
-  Serial.println(F("HALTING LOOP - Configuration Mode Triggered."));
-  Serial.println();
-  ESParaSite::ConfigPortal::do_config_portal();
-}
-
 void do_check_printing() {
   if (optics_resource.si_visible >= VISIBLE_THRESHOLD) {
+
+#ifdef DEBUG_L1
+    Serial.println(F("Incrementing is_printing_counter"));
+    Serial.println();
+#endif
+
     is_printing_counter++;
+  } else{
+
+#ifdef DEBUG_L1
+    Serial.println(F("Not incrementing is_printing_counter"));
+    Serial.println();
+#endif
+
   }
 }
 
@@ -182,9 +209,20 @@ bool is_printing() {
     rtc_eeprom_resource.led_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
     rtc_eeprom_resource.fep_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
 
+#ifdef DEBUG_L1
+    Serial.println(F("Currently printing during this interval"));
+    Serial.println();
+#endif
+
     return 1;
   } else {
     is_printing_counter = 0;
+
+#ifdef DEBUG_L1
+    Serial.println(F("Not printing during this interval"));
+    Serial.println();
+#endif
+
     return 0;
   }
 }

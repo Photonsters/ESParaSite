@@ -1,6 +1,6 @@
 //ESParasite VERSION HISTORY
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
 	Authors: Andy  (SolidSt8Dad)Eakin
 	
 	Please see /ATTRIB for full credits and OSS License Info
@@ -29,7 +29,7 @@ v0.6 - Sixth Release -
 		- changed to modern c++ variable casting (const_cast, static_cast)
 		- added newline to end of several files
 		- Changed header guard syntax to "INCLUDE_ESPARASITE_FILENAME_H_"
-	- Improved web services to allow service of files and gzipped files.
+	XXXX REMOVED - Improved web services to allow service of files and gzipped files.
 	- Removed all blocking delay() calls from main loop in favor of millis() based isosynchronous triggers
 	- Changed Config Portal button handling to be interrupt driven.
 	- Substantial and continuing code work to properly lay scalable foundation
@@ -40,6 +40,11 @@ v0.6 - Sixth Release -
 		- Use most efficient data type for each variable
 		- Standardize variable and function names 
 		- Optimized Text strings to move them out of the DATA RAM 
+	- Major stability improvements to WiFi setup portal
+		- Implemented core branch of WiFi Manager replacing previously used branch (less pretty but more stable)
+		- Stop existing web services prior to launching config portal
+		- re-direct all fatal setup() errors to config portal
+	- Moved much of the verbose logging to Debug code. Only important boot events and sensor dumps are shown.
 
 v0.5 - Fifth Release - 
 	- Moved WiFi functions to their own file ESParaSite_Wifi.cpp

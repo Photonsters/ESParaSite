@@ -1,6 +1,6 @@
 // ESParaSite.cpp
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -64,10 +64,6 @@ uint16_t prev_sensor_msec = 0;
 uint16_t prev_dht_msec = 0;
 uint16_t prev_eeprom_msec = 0;
 
-// Variables used to handle interrupts
-volatile byte interruptCounter = 0;
-int numberOfInterrupts = 0;
-
 // The _resource structs used to carry data globally
 ESParaSite::ambient ambient_resource;
 ESParaSite::config_data config_resource;
@@ -107,24 +103,46 @@ void loop(void) {
 
   ESParaSite::HttpCore::serve_http_client();
 
-#ifdef DEBUG_L1
+#ifdef DEBUG_L1 
   Serial.println(F("refreshing cur_loop_msec"));
   Serial.println();
 #endif
 
   cur_loop_msec = millis();
 
-#ifdef DEBUG_L1
+#ifdef DEBUG_L2
+  Serial.print(F("cur_loop_msec:\t"))
   Serial.println(cur_loop_msec);
+  Serial.print(F("prev_sensor_msec:\t")) 
   Serial.println(prev_sensor_msec);
+  Serial.print(F("prev_dht_msec:\t"))
   Serial.println(prev_dht_msec);
+  Serial.print(F("prev_eeprom_msec:\t"))
   Serial.println(prev_eeprom_msec);
+  Serial.println();
+#endif
+
+#ifdef DEBUG_L1
+  Serial.println(F("checking to see if we need to do anything"));
+  Serial.println();
+  Serial.println(F("Sensors"));
+  Serial.println();
 #endif
 
   prev_sensor_msec =
       ESParaSite::Core::do_read_sensors(cur_loop_msec, prev_sensor_msec);
 
+#ifdef DEBUG_L1
+  Serial.println(F("DHT12 Sensor"));
+  Serial.println();
+#endif
+
   prev_dht_msec = ESParaSite::Core::do_read_dht(cur_loop_msec, prev_dht_msec);
+
+#ifdef DEBUG_L1
+  Serial.println(F("Write to EEPROM"));
+  Serial.println();
+#endif
 
   prev_eeprom_msec =
       ESParaSite::Core::do_handle_eeprom(cur_loop_msec, prev_eeprom_msec);
@@ -135,21 +153,15 @@ void loop(void) {
 #endif
 }
 
-// ICACHE_RAM_ATTR void handleInterrupt() { interruptCounter++; }
-
 void setup(void) {
+  //Set up our pins
   pinMode(PIN_LED, OUTPUT);
-
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(TRIGGER_PIN2, INPUT_PULLUP);
 
+  //Begin Serial Output
   Serial.begin(115200);
   Serial.println();
-
-#ifdef DEBUG_L1
-  WiFi.printDiag(Serial); // Remove this line if you do not want to see WiFi
-                          // password printed
-#endif
 
   Serial.println();
   Serial.println(F("ESParaSite Data Logging Server"));
@@ -161,19 +173,35 @@ void setup(void) {
   Serial.println(__TIME__);
   Serial.println();
 
+#ifdef DEBUG_L2
+  Serial.println(F("Dumping Wifi Diagnostics"));
+  Serial.println();
+  WiFi.printDiag(Serial); // Remove this line if you do not want to see WiFi
+                          // password printed
+#endif
+
 #ifdef DEBUG_L1
   Serial.println(F("Mounting SPIFFS"));
   Serial.println();
   delay(500);
 #endif
 
-  // Mount the SPIFFS Filesystem
+ 
+
+#ifdef DEBUG_L1
   Serial.println(F("Mounting FS..."));
+#endif
+
+  // Mount the SPIFFS Filesystem
   if (!SPIFFS.begin()) {
-    Serial.println(F("Failed to mount file system"));
-    // ESParaSite::ConfigPortal::do_error_portal(1);
+    Serial.println(
+        F("Failed to mount SPIFFS file system. Booting in AP Config Portal mode."));
+    ESParaSite::ConfigPortal::do_config_portal();
   } else {
+
+#ifdef DEBUG_L1
     Serial.println(F("File system mounted"));
+#endif
   }
 
 #ifdef DEBUG_L1
@@ -186,10 +214,12 @@ void setup(void) {
   if (!ESParaSite::FileCore::loadConfig()) {
     Serial.println(
         F("Failed to load config. Booting in AP Config Portal mode."));
-
     ESParaSite::ConfigPortal::do_config_portal();
   } else {
+
+#ifdef DEBUG_L1
     Serial.println(F("config.json loaded"));
+#endif
   }
 
 #ifdef DEBUG_L1
@@ -197,46 +227,56 @@ void setup(void) {
   Serial.println();
   delay(500);
 #endif
+  // Turn led off as we are not in configuration mode.
+  digitalWrite(PIN_LED, HIGH);
 
   if (WiFi.SSID() == "") {
-    Serial.println(
-        "We haven't got any access point credentials, so get them now");
-    initialConfig = true;
+    Serial.println(F("We haven't got any access point credentials, Booting in AP Config Portal mode."));
+    ESParaSite::ConfigPortal::do_config_portal();
   } else {
+    // Force to station mode because if device was switched off while in
+    // access point mode it will start up next time in access point mode.
+    WiFi.mode(WIFI_STA); 
+
+    // Connect to Access Point
+    Serial.println(F("Connecting to Wifi."));
+    Serial.println();
     WiFi.reconnect();
-    digitalWrite(PIN_LED,
-                 HIGH); // Turn led off as we are not in configuration mode.
-    // WiFi.mode(WIFI_STA); // Force to station mode because if device was
-    // switched
-    // off while in access point mode it will start up next
-    // time in access point mode.
+
+    WiFi.waitForConnectResult();
+#ifdef DEBUG_L1
     unsigned long startedAt = millis();
-    Serial.print("After waiting ");
+    Serial.print(F("After waiting "));
     int connRes = WiFi.waitForConnectResult();
     float waited = (millis() - startedAt);
     Serial.print(waited / 1000);
-    Serial.print(" secs in setup() connection result is ");
+    Serial.print(F(" secs in setup() connection result is "));
     Serial.println(connRes);
+#endif
   }
 
 #ifdef DEBUG_L1
-  Serial.println(F("Wifi SHowing IP"));
+  Serial.println(F("Wifi Showing IP"));
   Serial.println();
-  delay(500);
 #endif
 
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("failed to connect, finishing setup anyway");
+    Serial.println(F("Failed to connect, Booting in AP Config Portal mode."));
+    ESParaSite::ConfigPortal::do_config_portal();
   } else {
-    Serial.print("local ip: ");
+    Serial.println(F("Wifi Connected"));
+    Serial.println();
+    Serial.print(F("IP Address: "));
     Serial.println(WiFi.localIP());
+    Serial.println();
   }
 
 #ifdef DEBUG_L1
   Serial.println(F("mDNS Config"));
   Serial.println();
-  delay(500);
 #endif
+
+  delay(500);
 
   if (config_resource.cfg_mdns_enabled == 1) {
     const char *mdns_n = config_resource.cfg_mdns_name;
@@ -246,6 +286,7 @@ void setup(void) {
       ESParaSite::ConfigPortal::do_config_portal();
     } else {
       Serial.println(F("mDNS responder started"));
+      Serial.println();
     }
   }
 
@@ -256,11 +297,11 @@ void setup(void) {
 #endif
 
   // Start http server
-  ESParaSite::HttpCore::config_rest_server_routing();
-  ESParaSite::HttpCore::start_http_server();
+ ESParaSite::HttpCore::config_rest_server_routing();
+ ESParaSite::HttpCore::start_http_server();
 
-  Serial.println(F("HTTP server started"));
-  Serial.println();
+ Serial.println(F("HTTP server started"));
+ Serial.println();
 
 #ifdef DEBUG_L1
   Serial.println(F("Initialize i2c bus, sensors, rtc and eeprom"));
@@ -277,9 +318,11 @@ void setup(void) {
   // Find the most recent EEPROM segment and populate our eeprom_data struct.
   uint16_t mru_segment_addr = ESParaSite::RtcEeprom::do_eeprom_first_read();
 
+#ifdef DEBUG_L1
   Serial.print(F("The most recent write address:\t"));
   Serial.println(mru_segment_addr);
   Serial.println();
+#endif
 
   ESParaSite::RtcEeprom::do_eeprom_read(mru_segment_addr);
 

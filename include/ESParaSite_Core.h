@@ -1,6 +1,6 @@
 // ESParaSite_Core.h
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -25,7 +25,6 @@ namespace Core {
 uint16_t do_read_sensors(uint16_t, uint16_t);
 uint16_t do_handle_eeprom(uint16_t, uint16_t);
 uint16_t do_read_dht(uint16_t, uint16_t);
-void do_config_trigger_check();
 } // namespace Core
 } // namespace ESParaSite
 
