@@ -1,6 +1,6 @@
 // ESParaSite_Rest.h
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -23,6 +23,7 @@ namespace ESParaSite {
 namespace HttpCore {
 void config_rest_server_routing();
 void start_http_server();
+void stop_http_server();
 void serve_http_client();
 bool do_web_gui(String path);
 }; // namespace HttpCore
