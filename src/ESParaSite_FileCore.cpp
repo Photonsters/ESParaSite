@@ -1,6 +1,6 @@
 // ESParaSite_ConfigFile.cpp
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -138,6 +138,7 @@ bool ESParaSite::FileCore::loadConfig() {
   Serial.print(config_resource.cfg_pin_sda);
   Serial.print(F(", "));
   Serial.println(config_resource.cfg_pin_scl);
+  Serial.println();
 
   return true;
 }

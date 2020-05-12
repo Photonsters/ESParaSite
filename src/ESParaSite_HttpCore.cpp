@@ -1,6 +1,6 @@
 // ESParaSite_Rest.cpp
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -52,63 +52,28 @@ const char *htmlfile = "/index.html";
 File fsUploadFile; // a File object to temporarily store the received file
 
 void HttpCore::config_rest_server_routing() {
-  /*
   http_server.on("/", handleRoot); // Call the 'handleRoot' function when a
                                    // client requests URI "/"
   http_server.onNotFound(
       handleNotFound); // When a client requests an unknown URI (i.e. something
                        // other than "/"), call function "handleNotFound"
-  */
-
   http_server.on("/printchamber", HTTP_GET, get_chamber);
   http_server.on("/optics", HTTP_GET, get_optics);
   http_server.on("/ambient", HTTP_GET, get_ambient);
   http_server.on("/enclosure", HTTP_GET, get_enclosure);
   http_server.on("/config", HTTP_GET, get_config);
-  /*
-  http_server.on(
-      "/upload", HTTP_GET, []() { // if the client requests the upload page
-        if (!do_web_gui("/upload.html")) // send it if it exists
-          http_server.send(
-              200, "text/html",
-              "<form method=\"post\" enctype=\"multipart/form-data\"><input "
-              "type=\"file\" name=\"name\"><input class=\"button\" "
-              "type=\"submit\" value=\"Upload\"></form>");
-        http_server.send(404, "text/plain",
-                              "404: Not Found"); // otherwise, respond with a
-                                                 // 404 (Not Found) error
-      });
-
-  http_server.on(
-      "/upload", HTTP_POST, // if the client posts to the upload page
-      []() {
-        http_server.send(200);
-      }, // Send status 200 (OK) to tell the client we are ready to receive
-      handleFileUpload); // Receive and save the file
-
-  http_server.on("/", HTTP_GET, []() {
-    http_server.sendHeader("Location", "/index.html", true);
-    http_server.send(302, "text/plain", "");
-  });
-
-  // http_server.on("/enclosure", HTTP_POST, post_enclosure); //Not yet
-  // implemented http_server.on("/enclosure", HTTP_PUT, post_enclosure);
-  // //Not yet implemented
-
-  // If the client requests any URI, send it if it exists, otherwise, respond
-  // with a 404 (Not Found) error
-  http_server.onNotFound([]() {
-    if (!do_web_gui(http_server.uri()))
-      http_server.send(404, "text/plain", "404: Not Found");
-  });
-    */
-  Serial.println("HTTP REST config complete!");
+  Serial.println("HTTP REST config complete");
 }
 
 void handleRoot() {
-  http_server.send(200, "text/plain",
-                   "Hello world!"); // Send HTTP status 200 (Ok) and send some
-                                    // text to the browser/client
+  http_server.send(
+      200, "text/html",
+      "<p>Please Browse to:</p><a "
+      "href=\"/printchamber\">Printchamber</a></br><a "
+      "href=\"/optics\">Optics</a></br><a href=\"/ambient\">Ambient</a></br><a "
+      "href=\"/enclosure\">Enclosure</a></br><a href=\"/config\">Config</a>");
+  // Send HTTP status 200 (Ok) and send some
+  // text to the browser/client
 }
 
 void handleNotFound() {
@@ -121,6 +86,7 @@ void handleNotFound() {
 void HttpCore::serve_http_client() { http_server.handleClient(); }
 
 void HttpCore::start_http_server() { http_server.begin(); }
+void HttpCore::stop_http_server() { http_server.stop(); }
 
 /*
 bool HttpCore::do_web_gui(

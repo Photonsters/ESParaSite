@@ -1,6 +1,6 @@
 // ESParaSite.h
 
-/* ESParasite Data Logger v0.5
+/* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -82,7 +82,5 @@ struct sensor_exists {
 };
 
 }; // namespace ESParaSite
-
-void handleInterrupt(volatile byte);
 
 #endif // INCLUDE_ESPARASITE_H_
