@@ -20,12 +20,14 @@
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
 #include "ESParaSite_Core.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
 #include "ESParaSite_HttpCore.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
 #include "ESParaSite_WiFiCore.h"
+
 
 // +++ Advanced Settings +++
 // VISIBLE_THRESHOLD adjusts the sensitivity of the SI1145 Sensor to Ambient
@@ -85,10 +87,11 @@ extern ESParaSite::status_data status_resource;
 
 WiFiClient Wifi;
 
-uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
-                                           uint16_t prev_sensor_msec) {
-  if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
-      sensors_read_msec) {
+      uint16_t
+      ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
+                                        uint16_t prev_sensor_msec) {
+    if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
+        sensors_read_msec) {
 
 #ifdef DEBUG_L1
     Serial.println(F("Reading the sensors"));
@@ -99,10 +102,12 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
     enclosure_resource.life_sec = (status_resource.rtc_current_second -
                                    rtc_eeprom_resource.first_on_timestamp);
 
+#ifdef DEBUG_L2
     Serial.print(F("This Printer has been on for:\t"));
     Serial.print(enclosure_resource.life_sec);
     Serial.println(F("  seconds"));
     Serial.println();
+#endif
 
     ESParaSite::Sensors::read_bme_sensor();
     ESParaSite::Sensors::read_mlx_sensor();
@@ -121,7 +126,7 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
 
     return (prev_sensor_msec);
   }
-}
+  }
 
 uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
                                        uint16_t prev_dht_msec) {
