@@ -27,7 +27,9 @@
 #include <LittleFS.h>
 
 #include "ESParaSite.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
+
 
 extern ESParaSite::config_data config_resource;
 

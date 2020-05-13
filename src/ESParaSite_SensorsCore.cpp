@@ -27,9 +27,11 @@
 
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
+
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
@@ -67,13 +69,18 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-int bme_i2c_address;
-int eeprom_i2c_address;
+#ifndef DEBUG_L2
 bool dump_sensor_data = 0;
-
+#endif
 #ifdef DEBUG_L2
 bool dump_sensor_data = 1;
 #endif
+
+int bme_i2c_address;
+int eeprom_i2c_address;
+
+
+
 
 extern ESParaSite::printchamber chamber_resource;
 extern ESParaSite::optics optics_resource;
@@ -194,7 +201,7 @@ void ESParaSite::Sensors::init_i2c_sensors() {
 }
 
 // This gives us a nicely formatted dump of all sensor data to Serial console.
-void ESParaSite::Sensors::dump_sensors() {
+void ESParaSite::Sensors::dump_sensors(bool in_seq_read) {
   dump_sensor_data = 1;
   Serial.println();
   Serial.println(F("Current Sensor Readings"));
@@ -207,7 +214,11 @@ void ESParaSite::Sensors::dump_sensors() {
   Serial.println();
 
   Serial.println(F("DHT12 Print Chamber Environmental Data:"));
+  if (in_seq_read == true){
   read_dht_sensor(true);
+  } else {
+    read_dht_sensor(false);
+  }
   Serial.println();
 
   Serial.println(F("SI1145 UV and Light Sensor Data:"));
@@ -220,6 +231,11 @@ void ESParaSite::Sensors::dump_sensors() {
 
   Serial.println(F("BME280 Ambient Temp Sensor Data:"));
   read_bme_sensor();
+  Serial.println();
+
+  Serial.print(F("This Printer has been on for:\t"));
+  Serial.print(enclosure_resource.life_sec);
+  Serial.println(F("  seconds"));
   Serial.println();
 
 #ifndef DEBUG_L2
@@ -544,7 +560,7 @@ void ESParaSite::Sensors::check_rtc_status() {
       Serial.print(F("RTC communications error = "));
       Serial.println(rtc.LastError());
       Serial.println(F("RTC not responding...Restarting"));
-      ESP.reset();
+      ESP.restart();
     } else {
       // Common Cuases:
       //  1) the battery on the device is low or even missing and the power
