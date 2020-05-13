@@ -20,7 +20,7 @@
 #include <ESP8266WiFi.h>
 //#include <ESP8266WiFiMulti.h>
 #include <ESP8266mDNS.h>
-#include <FS.h>
+#include <LittleFS.h>
 #include <WiFiManager.h>
 
 #include "ESParaSite.h"
@@ -181,7 +181,7 @@ void setup(void) {
 #endif
 
 #ifdef DEBUG_L1
-  Serial.println(F("Mounting SPIFFS"));
+  Serial.println(F("Mounting LittleFS"));
   Serial.println();
   delay(500);
 #endif
@@ -192,10 +192,10 @@ void setup(void) {
   Serial.println(F("Mounting FS..."));
 #endif
 
-  // Mount the SPIFFS Filesystem
-  if (!SPIFFS.begin()) {
-    Serial.println(
-        F("Failed to mount SPIFFS file system. Booting in AP Config Portal mode."));
+  // Mount the LittleFS Filesystem
+  if (!LittleFS.begin()) {
+    Serial.println(F("Failed to mount LittleFS file system. Booting in AP "
+                     "Config Portal mode."));
     ESParaSite::ConfigPortal::do_config_portal();
   } else {
 

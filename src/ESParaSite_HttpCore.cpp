@@ -19,7 +19,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266mDNS.h>
-#include <FS.h>
+#include <LittleFS.h>
 #include <WiFiClient.h>
 
 #include "ESParaSite.h"
@@ -62,6 +62,14 @@ void HttpCore::config_rest_server_routing() {
   http_server.on("/ambient", HTTP_GET, get_ambient);
   http_server.on("/enclosure", HTTP_GET, get_enclosure);
   http_server.on("/config", HTTP_GET, get_config);
+  //http_server.on("/upload", HTTP_GET, do_upload_page);
+  http_server.on("/upload", HTTP_POST, []() { 
+        // if the client posts to the upload page
+      
+        http_server.send(200);
+      }, // Send status 200 (OK) to tell the client we are ready to receive
+      handleFileUpload // Receive and save the file
+  );
   Serial.println("HTTP REST config complete");
 }
 
@@ -100,13 +108,13 @@ bool HttpCore::do_web_gui(
   String pathWithGz = path + ".gz";
 
   // If the file exists, either as a compressed archive, or normal
-  if (SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)) {
+  if (LittleFS.exists(pathWithGz) || LittleFS.exists(path)) {
     // If there's a compressed version available
-    if (SPIFFS.exists(pathWithGz))
+    if (LittleFS.exists(pathWithGz))
       // Use the compressed version
       path += ".gz";
     // Open the file
-    File file = SPIFFS.open(path, "r");
+    File file = LittleFS.open(path, "r");
     // Send it to the client
     http_server.streamFile(file, contentType);
     // Close the file again
@@ -119,6 +127,13 @@ bool HttpCore::do_web_gui(
   return false;
 }
 */
+void do_upload_page() {
+  http_server.send(
+      200, "text/html", "<form method=\"post\" enctype=\"multipart/form-data\">"
+                        "<input type=\"file\" name=\"name\">"
+                        "<input class=\"button\" type=\"submit\" value=\"Upload\">"
+                        "</form>");
+}
 
 void get_chamber() {
   StaticJsonDocument<256> doc;
@@ -243,7 +258,7 @@ String getContentType(String filename) {
   return "text/plain";
 }
 
-void handleFileUpload() { // upload a new file to the SPIFFS
+void handleFileUpload() { // upload a new file to the LittleFS
   HTTPUpload &upload = http_server.upload();
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
@@ -252,8 +267,8 @@ void handleFileUpload() { // upload a new file to the SPIFFS
     Serial.print("handleFileUpload Name: ");
     Serial.println(filename);
     fsUploadFile =
-        SPIFFS.open(filename, "w"); // Open the file for writing in SPIFFS
-                                    // (create if it doesn't exist)
+        LittleFS.open(filename, "w"); // Open the file for writing in LittleFS
+                                      // (create if it doesn't exist)
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
     if (fsUploadFile)

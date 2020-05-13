@@ -279,6 +279,7 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_read(uint16_t segment_addr) {
 }
 
 uint8_t ESParaSite::RtcEeprom::do_eeprom_write() {
+  ESParaSite::Sensors::dump_sensors();
   uint16_t segment_addr = rtc_eeprom_resource.last_segment_address +
                      (BYTES_PER_PAGE * PAGES_PER_SEGMENT);
   if (segment_addr >= (static_cast<uint16_t>(MEMORY_SIZE) / 8)) {
