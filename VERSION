@@ -13,7 +13,7 @@
 */
 
 /*
-v0.7 - Seventh Release - 
+v0.7 - Seventh Release - Giardiasis 2020-05-13
 	- Implemented LittleFS for /config.json to replace deprecated SPIFFS. This will require a new config file to be written. Thus a new run of the Config Portal.
 		- This is destructive to any exsisting SPIFFS data, but since we only use it for the config.json currently, it will simply force you back into the Config Portal
 	- Cleaned up some code in ESParaSite_Sensors.cpp
@@ -21,7 +21,7 @@ v0.7 - Seventh Release -
 		- Cleaned up and moved some RTC tasks to other functions to limit redundant code.  
 		- Continued moving serial.print() to serial.print(F()) to save on RAM. 
 
-v0.6 - Sixth Release - v0.6-Fascioliasis
+v0.6 - Sixth Release - Fascioliasis 2020-05-11
 	- Fixed a bug in ESParaSite_Eeprom.cpp where we issued a return prior to setting a variable in 2 places.
 	- Added for() loop to scan all 8 I2C addresses of an AT24Cx EEPROM
 	- Added Magic number warning comments in ESParaSite_Eeprom.cpp for the functions that assume an eeprom layout (we will go back and fix that IF a different chip becomes common)
