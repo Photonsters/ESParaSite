@@ -34,7 +34,7 @@ void read_rtc_temp();
 time_t read_rtc_epoch();
 void init_i2c_sensors();
 int ping_sensor(uint16_t);
-void dump_sensors();
+void dump_sensors(bool);
 }; // namespace Sensors
 }; // namespace ESParaSite
 

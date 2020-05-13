@@ -25,8 +25,10 @@
 
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
 #include "ESParaSite_HttpCore.h"
+
 
 extern ESParaSite::config_data config_resource;
 
@@ -120,7 +122,7 @@ void ESParaSite::ConfigPortal::do_config_portal() {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
     // reset and try again, or maybe put it to deep sleep
-    ESP.reset();
+    ESP.restart();
     delay(5000);
   } else {
   // if you get here you have connected to the WiFi
@@ -159,6 +161,6 @@ void ESParaSite::ConfigPortal::do_config_portal() {
     digitalWrite(PIN_LED, HIGH);
 
     // We restart the ESP8266 to reload with changes.
-    ESP.reset();
+    ESP.restart();
   }
 }
