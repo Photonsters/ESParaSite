@@ -17,7 +17,9 @@
 #include <Arduino.h>
 
 #include "ESParaSite.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_Util.h"
+
 
 using namespace ESParaSite;
 

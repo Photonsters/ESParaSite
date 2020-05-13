@@ -17,6 +17,7 @@
 #include <ESP8266WiFi.h>
 
 #include "ESParaSite.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_WiFiCore.h"
 
 using namespace ESParaSite;

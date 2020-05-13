@@ -20,7 +20,7 @@
 #include <ESP8266WiFi.h>
 //#include <ESP8266WiFiMulti.h>
 #include <ESP8266mDNS.h>
-#include <FS.h>
+#include <LittleFS.h>
 #include <WiFiManager.h>
 
 #include "ESParaSite.h"
@@ -32,12 +32,7 @@
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
 #include "ESParaSite_WiFiCore.h"
-
-// Dumping too much data to Serial seems to be problematic so we will add a
-// flag to allow us to toggle verbose text and delays (not fully implemented)
-
-//#define DEBUG_L1
-//#define DEBUG_L2
+#include "ESParaSite_DebugUtils.h"
 
 // Trigger for inititating config mode is Pin D3 and also flash button on
 // NodeMCU.  Flash button is convenient to use but if it is pressed it will
@@ -83,6 +78,7 @@ void loop(void) {
   Serial.println();
 #endif
 
+  // Check to see if Config Mode Triggered
   if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW) ||
       (initialConfig)) {
     Serial.println("Configuration portal requested.");
@@ -94,6 +90,7 @@ void loop(void) {
   Serial.println();
 #endif
 
+  // Refresh mDNS
   MDNS.update();
 
 #ifdef DEBUG_L1
@@ -101,23 +98,25 @@ void loop(void) {
   Serial.println();
 #endif
 
+  // Run the HTTP Sever
   ESParaSite::HttpCore::serve_http_client();
 
-#ifdef DEBUG_L1 
+#ifdef DEBUG_L1
   Serial.println(F("refreshing cur_loop_msec"));
   Serial.println();
 #endif
 
+  // Refresh the Current Loop Millisecond value
   cur_loop_msec = millis();
 
-#ifdef DEBUG_L2
-  Serial.print(F("cur_loop_msec:\t"))
+#ifdef DEBUG_L3
+  Serial.print(F("cur_loop_msec:\t"));
   Serial.println(cur_loop_msec);
-  Serial.print(F("prev_sensor_msec:\t")) 
+  Serial.print(F("prev_sensor_msec:\t"));
   Serial.println(prev_sensor_msec);
-  Serial.print(F("prev_dht_msec:\t"))
+  Serial.print(F("prev_dht_msec:\t"));
   Serial.println(prev_dht_msec);
-  Serial.print(F("prev_eeprom_msec:\t"))
+  Serial.print(F("prev_eeprom_msec:\t"));
   Serial.println(prev_eeprom_msec);
   Serial.println();
 #endif
@@ -129,6 +128,7 @@ void loop(void) {
   Serial.println();
 #endif
 
+  // Read sensors if it has been the right interval
   prev_sensor_msec =
       ESParaSite::Core::do_read_sensors(cur_loop_msec, prev_sensor_msec);
 
@@ -137,6 +137,7 @@ void loop(void) {
   Serial.println();
 #endif
 
+  // Read the DHT12 sensor if it has been the right interval
   prev_dht_msec = ESParaSite::Core::do_read_dht(cur_loop_msec, prev_dht_msec);
 
 #ifdef DEBUG_L1
@@ -144,6 +145,7 @@ void loop(void) {
   Serial.println();
 #endif
 
+  // Update EEPROM and memory values
   prev_eeprom_msec =
       ESParaSite::Core::do_handle_eeprom(cur_loop_msec, prev_eeprom_msec);
 
@@ -154,14 +156,16 @@ void loop(void) {
 }
 
 void setup(void) {
-  //Set up our pins
+  // Set up our pins
   pinMode(PIN_LED, OUTPUT);
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(TRIGGER_PIN2, INPUT_PULLUP);
 
-  //Begin Serial Output
+  // Begin Serial Output
   Serial.begin(115200);
   Serial.println();
+
+  digitalWrite(PIN_LED, LOW);
 
   Serial.println();
   Serial.println(F("ESParaSite Data Logging Server"));
@@ -181,21 +185,19 @@ void setup(void) {
 #endif
 
 #ifdef DEBUG_L1
-  Serial.println(F("Mounting SPIFFS"));
+  Serial.println(F("Mounting LittleFS"));
   Serial.println();
   delay(500);
 #endif
-
- 
 
 #ifdef DEBUG_L1
   Serial.println(F("Mounting FS..."));
 #endif
 
-  // Mount the SPIFFS Filesystem
-  if (!SPIFFS.begin()) {
-    Serial.println(
-        F("Failed to mount SPIFFS file system. Booting in AP Config Portal mode."));
+  // Mount the LittleFS Filesystem
+  if (!LittleFS.begin()) {
+    Serial.println(F("Failed to mount LittleFS file system. Booting in AP "
+                     "Config Portal mode."));
     ESParaSite::ConfigPortal::do_config_portal();
   } else {
 
@@ -216,10 +218,7 @@ void setup(void) {
         F("Failed to load config. Booting in AP Config Portal mode."));
     ESParaSite::ConfigPortal::do_config_portal();
   } else {
-
-#ifdef DEBUG_L1
     Serial.println(F("config.json loaded"));
-#endif
   }
 
 #ifdef DEBUG_L1
@@ -227,23 +226,25 @@ void setup(void) {
   Serial.println();
   delay(500);
 #endif
-  // Turn led off as we are not in configuration mode.
-  digitalWrite(PIN_LED, HIGH);
 
   if (WiFi.SSID() == "") {
-    Serial.println(F("We haven't got any access point credentials, Booting in AP Config Portal mode."));
+    Serial.println(
+        F("WiFi credentials unset, Booting in AP Config Portal mode."));
     ESParaSite::ConfigPortal::do_config_portal();
   } else {
     // Force to station mode because if device was switched off while in
     // access point mode it will start up next time in access point mode.
-    WiFi.mode(WIFI_STA); 
+    WiFi.mode(WIFI_STA);
 
     // Connect to Access Point
-    Serial.println(F("Connecting to Wifi."));
+    Serial.println(F("Connecting to Wifi..."));
     Serial.println();
     WiFi.reconnect();
 
+#ifndef DEBUG_L1
     WiFi.waitForConnectResult();
+#endif
+
 #ifdef DEBUG_L1
     unsigned long startedAt = millis();
     Serial.print(F("After waiting "));
@@ -290,18 +291,20 @@ void setup(void) {
     }
   }
 
-#ifdef DEBUG_L1
   Serial.println(F("Starting Webserver"));
   Serial.println();
-  delay(500);
+
+#ifdef DEBUG_L1
+  delay(1000);
 #endif
 
   // Start http server
- ESParaSite::HttpCore::config_rest_server_routing();
- ESParaSite::HttpCore::start_http_server();
+  ESParaSite::HttpCore::config_rest_server_routing();
+  ESParaSite::HttpCore::start_http_server();
 
- Serial.println(F("HTTP server started"));
- Serial.println();
+  Serial.println();
+  Serial.println(F("HTTP server started"));
+  Serial.println();
 
 #ifdef DEBUG_L1
   Serial.println(F("Initialize i2c bus, sensors, rtc and eeprom"));
@@ -313,7 +316,7 @@ void setup(void) {
   ESParaSite::Sensors::init_i2c_sensors();
 
   // Dump all sensor data to serial console
-  ESParaSite::Sensors::dump_sensors();
+  ESParaSite::Sensors::dump_sensors(false);
 
   // Find the most recent EEPROM segment and populate our eeprom_data struct.
   uint16_t mru_segment_addr = ESParaSite::RtcEeprom::do_eeprom_first_read();
@@ -329,6 +332,11 @@ void setup(void) {
   Serial.println(F("Startup Complete!"));
   Serial.println();
 
+#ifdef DEBUG_L1
   Serial.println(F("Waiting 3 Seconds..."));
   delay(3000);
+#endif
+
+  // Turn led off as we are finished booting.
+  digitalWrite(PIN_LED, HIGH);
 }

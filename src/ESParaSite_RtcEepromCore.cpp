@@ -20,9 +20,11 @@
 #include <Wire.h>
 
 #include "ESParaSite.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
+
 
 /*     The AT24C32 EEPROM is structured with 4096 x 8 bit words. Writing is
    performed on the page boundaries of 128 x 32 byte pages. The EEPROM is rated
@@ -279,8 +281,9 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_read(uint16_t segment_addr) {
 }
 
 uint8_t ESParaSite::RtcEeprom::do_eeprom_write() {
+  ESParaSite::Sensors::dump_sensors(true);
   uint16_t segment_addr = rtc_eeprom_resource.last_segment_address +
-                     (BYTES_PER_PAGE * PAGES_PER_SEGMENT);
+                          (BYTES_PER_PAGE * PAGES_PER_SEGMENT);
   if (segment_addr >= (static_cast<uint16_t>(MEMORY_SIZE) / 8)) {
     Serial.print(F("Rolling over to first segment:\t"));
     segment_addr = FIRST_SEGMENT_OFFSET;
@@ -355,11 +358,14 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_write() {
   Serial.println();
   Serial.println(F("DONE!"));
   Serial.println();
-  // "Magic Number Warning" - This logic may be flawed for chips other than the
-  // AT24C32 and AT24C64. It divides the reported ROM size by 8-bit pages, but
-  // other ROMs could be organized differently.
+  
+// "Magic Number Warning" - This logic may be flawed for chips other than the
+// AT24C32 and AT24C64. It divides the reported ROM size by 8-bit pages, but
+// other ROMs could be organized differently.
+#ifdef DEBUG_L2
   RtcEeprom::dumpEEPROM(segment_addr, ((static_cast<uint16_t>(MEMORY_SIZE)) /
                                        (BYTES_PER_PAGE * PAGES_PER_SEGMENT)));
+#endif
 
   return 0;
 }
@@ -410,6 +416,7 @@ void do_eeprom_format(uint8_t format_type) {
     ESParaSite::Util::SerializeUint32(second_data, second_part);
     rtc_eeprom.writeBlock(4, reinterpret_cast<uint8_t *>(second_data), 4);
 
+    // "Magic Number Warning - See Above."
     ESParaSite::RtcEeprom::dumpEEPROM(0, (static_cast<int>(MEMORY_SIZE)) / 8);
   }
 }
