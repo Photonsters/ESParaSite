@@ -24,7 +24,7 @@
 // This example code is in the public domain.
 
 #include <ArduinoJson.h>
-#include <FS.h>
+#include <LittleFS.h>
 
 #include "ESParaSite.h"
 #include "ESParaSite_FileCore.h"
@@ -36,7 +36,7 @@ bool ESParaSite::FileCore::loadConfig() {
   //  Serial.println(F("Waiting 3 Seconds..."));
   //  delay(3000);
 
-  File configFile = SPIFFS.open("/config.json", "r");
+  File configFile = LittleFS.open("/config.json", "r");
   if (!configFile) {
 
   //  Serial.println(F("Inside if(!configFile)"));
@@ -155,7 +155,7 @@ bool ESParaSite::FileCore::saveConfig() {
   serializeJsonPretty(doc, Serial);
   Serial.println();
 
-  File configFile = SPIFFS.open("/config.json", "w");
+  File configFile = LittleFS.open("/config.json", "w");
   if (!configFile) {
     Serial.println(F("Failed to open config file for writing"));
     return false;

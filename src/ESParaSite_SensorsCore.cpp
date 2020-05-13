@@ -19,13 +19,14 @@
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <BlueDot_BME280.h>
+#include <DHT12.h>
 #include <EepromAt24C32.h>
 #include <RtcDS3231.h>
 #include <Time.h>
 #include <Wire.h>
-#include <DHT12.h>
 
 #include "ESParaSite.h"
+#include "ESParaSite_ConfigPortal.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
@@ -68,6 +69,11 @@
 
 int bme_i2c_address;
 int eeprom_i2c_address;
+bool dump_sensor_data = 0;
+
+#ifdef DEBUG_L2
+bool dump_sensor_data = 1;
+#endif
 
 extern ESParaSite::printchamber chamber_resource;
 extern ESParaSite::optics optics_resource;
@@ -83,9 +89,11 @@ RtcDS3231<TwoWire> rtc(Wire);
 BlueDot_BME280 bme;
 DHT12 dht;
 
-// Since we use libraries by different authors, not all libraries talk to
-// sensors in the same way. init_i2c_sensors and ping_sensor give us a cleaner,
-// abstracted format to check fo rthe sensors before calling the
+
+
+// Since we use libraries by different authors and not all libraries talk to
+// sensors in the same way, init_i2c_sensors and ping_sensor give us a cleaner,
+// abstracted format to check for the sensors before calling the
 // init_xyz_sensor() methods which are unique to the sensor and library chosen.
 // This will allow us to extend sensor support over time in a more elegant
 // fashion.
@@ -94,7 +102,7 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   // initialize I2C bus
   Serial.print(F("Init I2C bus..."));
   Wire.begin(config_resource.cfg_pin_sda, config_resource.cfg_pin_scl);
-  Serial.println(F("\t\t\t\tOK!"));
+  Serial.println(F("\t\t\t\t\tOK!"));
   Serial.println();
 
   // initialize Print Chamber sensor
@@ -107,36 +115,49 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   }
 
   Serial.println();
+  Serial.println();
 
   // initialize UV Light sensor
   Serial.println(F("Init UV Light sensor..."));
   error = ping_sensor(SI_ADDR);
   if (error == 0) {
     Sensors::init_si_sensor();
+  } else {
+    exists_resource.siDetected = 0;
   }
+
+  Serial.println();
   Serial.println();
 
   // initialize Non-Contact temperature sensor
   Serial.println(F("Init Non-Contact temperature sensor..."));
   error = ping_sensor(MLX_ADDR);
   if (error == 0) {
-    init_mlx_sensor();
+    Sensors::init_mlx_sensor();
+  } else {
+    exists_resource.mlxDetected = 0;
   }
+
+  Serial.println();
   Serial.println();
 
-  // initialize BME280 temperature sensor
+  // initialize Ambient temperature sensor
   Serial.println(F("Init BME280 sensor..."));
   error = ping_sensor(BME_ADDR_A);
   if (error == 0) {
     bme_i2c_address = (BME_ADDR_A);
-    init_bme_sensor();
+    Sensors::init_bme_sensor();
   } else {
     error = ping_sensor(BME_ADDR_B);
     if (error == 0) {
       bme_i2c_address = (BME_ADDR_B);
-      init_bme_sensor();
+      Sensors::init_bme_sensor();
+    } else {
+      exists_resource.bmeDetected = 0;
     }
   }
+
+  Serial.println();
   Serial.println();
 
   // initialize DS3231 RTC
@@ -145,7 +166,14 @@ void ESParaSite::Sensors::init_i2c_sensors() {
   if (error == 0) {
     Serial.println(F("OK!"));
     init_rtc_clock();
+  } else {
+    Serial.println(F("No RTC Found. ESParaSite requires an RTC with EEPROM. "
+                     "Launching config portal"));
+    ESParaSite::ConfigPortal::do_config_portal();
   }
+
+  Serial.println();
+  Serial.println();
 
   // initialize AR24C32 EEPROM
   Serial.println(F("Init AT24C32 EEPROM..."));
@@ -167,10 +195,11 @@ void ESParaSite::Sensors::init_i2c_sensors() {
 
 // This gives us a nicely formatted dump of all sensor data to Serial console.
 void ESParaSite::Sensors::dump_sensors() {
+  dump_sensor_data = 1;
   Serial.println();
   Serial.println(F("Current Sensor Readings"));
-  Serial.println(F(
-      "============================================================"));
+  Serial.println(
+      F("============================================================"));
   Serial.println();
 
   Serial.println(F("DS3231 Real-Time Clock Timestamp and Temperature:"));
@@ -178,7 +207,7 @@ void ESParaSite::Sensors::dump_sensors() {
   Serial.println();
 
   Serial.println(F("DHT12 Print Chamber Environmental Data:"));
-  read_dht_sensor(false);
+  read_dht_sensor(true);
   Serial.println();
 
   Serial.println(F("SI1145 UV and Light Sensor Data:"));
@@ -192,6 +221,10 @@ void ESParaSite::Sensors::dump_sensors() {
   Serial.println(F("BME280 Ambient Temp Sensor Data:"));
   read_bme_sensor();
   Serial.println();
+
+#ifndef DEBUG_L2
+  dump_sensor_data = 0;
+#endif
 }
 
 void ESParaSite::Sensors::init_dht_sensor() {
@@ -202,16 +235,16 @@ void ESParaSite::Sensors::init_dht_sensor() {
     exists_resource.dhtDetected = 1;
     break;
   case DHT12_ERROR_CHECKSUM:
-    Serial.print(F("Checksum error,\t"));
+    Serial.print(F("DHT12 Checksum error,\t"));
     break;
   case DHT12_ERROR_CONNECT:
-    Serial.print(F("Connect error,\t"));
+    Serial.print(F("DHT12 Connect error,\t"));
     break;
   case DHT12_MISSING_BYTES:
-    Serial.print(F("Missing bytes,\t"));
+    Serial.print(F("DHT12 Missing bytes,\t"));
     break;
   default:
-    Serial.print(F("Unknown error,\t"));
+    Serial.print(F("DHT12 Unknown error,\t"));
     break;
   }
 }
@@ -220,8 +253,8 @@ void ESParaSite::Sensors::init_si_sensor() {
   if (!uv.begin()) {
     Serial.print(F("SI1145 Initialization Failure!"));
   } else {
-    exists_resource.siDetected = 1;
     Serial.print(F("OK!"));
+    exists_resource.siDetected = 1;
   }
 }
 
@@ -229,8 +262,8 @@ void ESParaSite::Sensors::init_mlx_sensor() {
   if (!mlx.begin()) {
     Serial.print(F("MLX90614 Initialization Failure"));
   } else {
-    exists_resource.mlxDetected = 1;
     Serial.print(F("OK!"));
+    exists_resource.mlxDetected = 1;
   }
 }
 
@@ -258,10 +291,10 @@ void ESParaSite::Sensors::init_bme_sensor() {
 void ESParaSite::Sensors::init_rtc_clock() {
   rtc.Begin();
 
-  Serial.println("");
+  Serial.println();
   RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
   Util::printDateTime(compiled);
-  Serial.println("");
+  Serial.println();
 
   if (!rtc.IsDateTimeValid()) {
     if (rtc.LastError() != 0) {
@@ -292,20 +325,20 @@ void ESParaSite::Sensors::init_rtc_clock() {
 
   RtcDateTime now = rtc.GetDateTime();
   if (now < compiled) {
-    Serial.println("RTC is older than compile time!  (Updating DateTime)");
+    Serial.println(F("RTC is older than compile time!  (Updating DateTime)"));
     rtc.SetDateTime(compiled);
   } else if (now > compiled) {
-    Serial.println("RTC is newer than compile time. (this is expected)");
+    Serial.println(F("RTC is newer than compile time. (this is expected)"));
   } else if (now == compiled) {
     Serial.println(
-        "RTC is the same as compile time! (not expected but all is fine)");
+        F("RTC is the same as compile time! (not expected but all is fine)"));
   }
 
-  Serial.println("");
+  Serial.println();
 
   status_resource.rtc_current_second = (rtc.GetDateTime() + 946684800);
 
-  Serial.println("");
+  Serial.println();
   // never assume the Rtc was last configured by you, so
   // just clear them to your needed state
   rtc.Enable32kHzPin(false);
@@ -313,12 +346,10 @@ void ESParaSite::Sensors::init_rtc_clock() {
 }
 
 void ESParaSite::Sensors::read_dht_sensor(bool in_seq_read) {
-  Serial.println("==========Print Chamber==========");
-
   // First dht measurement is stale, so if in_seq_read is 'false' (when read is
-  // out-of-sequence, in other words not called by a timer in the loop),
-  // we read, wait 2 seconds, then read again. Normal in loop reads do not need
-  // this, so we send a 'true' to skip the additional delay step.
+  // out-of-sequence or, in other words, not called by a timer in the loop() ),
+  // we read, wait 2 seconds, then read again. Normal in sequence reads do not
+  // need this, so we send a 'true' to skip the additional delay.
   if (exists_resource.dhtDetected == 1) {
     int status = dht.read();
 
@@ -327,229 +358,247 @@ void ESParaSite::Sensors::read_dht_sensor(bool in_seq_read) {
       case DHT12_OK:
         break;
       case DHT12_ERROR_CHECKSUM:
-        Serial.print("Checksum error,\t");
+        Serial.print(F("Checksum error,\t"));
         break;
       case DHT12_ERROR_CONNECT:
-        Serial.print("Connect error,\t");
+        Serial.print(F("Connect error,\t"));
         break;
       case DHT12_MISSING_BYTES:
-        Serial.print("Missing bytes,\t");
+        Serial.print(F("Missing bytes,\t"));
         break;
       default:
-        Serial.print("Unknown error,\t");
+        Serial.print(F("Unknown error,\t"));
         break;
       }
-
       delay(2000);
       status = dht.read();
     }
 
     switch (status) {
     case DHT12_OK:
-      Serial.print(F("Temperature:\t\t\t"));
       chamber_resource.dht_temp_c = dht.temperature;
-      Serial.print(chamber_resource.dht_temp_c, 1);
-      Serial.print("°C / ");
-      Serial.print(Util::convertCtoF(chamber_resource.dht_temp_c));
-      Serial.println("°F");
-
-      Serial.print(F("Humidity:\t\t\t"));
       chamber_resource.dht_humidity = dht.humidity;
-      Serial.print(chamber_resource.dht_humidity, 1);
-      Serial.println("%");
-
-      Serial.print(F("Dew Point:\t\t\t"));
       chamber_resource.dht_dewpoint = (Util::dewPoint(
           chamber_resource.dht_temp_c, chamber_resource.dht_humidity));
-      Serial.print(static_cast<int>(chamber_resource.dht_dewpoint));
-      Serial.print("°C / ");
-      Serial.print(Util::convertCtoF(chamber_resource.dht_dewpoint));
-      Serial.println("°F");
+
+      if (dump_sensor_data == 1) {
+        Serial.println(F("==========Print Chamber=========="));
+        Serial.print(F("Temperature:\t\t\t"));
+        Serial.print(chamber_resource.dht_temp_c, 1);
+        Serial.print("°C / ");
+        Serial.print(Util::convertCtoF(chamber_resource.dht_temp_c));
+        Serial.println("°F");
+        Serial.print(F("Humidity:\t\t\t"));
+        Serial.print(chamber_resource.dht_humidity, 1);
+        Serial.println("%");
+        Serial.print(F("Dew Point:\t\t\t"));
+        Serial.print(static_cast<int>(chamber_resource.dht_dewpoint));
+        Serial.print("°C / ");
+        Serial.print(Util::convertCtoF(chamber_resource.dht_dewpoint));
+        Serial.println("°F");
+      }
       break;
     case DHT12_ERROR_CHECKSUM:
-      Serial.print("Checksum error,\t");
+      Serial.print(F("DHT12 Checksum error,\t"));
       break;
     case DHT12_ERROR_CONNECT:
-      Serial.print("Connect error,\t");
+      Serial.print(F("DHT12 Connect error,\t"));
       break;
     case DHT12_MISSING_BYTES:
-      Serial.print("Missing bytes,\t");
+      Serial.print(F("DHT12 Missing bytes,\t"));
       break;
     default:
-      Serial.print("Unknown error,\t");
+      Serial.print(F("DHT12 Unknown error,\t"));
       break;
     }
+
   } else {
-    Serial.print("Error: DHT12 Sensor not found");
     chamber_resource.dht_temp_c = 0;
     chamber_resource.dht_humidity = 0;
     chamber_resource.dht_dewpoint = 0;
+
+    if (dump_sensor_data == 1) {
+      Serial.print(F("DHT12 Sensor not found"));
+    }
   }
 }
 
 void ESParaSite::Sensors::read_si_sensor() {
-  Serial.println(F("==========LED Light Sensor=========="));
+  if (exists_resource.siDetected == 1) {
+    optics_resource.si_uvindex = uv.readUV();
+    optics_resource.si_uvindex /= 100.0;
+    optics_resource.si_visible = uv.readVisible();
+    optics_resource.si_infrared = uv.readIR();
 
-  optics_resource.si_uvindex = uv.readUV();
-  optics_resource.si_uvindex /= 100.0;
-  Serial.print("UV Index:\t\t\t");
-  Serial.println(static_cast<int>(optics_resource.si_uvindex));
+    if (dump_sensor_data == 1) {
+      Serial.println(F("==========LED Light Sensor=========="));
+      Serial.print(F("UV Index:\t\t\t"));
+      Serial.println(static_cast<int>(optics_resource.si_uvindex));
+      Serial.print(F("Visible:\t\t\t"));
+      Serial.println(optics_resource.si_visible);
+      Serial.print(F("Infrared:\t\t\t"));
+      Serial.println(optics_resource.si_infrared);
+    }
 
-  optics_resource.si_visible = uv.readVisible();
-  Serial.print("Visible:\t\t\t");
-  Serial.println(optics_resource.si_visible);
+  } else {
+    optics_resource.si_uvindex = 0;
+    optics_resource.si_visible = 0;
+    optics_resource.si_infrared = 0;
 
-  optics_resource.si_infrared = uv.readIR();
-  Serial.print("Infrared:\t\t\t");
-  Serial.println(optics_resource.si_infrared);
+    if (dump_sensor_data == 1) {
+      Serial.print(F("SI1145 Sensor not found"));
+    }
+  }
 }
 
 void ESParaSite::Sensors::read_mlx_sensor() {
-  Serial.println("==========LCD Temp Sensor==========");
+  if (exists_resource.mlxDetected == 1) {
+    optics_resource.mlx_amb_temp_c = mlx.readAmbientTempC();
+    optics_resource.mlx_obj_temp_c = mlx.readObjectTempC();
 
-  optics_resource.mlx_amb_temp_c = mlx.readAmbientTempC();
-  Serial.print("Ambient:\t\t\t");
-  Serial.print(optics_resource.mlx_amb_temp_c);
-  Serial.print("°C / ");
-  Serial.print(mlx.readAmbientTempF());
-  Serial.println("°F");
+    if (dump_sensor_data == 1) {
+      Serial.println("==========LCD Temp Sensor==========");
+      Serial.print("Ambient:\t\t\t");
+      Serial.print(optics_resource.mlx_amb_temp_c);
+      Serial.print("°C / ");
+      Serial.print(mlx.readAmbientTempF());
+      Serial.println("°F");
+      Serial.print("LCD Panel:\t\t\t");
+      Serial.print(optics_resource.mlx_obj_temp_c);
+      Serial.print("°C / ");
+      Serial.print(mlx.readObjectTempF());
+      Serial.println("°F");
+    }
 
-  optics_resource.mlx_obj_temp_c = mlx.readObjectTempC();
-  Serial.print("LCD Panel:\t\t\t");
-  Serial.print(optics_resource.mlx_obj_temp_c);
-  Serial.print("°C / ");
-  Serial.print(mlx.readObjectTempF());
-  Serial.println("°F");
+  } else {
+    optics_resource.mlx_amb_temp_c = 0;
+    optics_resource.mlx_obj_temp_c = 0;
+
+    if (dump_sensor_data == 1) {
+      Serial.print(F("MLX90614 Sensor not found"));
+    }
+  }
 }
 
 void ESParaSite::Sensors::read_bme_sensor() {
-  Serial.println("==========Ambient Conditions==========");
-
-  if (exists_resource.siDetected == 1) {
+  if (exists_resource.bmeDetected == 1) {
     ambient_resource.bme_temp_c = bme.readTempC();
-    Serial.print(F("Temperature:\t\t\t"));
-    Serial.print(ambient_resource.bme_temp_c);
-    Serial.print("°C / ");
-    Serial.print(bme.readTempF());
-    Serial.println("°F");
-
     ambient_resource.bme_humidity = bme.readHumidity();
-    Serial.print(F("Relative Humidity:\t\t"));
-    Serial.print(ambient_resource.bme_humidity);
-    Serial.println("%");
-
     ambient_resource.bme_barometer = bme.readPressure();
-    Serial.print(F("Barometric Pressure:\t\t"));
-    Serial.print(ambient_resource.bme_barometer);
-    Serial.println(" hPa");
-
     ambient_resource.bme_altitude = bme.readAltitudeMeter();
-    Serial.print(F("Altitude:\t\t\t"));
-    Serial.print(ambient_resource.bme_altitude);
-    Serial.print("m / ");
-    Serial.print(bme.readAltitudeFeet());
-    Serial.println("ft");
+
+    if (dump_sensor_data == 1) {
+      Serial.println("==========Ambient Conditions==========");
+      Serial.print(F("Temperature:\t\t\t"));
+      Serial.print(ambient_resource.bme_temp_c);
+      Serial.print("°C / ");
+      Serial.print(bme.readTempF());
+      Serial.println("°F");
+      Serial.print(F("Relative Humidity:\t\t"));
+      Serial.print(ambient_resource.bme_humidity);
+      Serial.println("%");
+      Serial.print(F("Barometric Pressure:\t\t"));
+      Serial.print(ambient_resource.bme_barometer);
+      Serial.println(" hPa");
+      Serial.print(F("Altitude:\t\t\t"));
+      Serial.print(ambient_resource.bme_altitude);
+      Serial.print("m / ");
+      Serial.print(bme.readAltitudeFeet());
+      Serial.println("ft");
+    }
+
   } else {
     ambient_resource.bme_temp_c = 0;
     ambient_resource.bme_humidity = 0;
     ambient_resource.bme_barometer = 0;
     ambient_resource.bme_altitude = 0;
+
+    if (dump_sensor_data == 1) {
+      Serial.print(F("BME280 Sensor not found"));
+    }
   }
 }
 
 void ESParaSite::Sensors::read_rtc_data() {
-  Serial.println("==========Real Time Clock==========");
+  ESParaSite::Sensors::check_rtc_status();
+  RtcDateTime now = rtc.GetDateTime();
+  // Epoch64 Conversion
+  status_resource.rtc_current_second = (rtc.GetDateTime() + 946684800);
+
+  if (dump_sensor_data == 1) {
+    Serial.println("==========Real Time Clock==========");
+    Util::printDateTime(now);
+    Serial.println();
+    Serial.print("Epoch64:\t\t\t");
+    Serial.println(status_resource.rtc_current_second);
+  }
+  ESParaSite::Sensors::read_rtc_temp();
+}
+
+void ESParaSite::Sensors::check_rtc_status() {
   if (!rtc.IsDateTimeValid()) {
     if (rtc.LastError() != 0) {
       // we have a communications error
       // see https://www.arduino.cc/en/Reference/WireEndTransmission for
       // what the number means
-      Serial.print("RTC communications error = ");
+      Serial.print(F("RTC communications error = "));
       Serial.println(rtc.LastError());
+      Serial.println(F("RTC not responding...Restarting"));
+      ESP.reset();
     } else {
       // Common Cuases:
-      //  1) the battery on the device is low or even missing and the power line
-      //  was disconnected
-      Serial.println("RTC lost confidence in the DateTime!");
+      //  1) the battery on the device is low or even missing and the power
+      //  line was disconnected
+      Serial.println(F("RTC lost confidence in the DateTime!"));
     }
   }
-
-  RtcDateTime now = rtc.GetDateTime();
-  Util::printDateTime(now);
-  Serial.println();
-
-  // Epoch64 Conversion
-  status_resource.rtc_current_second = (rtc.GetDateTime() + 946684800);
-  Serial.print("Epoch64:\t\t\t");
-  Serial.println(status_resource.rtc_current_second);
-
-  //
-  Serial.print(F("Case Temperature:\t\t"));
-  RtcTemperature temp = (rtc.GetTemperature());
-  enclosure_resource.case_temp = (temp.AsFloatDegC());
-  temp.Print(Serial);
-  Serial.print("°C / ");
-  Serial.print(Util::convertCtoF(enclosure_resource.case_temp));
-  Serial.println("°F");
 }
 
-void ESParaSite::Sensors::read_rtc_temp() {
-  Serial.println("==========Case Temperature=========");
-  if (rtc.LastError() != 0) {
-    Serial.print("RTC communications error = ");
-    Serial.println(rtc.LastError());
-    enclosure_resource.case_temp = (0);
-  } else {
+  void ESParaSite::Sensors::read_rtc_temp() {
     RtcTemperature temp = (rtc.GetTemperature());
-    Serial.print(F("Temperature:\t\t\t"));
     enclosure_resource.case_temp = (temp.AsFloatDegC());
-    temp.Print(Serial);
-    Serial.print("°C / ");
-    Serial.print(Util::convertCtoF(enclosure_resource.case_temp));
-    Serial.println("°F");
-  }
-}
 
-time_t ESParaSite::Sensors::read_rtc_epoch() {
-  if (!rtc.IsDateTimeValid()) {
-    if (rtc.LastError() != 0) {
-      Serial.print("RTC communications error = ");
-      Serial.println(rtc.LastError());
-    } else {
-      Serial.println("RTC lost confidence in the DateTime!");
+    if (dump_sensor_data == 1) {
+      Serial.println("==========Case Temperature=========");
+      Serial.print(F("Case Temperature:\t\t"));
+      temp.Print(Serial);
+      Serial.print("°C / ");
+      Serial.print(Util::convertCtoF(enclosure_resource.case_temp));
+      Serial.println("°F");
     }
   }
 
-  time_t rtc_return = (rtc.GetDateTime() + 946684800);
-
-  return rtc_return;
-}
-
-// This function provides us a handy way to ping I2C addresses.
-
-int ESParaSite::Sensors::ping_sensor(uint16_t address) {
-  byte error;
-  Wire.beginTransmission(address);
-  error = Wire.endTransmission();
-
-  if (error == 0) {
-    Serial.print("I2C device found at address 0x");
-    if (address < 16)
-      Serial.print("0");
-    Serial.print(address, HEX);
-    Serial.print("\t\t");
-  } else if (error == 2) {
-    Serial.print("No device (Ping recieved NACK) at address 0x");
-    if (address < 16)
-      Serial.print("0");
-    Serial.print(address, HEX);
-    Serial.print("\t\t");
-  } else if (error == 4) {
-    Serial.print("Unknown error at address 0x");
-    if (address < 16)
-      Serial.print("0");
-    Serial.print(address, HEX);
-    Serial.print("\t\t");
+  time_t ESParaSite::Sensors::read_rtc_epoch() {
+    ESParaSite::Sensors::check_rtc_status();
+    time_t rtc_return = (rtc.GetDateTime() + 946684800);
+    return rtc_return;
   }
-  return error;
-}
+
+
+  int ESParaSite::Sensors::ping_sensor(uint16_t address) {
+    // This function provides us a handy way to ping I2C addresses.
+    byte error;
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+
+    if (error == 0) {
+      Serial.print(F("I2C device found at address 0x"));
+      if (address < 16)
+        Serial.print(F("0"));
+      Serial.print(address, HEX);
+      Serial.print(F("\t\t"));
+    } else if (error == 2) {
+      Serial.print(F("No device (Ping recieved NACK) at address 0x"));
+      if (address < 16)
+        Serial.print(F("0"));
+      Serial.print(address, HEX);
+      Serial.print(F("\t\t"));
+    } else if (error == 4) {
+      Serial.print(F("Unknown error at address 0x"));
+      if (address < 16)
+        Serial.print(F("0"));
+      Serial.print(address, HEX);
+      Serial.print(F("\t\t"));
+    }
+    return error;
+  }
