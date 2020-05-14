@@ -7,39 +7,66 @@
   	Please see /LIBRARIES for necessary libraries
   	Please see /VERSION for Hstory
 	
-	All Derived Content is subject to the most restrictive licence of it's source.
+	All Derived Content is subject to the most restrictive licence of it's 
+	source.
 	
-	All Original content is free and unencumbered software released into the public domain.
+	All Original content is free and unencumbered software released into the 
+	public domain.
 	
-	The Author(s) are extremely grateful for the amazing open source communities that work to support all of the sensors, microcontrollers, web standards, etc.
+	The Author(s) are extremely grateful for the amazing open source 
+	communities that work to support all of the sensors, microcontrollers, 
+	web standards, etc.
 	
 */
 
-//This project contains derivative code and libraries from the following projects: (With much gratitude)
+//This project contains derivative code and libraries from the following 
+projects: (With much gratitude)
 
 
-//ESP8266 Community
+//ESP8266 Arduino Community
 // https://github.com/esp8266
 
 /*
- ESP8266WiFi.h - esp8266 Wifi support.
- Based on WiFi.h from Arduino WiFi shield library.
- Copyright (c) 2011-2014 Arduino.  All right reserved.
- Modified by Ivan Grokhotkov, December 2014
+ https://github.com/esp8266/Arduino/blob/master/README.md
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
+Arduino IDE is developed and maintained by the Arduino team. The IDE is 
+licensed under GPL.
 
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
+ESP8266 core includes an xtensa gcc toolchain, which is also under GPL.
 
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+Esptool.py was initially created by Fredrik Ahlberg (@themadinventor, 
+@kongo), and is currently maintained by Angus Gratton (@projectgus) under 
+GPL 2.0 license.
+
+Espressif SDK included in this build is under Espressif MIT License.
+
+ESP8266 core files are licensed under LGPL.
+
+SPI Flash File System (SPIFFS) written by Peter Andersson is used in this 
+project. It is distributed under the MIT license.
+
+umm_malloc memory management library written by Ralph Hempel is used in 
+this project. It is distributed under the MIT license.
+
+SoftwareSerial library and examples written by Peter Lerup. Distributed 
+under LGPL 2.1.
+
+axTLS library written by Cameron Rich, built from 
+https://github.com/igrr/axtls-8266, is used in this project. It is 
+distributed under BSD license.
+
+BearSSL library written by Thomas Pornin, built from 
+https://github.com/earlephilhower/bearssl-esp8266, is used in this project. 
+It is distributed under the MIT License.
+
+LittleFS library written by ARM Limited and released under the BSD 3-clause 
+license.
+
+uzlib library written and (c) 2014-2018 Paul Sokolovsky, licensed under the 
+ZLib license (https://www.zlib.net/zlib_license.html). uzlib is based on: 
+tinf library by Joergen Ibsen (Deflate decompression); Deflate Static Huffman 
+tree routines by Simon Tatham; LZ77 compressor by Paul Sokolovsky; with library 
+integrated and maintained by Paul Sokolovsky.
  */
 
  
@@ -76,20 +103,12 @@
  */
  
  
-//Arduino JSON
-//https://github.com/bblanchon/ArduinoJson
- 
-// ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2019
-// MIT License
- 
- 
 //Adafruit
 //https://github.com/adafruit
 
-//Adafruit Sensor
-//Adafruit SI1145
-//Adafruit MLX90614
+//Adafruit MLX90614 Library
+//Adafruit SI1145 Library
+//Adafruit Unified Sensor
       
 /*
 * Copyright (C) 2008 The Android Open Source Project
@@ -107,10 +126,16 @@
 * limitations under the License.
 */
  
+
+//Arduino JSON
+//https://github.com/bblanchon/ArduinoJson
+ 
+// ArduinoJson - arduinojson.org
+// Copyright Benoit Blanchon 2014-2019
+// MIT License
  
  
-/*
-  DHTServer - ESP8266 Webserver with a DHT sensor as an input
+/* DHTServer - ESP8266 Webserver with a DHT sensor as an input
 https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver?view=all
    Based on ESP8266Webserver, DHTexample, and BlinkWithoutDelay (thank you)
 
@@ -118,50 +143,70 @@ https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver?view=all
 */  
  
   
-/*
- Arduino library for the DHT11, DHT12, DHT22, DHT33, DHT44 and clone temperature and humidity sensors
-  https://github.com/dplasa/dht
+/* DHT12 by Rob Tillaart 0.1.2
+I2C Library for DHT12
+https://github.com/RobTillaart/Arduino
+MIT License
+Copyright (c) 2010-2020 Rob Tillaart
+
+Permission is hereby granted, free of charge, to any person obtaining a copy 
+of this software and associated documentation files (the "Software"), to deal 
+in the Software without restriction, including without limitation the rights 
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included 
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
  
- * dht.h
- *
- * Version 0.52
- *
- * DHTxx Temperature and humidity sensor library for Arduino.
- *
- * See http://playground.arduino.cc/main/DHT11Lib 
- * See http://playground.arduino.cc/main/DHTLib 
- *
- * License:   GPL v3 (http://www.gnu.org/licenses/gpl.html)
- * Datasheet: http://www.micro4you.com/files/sensor/DHT11.pdf
- *
- * Modification History:
- *   - George Hadjikyriacou                     - Version 0.1 (??)
- *   - SimKard                                  - Version 0.2 (24/11/2010)
- *   - Rob Tillaart                             - Version 0.3 (28/03/2011)
- *       * Added comments
- *       * Removed all non-DHT11 specific code
- *       * Added References
- *   - Rob Tillaart                             - Version 0.4 (17/03/2012)
- *       * Added Arduino 1.0 support
- *   - Rob Tillaart                             - Version 0.4.1 (19/05/2012)
- *       * Added error codes
- *   - Andy Dalton                              - Version 0.5 (13/09/2013)
- *       * Replaced magic numbers with named constants
- *       * Factored out repeated code into a helper method.
- *       * Made pin a parameter to the constructor instead of a parameter
- *         to read()
- *       * Changed the error codes to an enumeration
- *       * Update the temp/humidity only if the checksum is correct
- *       * Added more comments
- *   - Daniel Plasa                             - Version 0.52 (13/09/2016)
- *      * Merged in a dew point function
- *      * Merged in  code from DHTlib for DHT22,33,44 ...
- *      * Merged in code from https://github.com/Bobadas/DHT12_library_Arduino
- *        for DHT12 (I2C communication) support
 */
 
-/* ESP8266 Connect To WiFi with web captive portal to capture credentials 
-https://github.com/kentaylor/WiFiManager/
+
+/*ESP32-targz
+https://github.com/tobozo/ESP32-targz/blob/esp8266/LICENSE
+Since it includes modified versions of third party libraries, this project has multiple licenses.
+
+TinyUntar: GPL (see https://github.com/tobozo/ESP32-targz/blob/master/src/TinyUntar/LICENSE)
+uzlib: zlib (see https://github.com/tobozo/ESP32-targz/blob/master/src/uzlib/LICENSE)
+
+This project:
+
+MIT License
+
+Copyright (c) 2020 tobozo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
+/* WifiManager by tzapu 0.15.0
+ESP8266 WiFi Connection manager with fallback web configuration portal
+https://github.com/tzapu/WiFiManager
+
 The MIT License (MIT)
 
 Copyright (c) 2015 tzapu
