@@ -20,30 +20,59 @@
 */
 
 /*
+v0.8 - Heterophyiasis
+	- Separated HTTP routines into Core and Handler files. This will make 
+		code easier to scale.
+	- Implemented ESP32-Targz as a hardcoded library.
+		- This will allow us to upload and unarchive .gz, .tar.gz and .tar 
+			files
+		- gunzip is extremely memory intensive and may not be supported 
+			long term
+		- the main point of adding this is to be able to upload a website
+			"package" so the web GUI can be uploaded and upgraded 
+			separately from the core code.
+
+
 v0.7 - Seventh Release - Giardiasis 2020-05-13
-	- Implemented LittleFS for /config.json to replace deprecated SPIFFS. This will require a new config file to be written. Thus a new run of the Config Portal.
-		- This is destructive to any exsisting SPIFFS data, but since we only use it for the config.json currently, it will simply force you back into the Config Portal
+	- Implemented LittleFS for /config.json to replace deprecated SPIFFS. 
+		This will require a new config file to be written. Thus a new run 
+			of the Config Portal.
+		- This is destructive to any exsisting SPIFFS data, but since we 
+			only use it for the config.json currently, it will simply force 
+		  	you back into the Config Portal
 	- Cleaned up some code in ESParaSite_Sensors.cpp
-		- reduced serial verbosity, we no longer constantly dump sensor data to serial, except when in DEBUG_L2. We normally only do a sensor dump upon EEPROM Write.
-		- Cleaned up and moved some RTC tasks to other functions to limit redundant code.  
-		- Continued moving serial.print() to serial.print(F()) to save on RAM. 
+		- reduced serial verbosity, we no longer constantly dump sensor 
+		  	data to serial, except when in DEBUG_L2. We normally only do a 
+		  	sensor dump upon EEPROM Write.
+		- Cleaned up and moved some RTC tasks to other functions to limit 
+		  	redundant code.  
+		- Continued moving serial.print() to serial.print(F()) to save on 
+			RAM. 
 
 v0.6 - Sixth Release - Fascioliasis 2020-05-11
-	- Fixed a bug in ESParaSite_Eeprom.cpp where we issued a return prior to setting a variable in 2 places.
+	- Fixed a bug in ESParaSite_Eeprom.cpp where we issued a return prior 
+		to setting a variable in 2 places.
 	- Added for() loop to scan all 8 I2C addresses of an AT24Cx EEPROM
-	- Added Magic number warning comments in ESParaSite_Eeprom.cpp for the functions that assume an eeprom layout (we will go back and fix that IF a different chip becomes common)
+	- Added Magic number warning comments in ESParaSite_Eeprom.cpp for the 
+		functions that assume an eeprom layout (we will go back and fix 
+		that IF a different chip becomes common)
 	- cppcheck/cpplint work to clean up code
-		- 120 char max lines (I had 80 columns in 1982, lets move on, folks /me ducks)
-		- replaced less secure string (strcat, sprintf, etc) functions with 'snprintf' (Security/Modern Semantics)
+		- 120 char max lines (I had 80 columns in 1982, lets move on, 
+			folks /me ducks) (Deprecated)
+		- replaced less secure string (strcat, sprintf, etc) functions 
+			with 'snprintf' (Security/Modern Semantics)
 		- reduced scope of a number of variables.
 		- removed a couple of extraneous variables
 		- changed to modern c++ variable casting (const_cast, static_cast)
 		- added newline to end of several files
 		- Changed header guard syntax to "INCLUDE_ESPARASITE_FILENAME_H_"
-	XXXX REMOVED - Improved web services to allow service of files and gzipped files.
-	- Removed all blocking delay() calls from main loop in favor of millis() based isosynchronous triggers
+		- ****REMOVED**** Improved web services to allow service of files 
+			and gzipped files.
+	- Removed all blocking delay() calls from main loop in favor of 
+		millis() based isosynchronous triggers
 	- Changed Config Portal button handling to be interrupt driven.
-	- Substantial and continuing code work to properly lay scalable foundation
+	- Substantial and continuing code work to properly lay scalable 
+		foundation
 		- 80 char max lines (I fought the tools and the tools won)
 		- Rename and standardize content across *.cpp files
 		- Implement Namespaces
@@ -52,22 +81,27 @@ v0.6 - Sixth Release - Fascioliasis 2020-05-11
 		- Standardize variable and function names 
 		- Optimized Text strings to move them out of the DATA RAM 
 	- Major stability improvements to WiFi setup portal
-		- Implemented core branch of WiFi Manager replacing previously used branch (less pretty but more stable)
+		- Implemented core branch of WiFi Manager replacing previously 
+			used branch (less pretty but more stable)
 		- Stop existing web services prior to launching config portal
 		- re-direct all fatal setup() errors to config portal
-	- Moved much of the verbose logging to Debug code. Only important boot events and sensor dumps are shown.
+	- Moved much of the verbose logging to Debug code. Only important 
+		boot events and sensor dumps are shown.
 
 v0.5 - Fifth Release - 
 	- Moved WiFi functions to their own file ESParaSite_Wifi.cpp
 		- Moved init_wifi() from ESParaSite_Core.cpp to ESParaSite_Wifi.cpp
-		- Wifi will attempt autoconnect first, then fall back to Config.json if neither works we will launch the Config Portal.
+		- Wifi will attempt autoconnect first, then fall back to Config.json 
+			if neither works we will launch the Config Portal.
 	- Added ESParaSite_FileConfig.cpp for config file functions
 		- Implemented SPIFFS for /config.json (Issue #3)
 		- Added loadConfig()
 		- Added saveConfig()
 	- Added initial config via Web Portal (Issue #2)
-		- Added ESParaSite_PortalConfig.cpp for wifiManager/config portal functions
-		- Implemented Ken Taylor's Branch of wifiManager Library for initial configuration https://github.com/kentaylor/WiFiManager
+		- Added ESParaSite_PortalConfig.cpp for wifiManager/config portal 
+			functions
+		- Implemented Ken Taylor's Branch of wifiManager Library for 
+			initial configuration https://github.com/kentaylor/WiFiManager
 		- Configuration stored in /config.json on SPIFFS.
 	- Added mDNS function
 		- Defaults to http://esparasite.local
@@ -77,33 +111,52 @@ v0.5 - Fifth Release -
 
 v0.4 - Fourth Release - Diphyllobothriasis - 2019-09-05
 	- Added support for DHT12 Sensor and AT24C32 EEPROM.
-	- ESParaSite now records the following values to EEPROM - first_on_timestamp (immutable), eeprom_format_version, last_write_timestamp, lcd_screen_life, led_life, fep_life.
+	- ESParaSite now records the following values to EEPROM - 
+		first_on_timestamp (immutable), eeprom_format_version, 
+		last_write_timestamp, lcd_screen_life, led_life, fep_life.
 		-These values can be queried http://<ipaddress>/enclosure
-		-(not yet implemented) lcd_screen_life, led_life, fep_life values will be resettable via the REST interface.
-	- EEPROM error handling and wear levelling.  This will allow us to log 8 separate 32-bit values twice each minute for over 13 years.
-	- Changes to DHT12 Sensor, DS3231 RTC and AT4C32 EEPROM Libraries.  I am happy with the capabilites and performance of these libraries.
-	- Lots of refactoring to make code more modular. This will make adding support for other sensors, RTCs and EEPROM chips much easier in the future.
-	- Refactored initialization routines to standardize call to init routine for a given sensor and abstract the various routines created by different libraries and authors.
+		-(not yet implemented) lcd_screen_life, led_life, fep_life values 
+			will be resettable via the REST interface.
+	- EEPROM error handling and wear levelling.  This will allow us to log 
+		8 separate 32-bit values twice each minute for over 13 years.
+	- Changes to DHT12 Sensor, DS3231 RTC and AT4C32 EEPROM Libraries.  I 
+		am happy with the capabilites and performance of these libraries.
+	- Lots of refactoring to make code more modular. This will make adding 
+		support for other sensors, RTCs and EEPROM chips much easier in the 
+		future.
+	- Refactored initialization routines to standardize call to init 
+		routine for a given sensor and abstract the various routines 
+		created by different libraries and authors.
 	- Added error handling to many sensor routines.
 
 
 v0.3 - Third Release - Crabs - 2019-04-07
 	- Removed DHT12 Support, temporarily, while I find a better library.
-	- Migrated to Platform.IO for substantially better development experience.
-		- Required refactoring code to make it fully C++ complaint. (I'm a Real Boy!)
+	- Migrated to Platform.IO for substantially better development 
+		experience.
+		- Required refactoring code to make it fully C++ complaint. 
+			(I'm a Real Boy!)
 
 
 v0.2 - Second Release - Bed Bugs - 2019-04-07
-	- Adds support for the BME280 Sensor (For Ambient Temperature, Temperature, Humidity and Altitude.)
-	- Nearly all code has been refactored! (I just love saying that) Since we are relying on 3rd party open source libraries, 
-		each one is a bit different in how it behaves. Refactoring has prioritized standardization across the main functions 
-		and attempted to limit snowflakes to the functions that talk to the various sensor libraries.
-	- HTTP server re-created as RESTful api with JSON returns. (Currently GET only)
+	- Adds support for the BME280 Sensor (For Ambient Temperature, 
+		Temperature, Humidity and Altitude.)
+	- Nearly all code has been refactored! (I just love saying that) Since 
+		we are relying on 3rd party open source libraries, each one is a 
+		bit different in how it behaves. Refactoring has prioritized 
+		standardization across the main functions and attempted to limit 
+		snowflakes to the functions that talk to the various sensor 
+		libraries.
+	- HTTP server re-created as RESTful api with JSON returns. (Currently
+		GET only)
 	- Sensor data has been organized into 4 key groupings or "classes" 
-		- Ambient - The room an environment in which the printer lives (Temp, Humidity, Barometric Pressure, Altitude)
+		- Ambient - The room an environment in which the printer lives 
+			(Temp, Humidity, Barometric Pressure, Altitude)
 		- Chamber - The printing chamber itself. (Temp, Humidity, Dewpoint)
-		- Optics - The LCD Screen and UV LED (UV, Visible light, IR light, LED Temp and LCD Temp)
-		- Enclosure - The base of the printer that contains the MainBoard and Optics (Temperature)
+		- Optics - The LCD Screen and UV LED (UV, Visible light, IR light, 
+			LED Temp and LCD Temp)
+		- Enclosure - The base of the printer that contains the MainBoard 
+			and Optics (Temperature)
 		- All classes have a timestamp as part of the return value.	
 
 
@@ -120,8 +173,10 @@ v0.1 - Initial release! - Amebiasis - 2019-04-03
 			- If time not set, sets time to Compile Time
 			- Reads Timestamp
 		- Writes all sensor data to Serial port
-		- DHT12 Temperature and Humidity are available by querying http://<ipaddress>/chamberTemp and /chamberHumidity
-		- SI1145 UV index is available by querying http://<ipaddress>/uvledStatus
+		- DHT12 Temperature and Humidity are available by querying 
+			http://<ipaddress>/chamberTemp and /chamberHumidity
+		- SI1145 UV index is available by querying 
+			http://<ipaddress>/uvledStatus
 	-Lots left to do!
 */
 
