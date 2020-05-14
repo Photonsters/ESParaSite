@@ -1,4 +1,4 @@
-// ESParaSite_Sensors.cpp
+// ESParaSite_SensorsCore.cpp
 
 /* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -8,10 +8,14 @@
         Please see /VERSION for Hstory
 
         All Derived Content is subject to the most restrictive licence of it's
-   source.
+        source.
 
         All Original content is free and unencumbered software released into the
-   public domain.
+        public domain.
+
+        The Author(s) are extremely grateful for the amazing open source
+        communities that work to support all of the sensors, microcontrollers,
+        web standards, etc.
 */
 
 #include <Adafruit_MLX90614.h>
@@ -78,9 +82,6 @@ bool dump_sensor_data = 1;
 
 int bme_i2c_address;
 int eeprom_i2c_address;
-
-
-
 
 extern ESParaSite::printchamber chamber_resource;
 extern ESParaSite::optics optics_resource;
