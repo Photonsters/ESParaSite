@@ -7,9 +7,16 @@
   	Please see /LIBRARIES for necessary libraries
   	Please see /VERSION for Hstory
 	
-	All Derived Content is subject to the most restrictive licence of it's source.
+	All Derived Content is subject to the most restrictive licence of it's 
+	source.
 	
-	All Original content is free and unencumbered software released into the public domain.
+	All Original content is free and unencumbered software released into the 
+	public domain.
+	
+	The Author(s) are extremely grateful for the amazing open source 
+	communities that work to support all of the sensors, microcontrollers, 
+	web standards, etc.
+	
 */
 
 Visit https://github.com/esp8266/Arduino for instructions on setting up the ESP8266 with the Arduino IDE
@@ -35,3 +42,9 @@ https://github.com/RobTillaart/Arduino/tree/master/libraries/DHT12
 
 RobTillaart/Arduino/libraries/I2C_EEPROM/
 https://github.com/RobTillaart/Arduino/tree/master/libraries/I2C_EEPROM
+
+
+***Manually Installed and included:
+
+tobozo/ESP32-targz
+https://github.com/tobozo/ESP32-targz/blob/esp8266/LICENSE

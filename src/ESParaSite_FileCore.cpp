@@ -8,11 +8,16 @@
         Please see /VERSION for Hstory
 
         All Derived Content is subject to the most restrictive licence of it's
-   source.
+        source.
 
         All Original content is free and unencumbered software released into the
-   public domain.
+        public domain.
+
+        The Author(s) are extremely grateful for the amazing open source
+        communities that work to support all of the sensors, microcontrollers,
+        web standards, etc.
 */
+
 // BASED ON -
 // Example: storing JSON configuration file in flash file system
 //

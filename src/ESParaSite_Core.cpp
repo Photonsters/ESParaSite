@@ -8,10 +8,14 @@
         Please see /VERSION for Hstory
 
         All Derived Content is subject to the most restrictive licence of it's
-   source.
+        source.
 
         All Original content is free and unencumbered software released into the
-   public domain.
+        public domain.
+
+        The Author(s) are extremely grateful for the amazing open source
+        communities that work to support all of the sensors, microcontrollers,
+        web standards, etc.
 */
 
 #include <Arduino.h>
@@ -26,8 +30,6 @@
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
-#include "ESParaSite_WiFiCore.h"
-
 
 // +++ Advanced Settings +++
 // VISIBLE_THRESHOLD adjusts the sensitivity of the SI1145 Sensor to Ambient
@@ -87,11 +89,10 @@ extern ESParaSite::status_data status_resource;
 
 WiFiClient Wifi;
 
-      uint16_t
-      ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
-                                        uint16_t prev_sensor_msec) {
-    if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
-        sensors_read_msec) {
+uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
+                                           uint16_t prev_sensor_msec) {
+  if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
+      sensors_read_msec) {
 
 #ifdef DEBUG_L1
     Serial.println(F("Reading the sensors"));
@@ -126,7 +127,7 @@ WiFiClient Wifi;
 
     return (prev_sensor_msec);
   }
-  }
+}
 
 uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
                                        uint16_t prev_dht_msec) {
@@ -193,13 +194,12 @@ void do_check_printing() {
 #endif
 
     is_printing_counter++;
-  } else{
+  } else {
 
 #ifdef DEBUG_L1
     Serial.println(F("Not incrementing is_printing_counter"));
     Serial.println();
 #endif
-
   }
 }
 
@@ -207,8 +207,8 @@ bool is_printing() {
   // if 50% or more of our poll intervals detect light we will set our
   // flag for the full write Interval.
   if (is_printing_counter >=
-      (static_cast<uint8_t>((EEPROM_WRITE_INTERVAL_SEC / ALL_SENSOR_POLLING_SEC) /
-                        2))) {
+      (static_cast<uint8_t>(
+          (EEPROM_WRITE_INTERVAL_SEC / ALL_SENSOR_POLLING_SEC) / 2))) {
     is_printing_counter = 0;
     rtc_eeprom_resource.screen_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
     rtc_eeprom_resource.led_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
