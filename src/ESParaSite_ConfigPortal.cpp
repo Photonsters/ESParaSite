@@ -18,14 +18,12 @@
         web standards, etc.
 */
 
-#include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
-#include <ESP8266WiFi.h> //https://github.com/esp8266/Arduino
-#include <FS.h>
-
-// needed for library
+#include <ArduinoJson.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h> //https://github.com/kentaylor/WiFiManager
+#include <ESP8266WiFi.h>
+#include <FS.h>
+#include <WiFiManager.h>
 
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
@@ -33,6 +31,7 @@
 #include "ESParaSite_FileCore.h"
 #include "ESParaSite_HttpCore.h"
 
+using namespace ESParaSite;
 
 extern ESParaSite::config_data config_resource;
 
@@ -40,16 +39,16 @@ extern ESParaSite::config_data config_resource;
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
 const int PIN_LED = 2;
 
-
 void ESParaSite::ConfigPortal::do_config_portal() {
+
   Serial.println(F("Configuration portal requested"));
   Serial.println();
 
   // Stop existing HTTP server. This is required in order to start a new HTTP
   // server for the captive portal.
-  ESParaSite::HttpCore::stop_http_server();
+  ESParaSite::HttpCore::stopHttpServer();
 
-  // We will give our Access Point a unique name based on the last 3 
+  // We will give our Access Point a unique name based on the last 3
   uint8_t macAddr[6];
   WiFi.macAddress(macAddr);
 
@@ -122,15 +121,15 @@ void ESParaSite::ConfigPortal::do_config_portal() {
   wifiManager.addParameter(&p_hint3);
   wifiManager.addParameter(&p_mdnsName);
 
-  if (!wifiManager.startConfigPortal(ap_name,"thisbugsme")) {
+  if (!wifiManager.startConfigPortal(ap_name, "thisbugsme")) {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
     // reset and try again, or maybe put it to deep sleep
     ESP.restart();
     delay(5000);
   } else {
-  // if you get here you have connected to the WiFi
-  Serial.println(F("Connected..."));
+    // if you get here you have connected to the WiFi
+    Serial.println(F("Connected..."));
   }
 
   // Getting posted form values and overriding local variables parameters
@@ -149,7 +148,7 @@ void ESParaSite::ConfigPortal::do_config_portal() {
              p_mdnsName.getValue());
 
     Serial.println(F("mDNS Enabled"));
-    }
+  }
 
   if (!(ESParaSite::FileCore::saveConfig())) {
     Serial.println(F("Failed to save config"));

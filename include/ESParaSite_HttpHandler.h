@@ -1,4 +1,4 @@
-//ESParaSite_HttpHandler.h
+// ESParaSite_HttpHandler.h
 
 /* ESParasite Data Logger v0.6
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -27,13 +27,22 @@ class http_rest_server;
 namespace ESParaSite {
 namespace HttpHandler {
 
-void get_chamber();
-void get_optics();
-void get_ambient();
-void get_enclosure();
-void get_config();
 void handleRoot();
 void handleNotFound();
+void handleWebRequests();
+void handleResetScreen();
+void handleResetFep();
+void handleResetLed();
+void getHtmlUpload();
+void getJsonChamber();
+void getJsonOptics();
+void getJsonAmbient();
+void getJsonEnclosure();
+void getJsonConfig();
+void getResetScreen();
+void getResetFep();
+void getResetLed();
+
 }; // namespace HttpHandler
 }; // namespace ESParaSite
 

@@ -19,21 +19,23 @@
 
 */
 
+//#include <ESPAsyncWebServer.h>
+
 #ifndef INCLUDE_ESPARASITE_REST_H_
 #define INCLUDE_ESPARASITE_REST_H_
 
-class http_rest_server;
-
 namespace ESParaSite {
 namespace HttpCore {
-void config_rest_server_routing();
-void start_http_server();
-void stop_http_server();
-void serve_http_client();
 
-String getContentType(String filename);
-bool handleFileRead(String path);
-void handleFileUpload();
+void configHttpServerRouting();
+void startHttpServer();
+void stopHttpServer();
+void serveHttpClient();
+
+// void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
+//               AwsEventType type, void *arg, uint8_t *data, size_t len);
+// void cleanup_http_client();
+
 }; // namespace HttpCore
 }; // namespace ESParaSite
 
