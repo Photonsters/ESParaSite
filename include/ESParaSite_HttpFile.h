@@ -1,4 +1,4 @@
-// ESParaSite_WifiCore.h
+// ESParaSite_HttpFile.h
 
 /* ESParasite Data Logger v0.6
         Authors: Andy (DocMadmag) Eakin
@@ -19,14 +19,22 @@
 
 */
 
-#ifndef INCLUDE_ESPARASITE_WIFICORE_H_
-#define INCLUDE_ESPARASITE_WIFICORE_H_
+#include <arduino.h>
+
+#ifndef INCLUDE_ESPARASITE_HTTPFILE_H_
+#define INCLUDE_ESPARASITE_HTTPFILE_H_
+
+class http_rest_server;
 
 namespace ESParaSite {
-namespace Network {
-void do_wifi_ap();
-int do_init_wifi();
-} // namespace Network
-} // namespace ESParaSite
+namespace HttpFile {
 
-#endif // INCLUDE_ESPARASITE_WIFICORE_H_
+String getContentType(String filename);
+bool handleFileRead(String path);
+void handleFileUpload();
+bool loadFromLittleFS(String path);
+
+}; // namespace HttpFile
+}; // namespace ESParaSite
+
+#endif // INCLUDE_ESPARASITE_HTTPFILE_H_

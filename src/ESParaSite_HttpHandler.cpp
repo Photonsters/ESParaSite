@@ -18,20 +18,24 @@
         web standards, etc.
 */
 
-#include "ESP32-targz.h"
-#include "ESParaSite.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_HttpCore.h"
-#include "ESParaSite_HttpHandler.h"
 #include <ArduinoJson.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
 #include <ESP8266mDNS.h>
+
+//#include <ESPAsyncTCP.h>
+//#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-extern ESP8266WebServer http_server;
+#include "ESP32-targz.h"
+#include "ESParaSite.h"
+#include "ESParaSite_HttpCore.h"
+#include "ESParaSite_HttpFile.h"
+#include "ESParaSite_HttpHandler.h"
+
+// extern AsyncWebServer server;
+extern ESP8266WebServer server;
 
 extern ESParaSite::printchamber chamber_resource;
 extern ESParaSite::optics optics_resource;
@@ -42,24 +46,77 @@ extern ESParaSite::config_data config_resource;
 extern ESParaSite::rtc_eeprom_data rtc_eeprom_resource;
 
 void ESParaSite::HttpHandler::handleRoot() {
-  http_server.send(
-      200, "text/html",
-      "<p>Please Browse to:</p><a "
-      "href=\"/printchamber\">Printchamber</a></br><a "
-      "href=\"/optics\">Optics</a></br><a href=\"/ambient\">Ambient</a></br><a "
-      "href=\"/enclosure\">Enclosure</a></br><a href=\"/config\">Config</a>");
+  if (!ESParaSite::HttpFile::handleFileRead("/index.html")) {
+    server.send(
+        200, "text/html",
+        "<p>Please Browse to:</p><a "
+        "href=\"/printchamber\">Printchamber</a></br><a "
+        "href=\"/optics\">Optics</a></br><a "
+        "href=\"/ambient\">Ambient</a></br><a "
+        "href=\"/enclosure\">Enclosure</a></br><a href=\"/config\">Config</a>");
+  }
   // Send HTTP status 200 (Ok) and send some
   // text to the browser/client
 }
 
 void ESParaSite::HttpHandler::handleNotFound() {
-  http_server.send(
+  server.send(
       404, "text/plain",
       "404: Not found"); // Send HTTP status 404 (Not Found) when there's no
                          // handler for the URI in the request
 }
 
-void ESParaSite::HttpHandler::get_chamber() {
+void ESParaSite::HttpHandler::handleWebRequests() {
+  if (ESParaSite::HttpFile::loadFromLittleFS(server.uri()))
+    return;
+  String message = "File Not Detected\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message +=
+        " NAME:" + server.argName(i) + "\n VALUE:" + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+  Serial.println(message);
+}
+// if the client requests the upload page
+// send it if it exists
+// otherwise, respond with a basic HTML form
+void ESParaSite::HttpHandler::getHtmlUpload() {
+
+  if (!ESParaSite::HttpFile::handleFileRead("/upload.html")) {
+    server.send(200, "text/html",
+                "<form method=\"post\" enctype=\"multipart/form-data\">"
+                "<input type=\"file\" name=\"name\">"
+                "<input class=\"button\" type=\"submit\" value=\"Upload\">"
+                "</form>");
+  }
+}
+
+void ESParaSite::HttpHandler::handleResetScreen() {
+  server.send(200, "text/html", "Success!");
+  Serial.print(F("Resetting LCD Screen Counter"));
+  rtc_eeprom_resource.screen_life_seconds = 0;
+}
+
+void ESParaSite::HttpHandler::handleResetFep() {
+  server.send(200, "text/html", "Success!");
+  Serial.print(F("Resetting FEP Counter"));
+  rtc_eeprom_resource.fep_life_seconds = 0;
+}
+
+void ESParaSite::HttpHandler::handleResetLed() {
+  server.send(200, "text/html", "Success!");
+  Serial.print(F("Resetting LED Counter"));
+  rtc_eeprom_resource.led_life_seconds = 0;
+}
+
+void ESParaSite::HttpHandler::getJsonChamber() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
@@ -73,13 +130,13 @@ void ESParaSite::HttpHandler::get_chamber() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_server.send(200, "application/json", output);
+  server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
 }
 
-void ESParaSite::HttpHandler::get_optics() {
+void ESParaSite::HttpHandler::getJsonOptics() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "optics";
@@ -95,13 +152,13 @@ void ESParaSite::HttpHandler::get_optics() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_server.send(200, "application/json", output);
+  server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
 }
 
-void ESParaSite::HttpHandler::get_ambient() {
+void ESParaSite::HttpHandler::getJsonAmbient() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
@@ -116,13 +173,13 @@ void ESParaSite::HttpHandler::get_ambient() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_server.send(200, "application/json", output);
+  server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
 }
 
-void ESParaSite::HttpHandler::get_enclosure() {
+void ESParaSite::HttpHandler::getJsonEnclosure() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "enclosure";
@@ -138,13 +195,13 @@ void ESParaSite::HttpHandler::get_enclosure() {
 
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
-  http_server.send(200, "application/json", output);
+  server.send(200, "application/json", output);
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
 }
 
-void ESParaSite::HttpHandler::get_config() {
+void ESParaSite::HttpHandler::getJsonConfig() {
   StaticJsonDocument<256> doc;
   StaticJsonDocument<256> doc2;
 
@@ -165,5 +222,41 @@ void ESParaSite::HttpHandler::get_config() {
   String output = "JSON = ";
   serializeJsonPretty(doc, output);
   serializeJsonPretty(doc2, output);
-  http_server.send(200, "application/json", output);
+  server.send(200, "application/json", output);
+}
+
+void ESParaSite::HttpHandler::getResetScreen() {
+  server.send(200, "text/html",
+              "<font size=\"+3\">WARNING - This will reset the lifetime"
+              "counter of your LCD Screen to 0!!!</font><br>"
+              "<form method=\"post\">"
+              "<input type=\"submit\" name=\"name\" "
+              "value=\"Reset\">"
+              "</form>"
+              "Please do not immediately turn off your printer. This change"
+              "may take up to 30 seconds to be saved.<br>");
+}
+
+void ESParaSite::HttpHandler::getResetFep() {
+  server.send(200, "text/html",
+              "<font size=\"+3\">WARNING - This will reset the lifetime"
+              "counter of your Vat FEP to 0!!!</font><br>"
+              "<form method=\"post\">"
+              "<input type=\"submit\" name=\"name\" "
+              "value=\"Reset\">"
+              "</form>"
+              "Please do not immediately turn off your printer. This change"
+              "may take up to 30 seconds to be saved.<br>");
+}
+
+void ESParaSite::HttpHandler::getResetLed() {
+  server.send(200, "text/html",
+              "<font size=\"+3\">WARNING - This will reset the lifetime"
+              "counter of your LED Array to 0!!!</font><br>"
+              "<form method=\"post\">"
+              "<input type=\"submit\" name=\"name\" "
+              "value=\"Reset\">"
+              "</form>"
+              "Please do not immediately turn off your printer. This change"
+              "may take up to 30 seconds to be saved.<br>");
 }

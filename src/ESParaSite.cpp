@@ -19,24 +19,22 @@
 */
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
-#include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
-//#include <ESP8266WiFiMulti.h>
 #include <ESP8266mDNS.h>
+#include <ESP8266Webserver.h>
+//#include <ESPAsyncTCP.h>
+//#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
-#include <WiFiManager.h>
 
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
 #include "ESParaSite_Core.h"
+#include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
 #include "ESParaSite_HttpCore.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
-#include "ESParaSite_WiFiCore.h"
-#include "ESParaSite_DebugUtils.h"
 
 // Trigger for inititating config mode is Pin D3 and also flash button on
 // NodeMCU.  Flash button is convenient to use but if it is pressed it will
@@ -103,7 +101,8 @@ void loop(void) {
 #endif
 
   // Run the HTTP Sever
-  ESParaSite::HttpCore::serve_http_client();
+    ESParaSite::HttpCore::serveHttpClient();
+  //ESParaSite::HttpCore::cleanup_http_client();
 
 #ifdef DEBUG_L1
   Serial.println(F("refreshing cur_loop_msec"));
@@ -303,8 +302,8 @@ void setup(void) {
 #endif
 
   // Start http server
-  ESParaSite::HttpCore::config_rest_server_routing();
-  ESParaSite::HttpCore::start_http_server();
+  ESParaSite::HttpCore::configHttpServerRouting();
+  ESParaSite::HttpCore::startHttpServer();
 
   Serial.println();
   Serial.println(F("HTTP server started"));

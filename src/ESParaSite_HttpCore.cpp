@@ -18,19 +18,22 @@
         web standards, etc.
 */
 
-#include "ESParaSite_HttpCore.h"
-#include "ESP32-targz.h"
-#include "ESParaSite.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_HttpHandler.h"
 #include <ArduinoJson.h>
-#include <ESP8266WebServer.h>
+#include <ESP8266Webserver.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266mDNS.h>
+//#include <ESPAsyncTCP.h>
+//#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
+#include "ESP32-targz.h"
+#include "ESParaSite.h"
+#include "ESParaSite_DebugUtils.h"
+#include "ESParaSite_HttpCore.h"
+#include "ESParaSite_HttpFile.h"
+#include "ESParaSite_HttpHandler.h"
 
 //+++ User Settings +++
 
@@ -40,121 +43,228 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-ESP8266WebServer http_server(HTTP_REST_PORT);
+ESP8266WebServer server;
 
-extern ESParaSite::printchamber chamber_resource;
-extern ESParaSite::optics optics_resource;
-extern ESParaSite::ambient ambient_resource;
-extern ESParaSite::enclosure enclosure_resource;
-extern ESParaSite::status_data status_resource;
-extern ESParaSite::config_data config_resource;
-extern ESParaSite::rtc_eeprom_data rtc_eeprom_resource;
-
-
-File fsUploadFile; // a File object to temporarily store the received file
-
-void ESParaSite::HttpCore::config_rest_server_routing() {
-  http_server.on(
+void ESParaSite::HttpCore::configHttpServerRouting() {
+  server.on(
       "/",
       ESParaSite::HttpHandler::handleRoot); // Call the 'handleRoot' function
                                             // when a client requests URI "/"
-  http_server.onNotFound(
-      ESParaSite::HttpHandler::handleNotFound); // When a client requests an
-                                                // unknown URI (i.e. something
-                                                // other than "/"), call
-                                                // function "handleNotFound"
-  http_server.on("/printchamber", HTTP_GET,
-                 ESParaSite::HttpHandler::get_chamber);
-  http_server.on("/optics", HTTP_GET, ESParaSite::HttpHandler::get_optics);
-  http_server.on("/ambient", HTTP_GET, ESParaSite::HttpHandler::get_ambient);
-  http_server.on("/enclosure", HTTP_GET,
-                 ESParaSite::HttpHandler::get_enclosure);
-  http_server.on("/config", HTTP_GET, ESParaSite::HttpHandler::get_config);
+  server.onNotFound(
+      ESParaSite::HttpHandler::handleWebRequests); // When a client requests an
+                                                   // unknown URI (i.e.
+                                                   // something other than "/"),
+                                                   // call function
+                                                   // "handleNotFound"
+  server.on("/printchamber", HTTP_GET, ESParaSite::HttpHandler::getJsonChamber);
+  server.on("/optics", HTTP_GET, ESParaSite::HttpHandler::getJsonOptics);
+  server.on("/ambient", HTTP_GET, ESParaSite::HttpHandler::getJsonAmbient);
+  server.on("/enclosure", HTTP_GET, ESParaSite::HttpHandler::getJsonEnclosure);
+  server.on("/config", HTTP_GET, ESParaSite::HttpHandler::getJsonConfig);
+  server.on("/upload", HTTP_GET, ESParaSite::HttpHandler::getHtmlUpload);
+  server.on("/reset_screen", HTTP_GET, ESParaSite::HttpHandler::getResetScreen);
+  server.on("/reset_fep", HTTP_GET, ESParaSite::HttpHandler::getResetFep);
+  server.on("/reset_led", HTTP_GET, ESParaSite::HttpHandler::getResetLed);
   // if the client posts to the upload page
   // Send status 200 (OK) to tell the client we are ready to receive
   // Receive and save the file
-  //http_server.on("/upload", HTTP_POST,[]()
-  //{http_server.send(200);},handleFileUpload);
-  
+  server.on(
+      "/upload", HTTP_POST, []() { server.send(200); },
+      ESParaSite::HttpFile::handleFileUpload);
+  server.on(
+      "/reset_screen", HTTP_POST, ESParaSite::HttpHandler::handleResetScreen);
+  server.on("/reset_fep", HTTP_POST, ESParaSite::HttpHandler::handleResetFep);
+  server.on("/reset_led", HTTP_POST, ESParaSite::HttpHandler::handleResetLed);
+
   Serial.println("HTTP REST config complete");
 }
 
-void ESParaSite::HttpCore::serve_http_client() { http_server.handleClient(); }
+void ESParaSite::HttpCore::serveHttpClient() { server.handleClient(); }
 
-void ESParaSite::HttpCore::start_http_server() { http_server.begin(); }
+void ESParaSite::HttpCore::startHttpServer() { server.begin(); }
 
-void ESParaSite::HttpCore::stop_http_server() { http_server.stop(); }
+void ESParaSite::HttpCore::stopHttpServer() { server.stop(); }
 
-String
-getContentType(String filename) { // convert the file extension to the MIME type
-  if (filename.endsWith(".html"))
-    return "text/html";
-  else if (filename.endsWith(".css"))
-    return "text/css";
-  else if (filename.endsWith(".js"))
-    return "application/javascript";
-  else if (filename.endsWith(".ico"))
-    return "image/x-icon";
-  else if (filename.endsWith(".gz"))
-    return "application/x-gzip";
-  else if (filename.endsWith(".tar"))
-    return "application/x-tar";
-  return "text/plain";
-}
-/*
-bool handleFileRead(
-    String path) { // send the right file to the client (if it exists)
-  Serial.println("handleFileRead: " + path);
-  if (path.endsWith("/"))
-    path += "index.html"; // If a folder is requested, send the index file
-  String contentType = getContentType(path); // Get the MIME type
-  String pathWithGz = path + ".gz";
-  if (LittleFS.exists(pathWithGz) ||
-      LittleFS.exists(path)) {       // If the file exists, either as a
-compressed
-                                   // archive, or normal
-    if (LittleFS.exists(pathWithGz)) // If there's a compressed version
-available path += ".gz";               // Use the compressed verion File file =
-LittleFS.open(path, "r");                 // Open the file size_t sent
-=http_server.streamFile(file, contentType); // Send it to the client
-    file.close();                                       // Close the file again
-    Serial.println(String("\tSent file: ") + path);
-    return true;
-  }
-  Serial.println(String("\tFile Not Found: ") +
-                 path); // If the file doesn't exist, return false
-  return false;
-}
+/* Code to implement Async Web Server (far future)
 
-void handleFileUpload() { // upload a new file to the LittleFS
-  HTTPUpload &upload =http_server.upload();
-  if (upload.status == UPLOAD_FILE_START) {
-    String filename = upload.filename;
-    if (!filename.startsWith("/"))
-      filename = "/" + filename;
-    Serial.print("handleFileUpload Name: ");
-    Serial.println(filename);
-    fsUploadFile =
-        LittleFS.open(filename, "w"); // Open the file for writing in LittleFS
-                                    // (create if it doesn't exist)
-    filename = String();
-  } else if (upload.status == UPLOAD_FILE_WRITE) {
-    if (fsUploadFile)
-      fsUploadFile.write(
-          upload.buf,
-          upload.currentSize); // Write the received bytes to the file
-  } else if (upload.status == UPLOAD_FILE_END) {
-    if (fsUploadFile) {     // If the file was successfully created
-      fsUploadFile.close(); // Close the file again
-      Serial.print("handleFileUpload Size: ");
-      Serial.println(upload.totalSize);
-     http_server.sendHeader(
-          "Location",
-          "/success.html"); // Redirect the client to the success page
-     http_server.send(303);
+AsyncWebServer server(HTTP_REST_PORT);
+AsyncWebSocket ws("/ws");
+AsyncEventSource events("/events");
+
+void ESParaSite::HttpCore::onWsEvent(AsyncWebSocket *server,
+                                     AsyncWebSocketClient *client,
+                                     AwsEventType type, void *arg,
+                                     uint8_t *data, size_t len) {
+  if (type == WS_EVT_CONNECT) {
+    Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
+    client->printf("Hello Client %u :)", client->id());
+    client->ping();
+  } else if (type == WS_EVT_DISCONNECT) {
+    Serial.printf("ws[%s][%u] disconnect\n", server->url(), client->id());
+  } else if (type == WS_EVT_ERROR) {
+    Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(),
+                  *((uint16_t *)arg), (char *)data);
+  } else if (type == WS_EVT_PONG) {
+    Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len,
+                  (len) ? (char *)data : "");
+  } else if (type == WS_EVT_DATA) {
+    AwsFrameInfo *info = (AwsFrameInfo *)arg;
+    String msg = "";
+    if (info->final && info->index == 0 && info->len == len) {
+      // the whole message is in a single frame and we got all of it's data
+      Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(),
+                    client->id(), (info->opcode == WS_TEXT) ? "text" : "binary",
+                    info->len);
+
+      if (info->opcode == WS_TEXT) {
+        for (size_t i = 0; i < info->len; i++) {
+          msg += (char)data[i];
+        }
+      } else {
+        char buff[3];
+        for (size_t i = 0; i < info->len; i++) {
+          sprintf(buff, "%02x ", (uint8_t)data[i]);
+          msg += buff;
+        }
+      }
+      Serial.printf("%s\n", msg.c_str());
+
+      if (info->opcode == WS_TEXT)
+        client->text("I got your text message");
+      else
+        client->binary("I got your binary message");
     } else {
-     http_server.send(500, "text/plain", "500: couldn't create file");
+      // message is comprised of multiple frames or the frame is split into
+      // multiple packets
+      if (info->index == 0) {
+        if (info->num == 0)
+          Serial.printf("ws[%s][%u] %s-message start\n", server->url(),
+                        client->id(),
+                        (info->message_opcode == WS_TEXT) ? "text" : "binary");
+        Serial.printf("ws[%s][%u] frame[%u] start[%llu]\n", server->url(),
+                      client->id(), info->num, info->len);
+      }
+
+      Serial.printf("ws[%s][%u] frame[%u] %s[%llu - %llu]: ", server->url(),
+                    client->id(), info->num,
+                    (info->message_opcode == WS_TEXT) ? "text" : "binary",
+                    info->index, info->index + len);
+
+      if (info->opcode == WS_TEXT) {
+        for (size_t i = 0; i < len; i++) {
+          msg += (char)data[i];
+        }
+      } else {
+        char buff[3];
+        for (size_t i = 0; i < len; i++) {
+          sprintf(buff, "%02x ", (uint8_t)data[i]);
+          msg += buff;
+        }
+      }
+      Serial.printf("%s\n", msg.c_str());
+
+      if ((info->index + len) == info->len) {
+        Serial.printf("ws[%s][%u] frame[%u] end[%llu]\n", server->url(),
+                      client->id(), info->num, info->len);
+        if (info->final) {
+          Serial.printf("ws[%s][%u] %s-message end\n", server->url(),
+                        client->id(),
+                        (info->message_opcode == WS_TEXT) ? "text" : "binary");
+          if (info->message_opcode == WS_TEXT)
+            client->text("I got your text message");
+          else
+            client->binary("I got your binary message");
+        }
+      }
+    }
+  }
+}
+
+void ESParaSite::HttpCore::config_rest_server_routing() {
+  ws.onEvent(ESParaSite::HttpCore::onWsEvent);
+  server.addHandler(&ws);
+
+  events.onConnect([](AsyncEventSourceClient *client) {
+    client->send("hello!", NULL, millis(), 1000);
+  });
+  server.addHandler(&events);
+
+  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", String(ESP.getFreeHeap()));
+  });
+
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    Serial.printf("NOT_FOUND: ");
+    if (request->method() == HTTP_GET)
+      Serial.printf("GET");
+    else if (request->method() == HTTP_POST)
+      Serial.printf("POST");
+    else if (request->method() == HTTP_DELETE)
+      Serial.printf("DELETE");
+    else if (request->method() == HTTP_PUT)
+      Serial.printf("PUT");
+    else if (request->method() == HTTP_PATCH)
+      Serial.printf("PATCH");
+    else if (request->method() == HTTP_HEAD)
+      Serial.printf("HEAD");
+    else if (request->method() == HTTP_OPTIONS)
+      Serial.printf("OPTIONS");
+    else
+      Serial.printf("UNKNOWN");
+    Serial.printf(" http://%s%s\n", request->host().c_str(),
+                  request->url().c_str());
+
+    if (request->contentLength()) {
+      Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
+      Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
     }
 
-  }
-   */
+    int headers = request->headers();
+    int i;
+    for (i = 0; i < headers; i++) {
+      AsyncWebHeader *h = request->getHeader(i);
+      Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
+    }
+
+    int params = request->params();
+    for (i = 0; i < params; i++) {
+      AsyncWebParameter *p = request->getParam(i);
+      if (p->isFile()) {
+        Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(),
+                      p->value().c_str(), p->size());
+      } else if (p->isPost()) {
+        Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+      } else {
+        Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+      }
+    }
+
+    request->send(404);
+  });
+  server.onFileUpload([](AsyncWebServerRequest *request, const String &filename,
+                         size_t index, uint8_t *data, size_t len, bool final) {
+    if (!index)
+      Serial.printf("UploadStart: %s\n", filename.c_str());
+    Serial.printf("%s", (const char *)data);
+    if (final)
+      Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index + len);
+  });
+  server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data,
+                          size_t len, size_t index, size_t total) {
+    if (!index)
+      Serial.printf("BodyStart: %u\n", total);
+    Serial.printf("%s", (const char *)data);
+    if (index + len == total)
+      Serial.printf("BodyEnd: %u\n", total);
+  });
+}
+
+void ESParaSite::HttpCore::start_http_server() { server.begin(); }
+
+void ESParaSite::HttpCore::stop_http_server() { server.end(); }
+
+void ESParaSite::HttpCore::cleanup_http_client() { ws.cleanupClients(); }
+
+*/
