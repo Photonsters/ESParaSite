@@ -1,6 +1,6 @@
 // ESParaSite_ConfigPortal.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -33,13 +33,13 @@
 
 using namespace ESParaSite;
 
-extern ESParaSite::config_data config_resource;
+extern ESParaSite::configData configResource;
 
 // Onboard LED I/O pin on NodeMCU board
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
 const int PIN_LED = 2;
 
-void ESParaSite::ConfigPortal::do_config_portal() {
+void ESParaSite::ConfigPortal::doConfigPortal() {
 
   Serial.println(F("Configuration portal requested"));
   Serial.println();
@@ -57,8 +57,8 @@ void ESParaSite::ConfigPortal::do_config_portal() {
            macAddr[3], macAddr[4], macAddr[5]);
 
   // Default configuration values
-  config_resource.cfg_pin_sda = 4;
-  config_resource.cfg_pin_scl = 5;
+  configResource.cfgPinSda = 4;
+  configResource.cfgPinScl = 5;
 
   pinMode(PIN_LED, OUTPUT);
 
@@ -80,10 +80,10 @@ void ESParaSite::ConfigPortal::do_config_portal() {
 
   char convertedValue[3];
   snprintf(convertedValue, sizeof(convertedValue), "%d",
-           config_resource.cfg_pin_sda);
+           configResource.cfgPinSda);
   WiFiManagerParameter p_pinSda("pinsda", "I2C SDA pin", convertedValue, 3);
   snprintf(convertedValue, sizeof(convertedValue), "%d",
-           config_resource.cfg_pin_scl);
+           configResource.cfgPinScl);
   WiFiManagerParameter p_pinScl("pinscl", "I2C SCL pin", convertedValue, 3);
 
   // Extra parameters to be configured
@@ -134,17 +134,17 @@ void ESParaSite::ConfigPortal::do_config_portal() {
 
   // Getting posted form values and overriding local variables parameters
   // Config file is written regardless the connection state
-  config_resource.cfg_pin_sda = atoi(p_pinSda.getValue());
-  config_resource.cfg_pin_scl = atoi(p_pinScl.getValue());
+  configResource.cfgPinSda = atoi(p_pinSda.getValue());
+  configResource.cfgPinScl = atoi(p_pinScl.getValue());
 
   if (strncmp(p_mdnsEnabled.getValue(), "T", 1) != 0) {
     Serial.println(F("mDNS Disabled"));
-    config_resource.cfg_mdns_enabled = false;
+    configResource.cfgMdnsEnabled = false;
   } else {
-    config_resource.cfg_mdns_enabled = true;
+    configResource.cfgMdnsEnabled = true;
 
-    snprintf(config_resource.cfg_mdns_name,
-             sizeof(config_resource.cfg_mdns_name), "%s\n",
+    snprintf(configResource.cfgMdnsName,
+             sizeof(configResource.cfgMdnsName), "%s\n",
              p_mdnsName.getValue());
 
     Serial.println(F("mDNS Enabled"));

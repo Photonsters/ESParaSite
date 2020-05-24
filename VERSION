@@ -1,6 +1,6 @@
 // ESParasite VERSION HISTORY
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
 	Authors: Andy (DocMadmag) Eakin
 	
 	Please see /ATTRIB for full credits and OSS License Info
@@ -20,6 +20,12 @@
 */
 
 /*
+v0.9 - 
+	- Implemented chart.js and jquery.js in order to start creating a better web GUI
+	- DARK MODE GUI
+	- Completed renaming variables and functions from_my_convention to moreCommonConventions
+
+
 v0.8 - Heterophyiasis - 2020-05-15
 	- Separated HTTP routines into Core and Handler files. This will make 
 		code easier to scale.
@@ -116,8 +122,8 @@ v0.5 - Fifth Release -
 v0.4 - Fourth Release - Diphyllobothriasis - 2019-09-05
 	- Added support for DHT12 Sensor and AT24C32 EEPROM.
 	- ESParaSite now records the following values to EEPROM - 
-		first_on_timestamp (immutable), eeprom_format_version, 
-		last_write_timestamp, lcd_screen_life, led_life, fep_life.
+		firstOnTimestamp (immutable), eeprom_format_version, 
+		lastWriteTimestamp, lcd_screen_life, led_life, fep_life.
 		-These values can be queried http://<ipaddress>/enclosure
 		-(not yet implemented) lcd_screen_life, led_life, fep_life values 
 			will be resettable via the REST interface.

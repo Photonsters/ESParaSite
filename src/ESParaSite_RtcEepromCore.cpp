@@ -1,6 +1,6 @@
 // ESParaSite_RtcEepromCore.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -91,11 +91,11 @@ uint32_t start, diff, totals = 0;
 
 I2C_eeprom rtc_eeprom(RTC_EEPROM_ADDR, MEMORY_SIZE);
 
-extern ESParaSite::enclosure enclosure_resource;
-extern ESParaSite::rtc_eeprom_data rtc_eeprom_resource;
-extern ESParaSite::status_data status_resource;
+extern ESParaSite::enclosure enclosureResource;
+extern ESParaSite::rtcEepromData rtcEepromResource;
+extern ESParaSite::statusData statusResource;
 
-void ESParaSite::RtcEeprom::init_rtc_eeprom() {
+void ESParaSite::RtcEeprom::initRtcEeprom() {
   rtc_eeprom.begin();
 
   Serial.println();
@@ -128,7 +128,7 @@ void ESParaSite::RtcEeprom::init_rtc_eeprom() {
   bool test_1 = false;
   bool test_2 = false;
   bool test_3 = false;
-  uint32_t current_rtc_epoch = ESParaSite::Sensors::read_rtc_epoch();
+  uint32_t current_rtc_epoch = ESParaSite::Sensors::readRtcEpoch();
 
   // First test - Data at index [0] should be '0' if date and time is
   // currently prior to 03:14:07 on Tuesday, 19 January 2038.
@@ -162,19 +162,19 @@ void ESParaSite::RtcEeprom::init_rtc_eeprom() {
     Serial.println("values will be set to '0'.");
     do_eeprom_format(1);
   } else if (test_2 || test_1) {
-    Serial.println("WARNING: The first_on_timestamp is Invalid."
+    Serial.println("WARNING: The firstOnTimestamp is Invalid."
                    "This value will be reset to 0.");
     do_eeprom_format(2);
   } else {
     Serial.print("EEPROM Format Valid - Version:\t");
     Serial.println(read_words[7]);
 
-    rtc_eeprom_resource.first_on_timestamp =
+    rtcEepromResource.firstOnTimestamp =
         Util::join_64(read_words[0], read_words[1]);
   }
 }
 
-int ESParaSite::RtcEeprom::do_eeprom_first_read() {
+int ESParaSite::RtcEeprom::doEepromFirstRead() {
   int current_seg_addr = FIRST_SEGMENT_OFFSET;
 
   char first_data[BYTES_PER_PAGE];
@@ -217,18 +217,18 @@ int ESParaSite::RtcEeprom::do_eeprom_first_read() {
   if (latest_timestamp == 0 || latest_timestamp_segment == 0) {
     Serial.println("EEPROM Does not contain any valid data. Data logging"
                    " will begin at first segment.");
-    rtc_eeprom_resource.last_write_timestamp =
-        status_resource.rtc_current_second;
+    rtcEepromResource.lastWriteTimestamp =
+        statusResource.rtcCurrentSecond;
     return (FIRST_SEGMENT_OFFSET);
   } else {
     Serial.print("The most recent write timestamp is:\t");
     Serial.println(latest_timestamp);
-    rtc_eeprom_resource.last_write_timestamp = latest_timestamp;
+    rtcEepromResource.lastWriteTimestamp = latest_timestamp;
     return (latest_timestamp_segment * (PAGES_PER_SEGMENT * BYTES_PER_PAGE));
   }
 }
 
-uint8_t ESParaSite::RtcEeprom::do_eeprom_read(uint16_t segment_addr) {
+uint8_t ESParaSite::RtcEeprom::doEepromRead(uint16_t segment_addr) {
   Serial.print("Reading EEPROM Values");
 
   for (int page = 0; page < PAGES_PER_SEGMENT; page++) {
@@ -250,25 +250,25 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_read(uint16_t segment_addr) {
       first_part = ESParaSite::Util::ParseUint32(page_1);
       second_part = ESParaSite::Util::ParseUint32(page_2);
 
-      rtc_eeprom_resource.last_write_timestamp =
+      rtcEepromResource.lastWriteTimestamp =
           ESParaSite::Util::join_64(first_part, second_part);
       break;
     case 4:
       rtc_eeprom.readBlock(segment_addr + (BYTES_PER_PAGE * page),
                            reinterpret_cast<uint8_t *>(page_1), BYTES_PER_PAGE);
-      rtc_eeprom_resource.fep_life_seconds =
+      rtcEepromResource.eepromVatLifeSec =
           ESParaSite::Util::ParseUint32(page_1);
       break;
     case 5:
       rtc_eeprom.readBlock(segment_addr + (BYTES_PER_PAGE * page),
                            reinterpret_cast<uint8_t *>(page_1), BYTES_PER_PAGE);
-      rtc_eeprom_resource.led_life_seconds =
+      rtcEepromResource.eepromLedLifeSec =
           ESParaSite::Util::ParseUint32(page_1);
       break;
     case 6:
       rtc_eeprom.readBlock(segment_addr + (BYTES_PER_PAGE * page),
                            reinterpret_cast<uint8_t *>(page_1), BYTES_PER_PAGE);
-      rtc_eeprom_resource.screen_life_seconds =
+      rtcEepromResource.eepromScreenLifeSec =
           ESParaSite::Util::ParseUint32(page_1);
       break;
     default:
@@ -276,7 +276,7 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_read(uint16_t segment_addr) {
     }
   }
 
-  rtc_eeprom_resource.last_segment_address = segment_addr;
+  rtcEepromResource.lastSegmentAddress = segment_addr;
 
   Serial.println();
   Serial.println("DONE!");
@@ -284,9 +284,9 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_read(uint16_t segment_addr) {
   return 0;
 }
 
-uint8_t ESParaSite::RtcEeprom::do_eeprom_write() {
-  ESParaSite::Sensors::dump_sensors(true);
-  uint16_t segment_addr = rtc_eeprom_resource.last_segment_address +
+uint8_t ESParaSite::RtcEeprom::doEepromWrite() {
+  // ESParaSite::Sensors::dumpSensor(true);
+  uint16_t segment_addr = rtcEepromResource.lastSegmentAddress +
                           (BYTES_PER_PAGE * PAGES_PER_SEGMENT);
   if (segment_addr >= (static_cast<uint16_t>(MEMORY_SIZE) / 8)) {
     Serial.print(F("Rolling over to first segment:\t"));
@@ -307,9 +307,9 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_write() {
     switch (page) {
     case 0:
       first_part = (uint32_t)(
-          (status_resource.rtc_current_second & 0xFFFFFFFF00000000LL) >> 32);
+          (statusResource.rtcCurrentSecond & 0xFFFFFFFF00000000LL) >> 32);
       second_part =
-          (uint32_t)(status_resource.rtc_current_second & 0xFFFFFFFFLL);
+          (uint32_t)(statusResource.rtcCurrentSecond & 0xFFFFFFFFLL);
 
       ESParaSite::Util::SerializeUint32(page_1, first_part);
       rtc_eeprom.writeBlock(segment_addr, reinterpret_cast<uint8_t *>(page_1),
@@ -324,40 +324,40 @@ uint8_t ESParaSite::RtcEeprom::do_eeprom_write() {
     case 4:
 
       ESParaSite::Util::SerializeUint32(page_1,
-                                        rtc_eeprom_resource.fep_life_seconds);
+                                        rtcEepromResource.eepromVatLifeSec);
       rtc_eeprom.writeBlock(segment_addr + (BYTES_PER_PAGE * page),
                             reinterpret_cast<uint8_t *>(page_1),
                             BYTES_PER_PAGE);
 
-      enclosure_resource.fep_sec = rtc_eeprom_resource.fep_life_seconds;
+      enclosureResource.vatLifeSec = rtcEepromResource.eepromVatLifeSec;
       break;
     case 5:
 
       ESParaSite::Util::SerializeUint32(page_1,
-                                        rtc_eeprom_resource.led_life_seconds);
+                                        rtcEepromResource.eepromLedLifeSec);
       rtc_eeprom.writeBlock(segment_addr + (BYTES_PER_PAGE * page),
                             reinterpret_cast<uint8_t *>(page_1),
                             BYTES_PER_PAGE);
 
-      enclosure_resource.led_sec = rtc_eeprom_resource.led_life_seconds;
+      enclosureResource.ledLifeSec = rtcEepromResource.eepromLedLifeSec;
       break;
     case 6:
 
       ESParaSite::Util::SerializeUint32(
-          page_1, rtc_eeprom_resource.screen_life_seconds);
+          page_1, rtcEepromResource.eepromScreenLifeSec);
       rtc_eeprom.writeBlock(segment_addr + (BYTES_PER_PAGE * page),
                             reinterpret_cast<uint8_t *>(page_1),
                             BYTES_PER_PAGE);
 
-      enclosure_resource.lcd_sec = rtc_eeprom_resource.screen_life_seconds;
+      enclosureResource.lcdLifeSec = rtcEepromResource.eepromScreenLifeSec;
       break;
     default:
       break;
     }
   }
 
-  rtc_eeprom_resource.last_segment_address = segment_addr;
-  rtc_eeprom_resource.last_write_timestamp = status_resource.rtc_current_second;
+  rtcEepromResource.lastSegmentAddress = segment_addr;
+  rtcEepromResource.lastWriteTimestamp = statusResource.rtcCurrentSecond;
 
   Serial.println();
   Serial.println(F("DONE!"));
@@ -404,7 +404,7 @@ void do_eeprom_format(uint8_t format_type) {
   if (set_first_on == 1) {
     Serial.println("Resetting first on value to current second");
     Serial.print("The current epoch is:\t");
-    time_t current_epoch = ESParaSite::Sensors::read_rtc_epoch();
+    time_t current_epoch = ESParaSite::Sensors::readRtcEpoch();
     Serial.println(current_epoch);
 
     uint32_t first_part =
