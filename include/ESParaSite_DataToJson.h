@@ -1,4 +1,4 @@
-// ESParaSite_HttpCore.h
+// ESParaSite_DatatoJson.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -19,24 +19,15 @@
 
 */
 
-//#include <ESPAsyncWebServer.h>
-
-#ifndef INCLUDE_ESPARASITE_REST_H_
-#define INCLUDE_ESPARASITE_REST_H_
+#ifndef INCLUDE_ESPARASITE_DATATOJSON_H_
+#define INCLUDE_ESPARASITE_DATATOJSON_H_
 
 namespace ESParaSite {
-namespace HttpCore {
+namespace DataToJson {
 
-void configHttpServerRouting();
-void startHttpServer();
-void stopHttpServer();
-void serveHttpClient();
+void historyToJson();
 
-// void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
-//               AwsEventType type, void *arg, uint8_t *data, size_t len);
-// void cleanup_http_client();
+} // namespace DataToJson
+} // namespace ESParaSite
 
-}; // namespace HttpCore
-}; // namespace ESParaSite
-
-#endif // INCLUDE_ESPARASITE_REST_H_
+#endif // INCLUDE_ESPARASITE_DATATOJSON_H_

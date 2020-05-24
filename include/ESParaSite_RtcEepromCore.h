@@ -1,6 +1,6 @@
 // ESParaSite_RtcEepromCore.h
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -24,11 +24,11 @@
 
 namespace ESParaSite {
 namespace RtcEeprom {
-void init_rtc_eeprom();
+void initRtcEeprom();
 void dumpEEPROM(uint16_t, uint16_t);
-int do_eeprom_first_read();
-uint8_t do_eeprom_read(uint16_t);
-uint8_t do_eeprom_write();
+int doEepromFirstRead();
+uint8_t doEepromRead(uint16_t);
+uint8_t doEepromWrite();
 
 }; // namespace RtcEeprom
 }; // namespace ESParaSite

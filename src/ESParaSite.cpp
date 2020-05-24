@@ -1,6 +1,6 @@
 // ESParaSite.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -45,8 +45,8 @@
 const byte TRIGGER_PIN = 0;
 
 // Alternate button, if an external button is desired.
-// D7 on NodeMCU and WeMos.
-const byte TRIGGER_PIN2 = 13;
+// D0 on NodeMCU and WeMos D1 Mini
+const byte TRIGGER_PIN2 = 16;
 
 // Onboard LED I/O pin on NodeMCU board
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
@@ -56,21 +56,25 @@ const int PIN_LED = 2;
 bool initialConfig = false;
 
 // Variables used to service the loop
-uint16_t cur_loop_msec = 0;
-uint16_t prev_sensor_msec = 0;
-uint16_t prev_dht_msec = 0;
-uint16_t prev_eeprom_msec = 0;
+uint16_t curLoopMillis = 0;
+uint16_t prevSensorMillis = 0;
+uint16_t prevDhtMillis = 0;
+uint16_t prevEepromMillis = 0;
+uint16_t prevHistoryMillis = 0;
 
 // The _resource structs used to carry data globally
-ESParaSite::ambient ambient_resource;
-ESParaSite::config_data config_resource;
-ESParaSite::enclosure enclosure_resource;
-ESParaSite::optics optics_resource;
-ESParaSite::printchamber chamber_resource;
-ESParaSite::rtc_eeprom_data rtc_eeprom_resource;
-ESParaSite::status_data status_resource;
-ESParaSite::sensor_exists exists_resource;
+ESParaSite::ambient ambientResource;
+ESParaSite::configData configResource;
+ESParaSite::enclosure enclosureResource;
+ESParaSite::optics opticsResource;
+ESParaSite::printchamber chamberResource;
+ESParaSite::rtcEepromData rtcEepromResource;
+ESParaSite::statusData statusResource;
+ESParaSite::sensorExists existsResource;
 
+//*************************************************************************
+// LOOP
+//*************************************************************************
 void loop(void) {
 
 #ifdef DEBUG_L1
@@ -84,7 +88,7 @@ void loop(void) {
   if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW) ||
       (initialConfig)) {
     Serial.println("Configuration portal requested.");
-    ESParaSite::ConfigPortal::do_config_portal();
+    ESParaSite::ConfigPortal::doConfigPortal();
   }
 
 #ifdef DEBUG_L1
@@ -102,25 +106,24 @@ void loop(void) {
 
   // Run the HTTP Sever
     ESParaSite::HttpCore::serveHttpClient();
-  //ESParaSite::HttpCore::cleanup_http_client();
 
 #ifdef DEBUG_L1
-  Serial.println(F("refreshing cur_loop_msec"));
+  Serial.println(F("refreshing curLoopMillis"));
   Serial.println();
 #endif
 
   // Refresh the Current Loop Millisecond value
-  cur_loop_msec = millis();
+  curLoopMillis = millis();
 
 #ifdef DEBUG_L3
-  Serial.print(F("cur_loop_msec:\t"));
-  Serial.println(cur_loop_msec);
-  Serial.print(F("prev_sensor_msec:\t"));
-  Serial.println(prev_sensor_msec);
-  Serial.print(F("prev_dht_msec:\t"));
-  Serial.println(prev_dht_msec);
-  Serial.print(F("prev_eeprom_msec:\t"));
-  Serial.println(prev_eeprom_msec);
+  Serial.print(F("curLoopMillis:\t"));
+  Serial.println(curLoopMillis);
+  Serial.print(F("prevSensorMillis:\t"));
+  Serial.println(prevSensorMillis);
+  Serial.print(F("prevDhtMillis:\t"));
+  Serial.println(prevDhtMillis);
+  Serial.print(F("prevEepromMillis:\t"));
+  Serial.println(prevEepromMillis);
   Serial.println();
 #endif
 
@@ -132,8 +135,8 @@ void loop(void) {
 #endif
 
   // Read sensors if it has been the right interval
-  prev_sensor_msec =
-      ESParaSite::Core::do_read_sensors(cur_loop_msec, prev_sensor_msec);
+  prevSensorMillis =
+      ESParaSite::Core::doReadSensors(curLoopMillis, prevSensorMillis);
 
 #ifdef DEBUG_L1
   Serial.println(F("DHT12 Sensor"));
@@ -141,7 +144,7 @@ void loop(void) {
 #endif
 
   // Read the DHT12 sensor if it has been the right interval
-  prev_dht_msec = ESParaSite::Core::do_read_dht(cur_loop_msec, prev_dht_msec);
+  prevDhtMillis = ESParaSite::Core::doReadDht(curLoopMillis, prevDhtMillis);
 
 #ifdef DEBUG_L1
   Serial.println(F("Write to EEPROM"));
@@ -149,8 +152,12 @@ void loop(void) {
 #endif
 
   // Update EEPROM and memory values
-  prev_eeprom_msec =
-      ESParaSite::Core::do_handle_eeprom(cur_loop_msec, prev_eeprom_msec);
+  prevEepromMillis =
+      ESParaSite::Core::doHandleEeprom(curLoopMillis, prevEepromMillis);
+
+  // Keep track of historical data and update Web UI data
+  prevHistoryMillis =
+      ESParaSite::Core::doHandleHistory(curLoopMillis, prevHistoryMillis);
 
 #ifdef DEBUG_L1
   Serial.println(F("End of loop waiting 500msec"));
@@ -158,6 +165,9 @@ void loop(void) {
 #endif
 }
 
+//*************************************************************************
+// SETUP
+//*************************************************************************
 void setup(void) {
   // Set up our pins
   pinMode(PIN_LED, OUTPUT);
@@ -201,7 +211,7 @@ void setup(void) {
   if (!LittleFS.begin()) {
     Serial.println(F("Failed to mount LittleFS file system. Booting in AP "
                      "Config Portal mode."));
-    ESParaSite::ConfigPortal::do_config_portal();
+    ESParaSite::ConfigPortal::doConfigPortal();
   } else {
 
 #ifdef DEBUG_L1
@@ -219,7 +229,7 @@ void setup(void) {
   if (!ESParaSite::FileCore::loadConfig()) {
     Serial.println(
         F("Failed to load config. Booting in AP Config Portal mode."));
-    ESParaSite::ConfigPortal::do_config_portal();
+    ESParaSite::ConfigPortal::doConfigPortal();
   } else {
     Serial.println(F("config.json loaded"));
   }
@@ -233,7 +243,7 @@ void setup(void) {
   if (WiFi.SSID() == "") {
     Serial.println(
         F("WiFi credentials unset, Booting in AP Config Portal mode."));
-    ESParaSite::ConfigPortal::do_config_portal();
+    ESParaSite::ConfigPortal::doConfigPortal();
   } else {
     // Force to station mode because if device was switched off while in
     // access point mode it will start up next time in access point mode.
@@ -266,7 +276,7 @@ void setup(void) {
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("Failed to connect, Booting in AP Config Portal mode."));
-    ESParaSite::ConfigPortal::do_config_portal();
+    ESParaSite::ConfigPortal::doConfigPortal();
   } else {
     Serial.println(F("Wifi Connected"));
     Serial.println();
@@ -282,12 +292,12 @@ void setup(void) {
 
   delay(500);
 
-  if (config_resource.cfg_mdns_enabled == 1) {
-    const char *mdns_n = config_resource.cfg_mdns_name;
+  if (configResource.cfgMdnsEnabled == 1) {
+    const char *mdns_n = configResource.cfgMdnsName;
     if (!MDNS.begin(mdns_n)) {
-      // Start the mDNS responder <cfg_mdns_name>.local
+      // Start the mDNS responder <cfgMdnsName>.local
       Serial.println(F("Error setting up MDNS responder!"));
-      ESParaSite::ConfigPortal::do_config_portal();
+      ESParaSite::ConfigPortal::doConfigPortal();
     } else {
       Serial.println(F("mDNS responder started"));
       Serial.println();
@@ -316,13 +326,13 @@ void setup(void) {
 #endif
 
   // Initialize i2c bus, sensors, rtc and eeprom
-  ESParaSite::Sensors::init_i2c_sensors();
+  ESParaSite::Sensors::initI2cSensors();
 
   // Dump all sensor data to serial console
-  ESParaSite::Sensors::dump_sensors(false);
+  ESParaSite::Sensors::dumpSensor(false);
 
   // Find the most recent EEPROM segment and populate our eeprom_data struct.
-  uint16_t mru_segment_addr = ESParaSite::RtcEeprom::do_eeprom_first_read();
+  uint16_t mru_segment_addr = ESParaSite::RtcEeprom::doEepromFirstRead();
 
 #ifdef DEBUG_L1
   Serial.print(F("The most recent write address:\t"));
@@ -330,7 +340,7 @@ void setup(void) {
   Serial.println();
 #endif
 
-  ESParaSite::RtcEeprom::do_eeprom_read(mru_segment_addr);
+  ESParaSite::RtcEeprom::doEepromRead(mru_segment_addr);
 
   Serial.println(F("Startup Complete!"));
   Serial.println();

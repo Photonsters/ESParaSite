@@ -1,6 +1,6 @@
 // ESParaSite_ConfigPortal.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -26,8 +26,7 @@
 
 namespace ESParaSite {
 namespace ConfigPortal {
-void do_config_portal();
-void do_error_portal(int8_t);
+void doConfigPortal();
 } // namespace ConfigPortal
 } // namespace ESParaSite
 
