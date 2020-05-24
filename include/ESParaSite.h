@@ -1,6 +1,6 @@
 // ESParaSite.h
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -27,59 +27,59 @@
 namespace ESParaSite {
 
 struct printchamber {
-  float dht_temp_c{};
-  float dht_humidity{};
-  float dht_dewpoint{};
+  float chamberTempC{};
+  float chamberHumidity{};
+  float chamberDewPoint{};
 };
 
 struct optics {
-  float si_uvindex{};
-  float si_visible{};
-  float si_infrared{};
-  float mlx_amb_temp_c{};
-  float mlx_obj_temp_c{};
+  float ledUVIndex{};
+  float ledVisible{};
+  float ledInfrared{};
+  float ledTempC{};
+  float screenTempC{};
 };
 
 struct ambient {
-  float bme_temp_c{};
-  float bme_humidity{};
-  float bme_barometer{};
-  float bme_altitude{};
+  float ambientTempC{};
+  float ambientHumidity{};
+  float ambientBarometer{};
+  float ambientAltitude{};
 };
 
 struct enclosure {
-  uint32_t life_sec{};
-  uint32_t lcd_sec{};
-  uint32_t led_sec{};
-  uint32_t fep_sec{};
-  float case_temp{};
+  uint32_t printerLifeSec{};
+  uint32_t lcdLifeSec{};
+  uint32_t ledLifeSec{};
+  uint32_t vatLifeSec{};
+  float caseTempC{};
 };
 
-struct status_data {
-  time_t rtc_current_second{};
-  int is_printing_flag{};
+struct statusData {
+  time_t rtcCurrentSecond{};
+  int isPrintingFlag{};
 };
 
-struct rtc_eeprom_data {
-  time_t first_on_timestamp{};
-  time_t last_write_timestamp{};
-  uint32_t screen_life_seconds{};
-  uint32_t led_life_seconds{};
-  uint32_t fep_life_seconds{};
-  uint16_t last_segment_address{};
+struct rtcEepromData {
+  time_t firstOnTimestamp{};
+  time_t lastWriteTimestamp{};
+  uint32_t eepromScreenLifeSec{};
+  uint32_t eepromLedLifeSec{};
+  uint32_t eepromVatLifeSec{};
+  uint16_t lastSegmentAddress{};
 };
 
-struct config_data {
-  char cfg_mdns_name[32];
-  const char *cfg_wifi_ssid{};
-  const char *cfg_wifi_password{};
-  int cfg_pin_sda{};
-  int cfg_pin_scl{};
-  bool cfg_mdns_enabled{};
+struct configData {
+  char cfgMdnsName[32];
+  const char *cfgWifiSsid{};
+  const char *cfgWifiPassword{};
+  int cfgPinSda{};
+  int cfgPinScl{};
+  bool cfgMdnsEnabled{};
 
 };
 
-struct sensor_exists {
+struct sensorExists {
   bool bmeDetected{};
   bool dhtDetected{};
   bool mlxDetected{};

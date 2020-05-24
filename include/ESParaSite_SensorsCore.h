@@ -1,6 +1,6 @@
 // ESParaSite_SensorsCore.h
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -24,22 +24,22 @@
 
 namespace ESParaSite {
 namespace Sensors {
-void init_dht_sensor();
-void init_si_sensor();
-void init_mlx_sensor();
-void init_bme_sensor();
-void init_rtc_clock();
-void read_dht_sensor(bool);
-void read_si_sensor();
-void read_mlx_sensor();
-void read_bme_sensor();
-void read_rtc_data();
-void check_rtc_status();
-void read_rtc_temp();
-time_t read_rtc_epoch();
-void init_i2c_sensors();
-int ping_sensor(uint16_t);
-void dump_sensors(bool);
+void initDhtSensor();
+void initSiSensor();
+void initMlxSensor();
+void initBmeSensor();
+void initRtcClock();
+void readDhtSensor(bool);
+void readSiSensor();
+void readMlxSensor();
+void readBmeSensor();
+void readRtcData();
+void checkRtcStatus();
+void readRtcTemp();
+time_t readRtcEpoch();
+void initI2cSensors();
+int pingSensor(uint16_t);
+void dumpSensor(bool);
 }; // namespace Sensors
 }; // namespace ESParaSite
 

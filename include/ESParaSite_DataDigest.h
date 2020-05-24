@@ -1,4 +1,4 @@
-// ESParaSite_HttpCore.h
+// ESParaSite_DataDigest.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -18,25 +18,38 @@
         web standards, etc.
 
 */
+#include <time.h>
 
-//#include <ESPAsyncWebServer.h>
+#ifndef INCLUDE_ESPARASITE_DIGEST_H_
+#define INCLUDE_ESPARASITE_DIGEST_H_
 
-#ifndef INCLUDE_ESPARASITE_REST_H_
-#define INCLUDE_ESPARASITE_REST_H_
+#define FIVESECMAXELEMENT (5)
+#define THIRTYSECMAXELEMENT (9)
+#define THREEHSECMAXELEMENT (11)
+
+struct history {
+  time_t dataTimestamp;
+  float chamberTempC;
+  float chamberHumidity;
+  float ambientTempC;
+  float ambientHumidity;
+  float screenTempC;
+  float ledTempC;
+  bool ledOn;
+};
+
+void fivesToThirty();
+void thirtysToThreeH();
+
+#define FIVESECMAXELEMENT (5)
 
 namespace ESParaSite {
-namespace HttpCore {
+namespace DataDigest {
 
-void configHttpServerRouting();
-void startHttpServer();
-void stopHttpServer();
-void serveHttpClient();
+void fillRow();
+void printRows();
 
-// void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
-//               AwsEventType type, void *arg, uint8_t *data, size_t len);
-// void cleanup_http_client();
+} // namespace DataDigest
+} // namespace ESParaSite
 
-}; // namespace HttpCore
-}; // namespace ESParaSite
-
-#endif // INCLUDE_ESPARASITE_REST_H_
+#endif // INCLUDE_ESPARASITE_DIGEST_H_

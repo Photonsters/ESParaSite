@@ -1,6 +1,6 @@
 // ESParaSite_HttpFile.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -23,11 +23,8 @@
 #include "ESParaSite_HttpCore.h"
 #include <Arduino.h>
 #include <ESP8266WebServer.h>
-//#include <ESPAsyncTCP.h>
-//#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 
-// extern AsyncWebServer server;
 extern ESP8266WebServer server;
 
 File fsUploadFile; // a File object to temporarily store
@@ -88,7 +85,8 @@ bool ESParaSite::HttpFile::handleFileRead(String path) {
     // Open the file
     File file = LittleFS.open(path, "r");
     // Send it to the client
-    size_t sent = server.streamFile(file, contentType);
+    //size_t sent = 
+    server.streamFile(file, contentType);
     // Close the file again
     file.close();
     Serial.println(String("\tSent file: ") + path);
@@ -142,30 +140,7 @@ bool ESParaSite::HttpFile::loadFromLittleFS(String path) {
     path = path.substring(0, path.lastIndexOf("."));
   else
     dataType = ESParaSite::HttpFile::getContentType(path);
-  /*
-   if (path.endsWith(".html"))
-    dataType = "text/html";
-  else if (path.endsWith(".htm"))
-    dataType = "text/html";
-  else if (path.endsWith(".css"))
-    dataType = "text/css";
-  else if (path.endsWith(".js"))
-    dataType = "application/javascript";
-  else if (path.endsWith(".png"))
-    dataType = "image/png";
-  else if (path.endsWith(".gif"))
-    dataType = "image/gif";
-  else if (path.endsWith(".jpg"))
-    dataType = "image/jpeg";
-  else if (path.endsWith(".ico"))
-    dataType = "image/x-icon";
-  else if (path.endsWith(".xml"))
-    dataType = "text/xml";
-  else if (path.endsWith(".pdf"))
-    dataType = "application/pdf";
-  else if (path.endsWith(".zip"))
-    dataType = "application/zip";
-  */
+  
   File dataFile = LittleFS.open(path.c_str(), "r");
   if (server.hasArg("download"))
     dataType = "application/octet-stream";

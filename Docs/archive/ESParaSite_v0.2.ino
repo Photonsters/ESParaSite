@@ -63,29 +63,29 @@ struct printchamber {
   float dht_temp_c;
   float dht_humidity;
   float dht_dewpoint;
-} chamber_resource;
+} chamberResource;
 
 struct optics {
   float si_uvindex;
-  float si_visible;
-  float si_infrared;
-  float mlx_amb_temp_c;
-  float mlx_obj_temp_c;
-} optics_resource;
+  float ledVisible;
+  float ledInfrared;
+  float ledTempC;
+  float screenTempC;
+} opticsResource;
 
 struct ambient {
-  float bme_temp_c;
-  float bme_humidity;
-  float bme_barometer;
-  float bme_altitude;
-} ambient_resource;
+  float ambientTempC;
+  float ambientHumidity;
+  float ambientBarometer;
+  float ambientAltitude;
+} ambientResource;
 
 struct enclosure {
-  float case_temp;
+  float caseTempC;
   float total_sec;
   float screen_sec;
-  float led_sec;
-} enclosure_resource;
+  float ledLifeSec;
+} enclosureResource;
 
 RtcDateTime now;
 char timestamp[14];
@@ -106,32 +106,32 @@ int init_wifi() {
   return WiFi.status(); // return the WiFi connection status
 }
 
-void init_chamber_resource() {
-  chamber_resource.dht_temp_c = 0;
-  chamber_resource.dht_humidity = 0;
-  chamber_resource.dht_dewpoint = 0;
+void init_chamberResource() {
+  chamberResource.dht_temp_c = 0;
+  chamberResource.dht_humidity = 0;
+  chamberResource.dht_dewpoint = 0;
 }
 
-void init_optics_resource() {
-  optics_resource.si_uvindex = 0;
-  optics_resource.si_visible = 0;
-  optics_resource.si_infrared = 0;
-  optics_resource.mlx_amb_temp_c = 0;
-  optics_resource.mlx_obj_temp_c = 0;
+void init_opticsResource() {
+  opticsResource.si_uvindex = 0;
+  opticsResource.ledVisible = 0;
+  opticsResource.ledInfrared = 0;
+  opticsResource.ledTempC = 0;
+  opticsResource.screenTempC = 0;
 }
 
-void init_ambient_resource() {
-  ambient_resource.bme_temp_c = 0;
-  ambient_resource.bme_humidity = 0;
-  ambient_resource.bme_barometer = 0;
-  ambient_resource.bme_altitude = 0;
+void init_ambientResource() {
+  ambientResource.ambientTempC = 0;
+  ambientResource.ambientHumidity = 0;
+  ambientResource.ambientBarometer = 0;
+  ambientResource.ambientAltitude = 0;
 }
 
-void init_enclosure_resource() {
-  enclosure_resource.case_temp = 0;
-  enclosure_resource.total_sec = 0;
-  enclosure_resource.screen_sec = 0;
-  enclosure_resource.led_sec = 0;
+void init_enclosureResource() {
+  enclosureResource.caseTempC = 0;
+  enclosureResource.total_sec = 0;
+  enclosureResource.screen_sec = 0;
+  enclosureResource.ledLifeSec = 0;
 }
 
 void config_rest_server_routing() {
@@ -149,17 +149,17 @@ void config_rest_server_routing() {
 
 void get_chamber () {
 
-  read_dht_sensor();
-  read_rtc_data();
+  readDhtSensor();
+  readRtcData();
   create_timestamp(now);
 
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
   doc["timestamp"] = timestamp;
-  doc["seconds_t"] = chamber_resource.dht_temp_c;
-  doc["seconds_s"] = chamber_resource.dht_humidity;
-  doc["seconds_l"] = chamber_resource.dht_dewpoint;
+  doc["seconds_t"] = chamberResource.dht_temp_c;
+  doc["seconds_s"] = chamberResource.dht_humidity;
+  doc["seconds_l"] = chamberResource.dht_dewpoint;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -174,20 +174,20 @@ void get_chamber () {
 
 void get_optics () {
 
-  read_si_sensor();
-  read_mlx_sensor();
-  read_rtc_data();
+  readSiSensor();
+  readMlxSensor();
+  readRtcData();
   create_timestamp(now);
 
   StaticJsonDocument<256> doc;
 
   doc["class"] = "optics";
   doc["timestamp"] = timestamp;
-  doc["uvindex"] = optics_resource.si_uvindex;
-  doc["visible"] = optics_resource.si_visible;
-  doc["infrared"] = optics_resource.si_infrared;
-  doc["led_temp_c"] = optics_resource.mlx_amb_temp_c;
-  doc["screen_temp_c"] = optics_resource.mlx_obj_temp_c;
+  doc["uvindex"] = opticsResource.si_uvindex;
+  doc["visible"] = opticsResource.ledVisible;
+  doc["infrared"] = opticsResource.ledInfrared;
+  doc["led_temp_c"] = opticsResource.ledTempC;
+  doc["screen_temp_c"] = opticsResource.screenTempC;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -202,18 +202,18 @@ void get_optics () {
 
 void get_ambient() {
 
-  read_bme_sensor();
-  read_rtc_data();
+  readBmeSensor();
+  readRtcData();
   create_timestamp(now);
 
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
   doc["timestamp"] = timestamp;
-  doc["amb_temp_c"] = ambient_resource.bme_temp_c;
-  doc["amb_humidity"] = ambient_resource.bme_humidity;
-  doc["amb_pressure"] = ambient_resource.bme_barometer;
-  doc["altitude"] = ambient_resource.bme_altitude;
+  doc["amb_temp_c"] = ambientResource.ambientTempC;
+  doc["amb_humidity"] = ambientResource.ambientHumidity;
+  doc["amb_pressure"] = ambientResource.ambientBarometer;
+  doc["altitude"] = ambientResource.ambientAltitude;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -228,7 +228,7 @@ void get_ambient() {
 
 void get_enclosure() {
 
-  read_rtc_data();
+  readRtcData();
   //  read_at24_data();   //Placeholder - Not yet Implemented
   create_timestamp(now);
 
@@ -236,10 +236,10 @@ void get_enclosure() {
 
   doc["class"] = "enclosure";
   doc["timestamp"] = timestamp;
-  doc["case_temp"] = enclosure_resource.case_temp;
-  doc["seconds_t"] = enclosure_resource.total_sec;  //Placeholder - Not yet Implemented
-  doc["seconds_s"] = enclosure_resource.screen_sec; //Placeholder - Not yet Implemented
-  doc["seconds_l"] = enclosure_resource.led_sec;    //Placeholder - Not yet Implemented
+  doc["caseTempC"] = enclosureResource.caseTempC;
+  doc["seconds_t"] = enclosureResource.total_sec;  //Placeholder - Not yet Implemented
+  doc["seconds_s"] = enclosureResource.screen_sec; //Placeholder - Not yet Implemented
+  doc["seconds_l"] = enclosureResource.ledLifeSec;    //Placeholder - Not yet Implemented
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -268,10 +268,10 @@ void setup(void) {
     Serial.println(wifi_ssid);
   }
 
-  init_chamber_resource();
-  init_optics_resource();
-  init_ambient_resource();
-  init_enclosure_resource();
+  init_chamberResource();
+  init_opticsResource();
+  init_ambientResource();
+  init_enclosureResource();
   config_rest_server_routing();
 
   Serial.println("");
@@ -316,13 +316,13 @@ void setup(void) {
 
   // initialize bme80 temperature sensor
   Serial.println("Read BME280 sensor");
-  init_bme_sensor();
+  initBmeSensor();
   Serial.println();
 
 
   // initialize DS3231 RTC
   Serial.println("Read DS3231 RTC sensor");
-  init_rtc_clock();
+  initRtcClock();
   Serial.println();
 
   //Dump all Sensor data to Serial
@@ -331,23 +331,23 @@ void setup(void) {
   Serial.println("============================================================");
   Serial.println();
   Serial.println("DS3231 Real-Time Clock Timestamp and Temperature:");
-  read_rtc_data();
+  readRtcData();
   Serial.println();
 
   Serial.println("DHT12 Print Chamber Environmental Data:");
-  read_dht_sensor();
+  readDhtSensor();
   Serial.println();
 
   Serial.println("SI1145 UV and Light Sensor Data:");
-  read_si_sensor();
+  readSiSensor();
   Serial.println();
 
   Serial.println("MLX90614 Temp Sensor Data:");
-  read_mlx_sensor();
+  readMlxSensor();
   Serial.println();
 
   Serial.println("BME280 Temp Sensor Data:");
-  read_bme_sensor();
+  readBmeSensor();
   Serial.println();
   Serial.println("ESParasite Ready!");
 }
@@ -386,7 +386,7 @@ void  init_dht_sensor() {
   }
 }
 
-void init_bme_sensor() {
+void initBmeSensor() {
   // initialize BME280 temperature sensor
 
   bme.parameter.communication = 0;
@@ -413,7 +413,7 @@ void init_bme_sensor() {
   Serial.println();
 }
 
-void init_rtc_clock() {
+void initRtcClock() {
   Rtc.Begin();
 
   RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
@@ -460,7 +460,7 @@ void init_rtc_clock() {
 
 }
 
-void read_rtc_data () {
+void readRtcData () {
   Serial.println("===================");
   if (!Rtc.IsDateTimeValid())
   {
@@ -480,14 +480,14 @@ void read_rtc_data () {
   Serial.println();
 
   RtcTemperature temp = Rtc.GetTemperature();
-  enclosure_resource.case_temp = (temp.AsFloatDegC());
-  Serial.print(enclosure_resource.case_temp);
+  enclosureResource.caseTempC = (temp.AsFloatDegC());
+  Serial.print(enclosureResource.caseTempC);
   Serial.println("°C");
 
   delay(500);
 }
 
-void read_dht_sensor() {
+void readDhtSensor() {
   Serial.println("===================");
 
   //First DHT measurement is stale, so we measure, wait ~2 seconds, then measure again.
@@ -498,53 +498,53 @@ void read_dht_sensor() {
   delay(2500);
 
   Serial.print(F("Temperature (°C): "));
-  chamber_resource.dht_temp_c = ((float)DHT.getTemperature() / (float)10);
-  Serial.println(((int)chamber_resource.dht_temp_c));
+  chamberResource.dht_temp_c = ((float)DHT.getTemperature() / (float)10);
+  Serial.println(((int)chamberResource.dht_temp_c));
 
   Serial.print(F("Humidity: "));
-  chamber_resource.dht_humidity = ((float)DHT.getHumidity() / (float)10);
-  Serial.print(((int)chamber_resource.dht_humidity));
+  chamberResource.dht_humidity = ((float)DHT.getHumidity() / (float)10);
+  Serial.print(((int)chamberResource.dht_humidity));
   Serial.println("%");
 
   Serial.print(F("Dew Point (°C): "));
-  chamber_resource.dht_dewpoint = ((float)DHT.dewPoint());
-  Serial.println(((int)chamber_resource.dht_dewpoint));
+  chamberResource.dht_dewpoint = ((float)DHT.dewPoint());
+  Serial.println(((int)chamberResource.dht_dewpoint));
 
   delay(1000);
 }
 
-void read_si_sensor() {
+void readSiSensor() {
   Serial.println("===================");
 
-  optics_resource.si_uvindex = uv.readUV();
-  optics_resource.si_uvindex /= 100.0;
+  opticsResource.si_uvindex = uv.readUV();
+  opticsResource.si_uvindex /= 100.0;
   Serial.print("UV Index: ");
-  Serial.println((int)optics_resource.si_uvindex);
+  Serial.println((int)opticsResource.si_uvindex);
 
-  optics_resource.si_visible = uv.readVisible();
+  opticsResource.ledVisible = uv.readVisible();
   Serial.print("Vis: ");
-  Serial.println(optics_resource.si_visible);
+  Serial.println(opticsResource.ledVisible);
 
-  optics_resource.si_infrared = uv.readIR();
+  opticsResource.ledInfrared = uv.readIR();
   Serial.print("IR: ");
-  Serial.println(optics_resource.si_infrared);
+  Serial.println(opticsResource.ledInfrared);
 
   delay(1000);
 }
 
-void read_mlx_sensor() {
+void readMlxSensor() {
   Serial.println("===================");
 
-  optics_resource.mlx_amb_temp_c = mlx.readAmbientTempC();
+  opticsResource.ledTempC = mlx.readAmbientTempC();
   Serial.print("Ambient = ");
-  Serial.print(optics_resource.mlx_amb_temp_c);
+  Serial.print(opticsResource.ledTempC);
   Serial.print("°C\t");
   Serial.print(mlx.readAmbientTempF());
   Serial.println("°F");
 
-  optics_resource.mlx_obj_temp_c = mlx.readObjectTempC();
+  opticsResource.screenTempC = mlx.readObjectTempC();
   Serial.print("Object = ");
-  Serial.print(optics_resource.mlx_obj_temp_c);
+  Serial.print(opticsResource.screenTempC);
   Serial.print("°C\t");
   Serial.print(mlx.readObjectTempF());
   Serial.println("°F");
@@ -553,30 +553,30 @@ void read_mlx_sensor() {
   delay(1000);
 }
 
-void read_bme_sensor() {
+void readBmeSensor() {
   Serial.println("===================");
   //  if (bmeDetected)
   //  {
-  ambient_resource.bme_temp_c = bme.readTempC();
+  ambientResource.ambientTempC = bme.readTempC();
   Serial.print(F("Temperature Sensor:\t\t"));
-  Serial.print(ambient_resource.bme_temp_c);
+  Serial.print(ambientResource.ambientTempC);
   Serial.print("°C\t");
   Serial.print(bme.readTempF());
   Serial.println("°F");
 
-  ambient_resource.bme_humidity = bme.readHumidity();
+  ambientResource.ambientHumidity = bme.readHumidity();
   Serial.print(F("Humidity Sensor:\t\t"));
-  Serial.print(ambient_resource.bme_humidity);
+  Serial.print(ambientResource.ambientHumidity);
   Serial.println("%");
 
-  ambient_resource.bme_barometer = bme.readPressure();
+  ambientResource.ambientBarometer = bme.readPressure();
   Serial.print(F("Pressure Sensor [hPa]:\t"));
-  Serial.print(ambient_resource.bme_barometer);
+  Serial.print(ambientResource.ambientBarometer);
   Serial.println(" hPa");
 
-  ambient_resource.bme_altitude = bme.readAltitudeMeter();
+  ambientResource.ambientAltitude = bme.readAltitudeMeter();
   Serial.print(F("Altitude Sensor:\t\t"));
-  Serial.print(ambient_resource.bme_altitude);
+  Serial.print(ambientResource.ambientAltitude);
   Serial.print("m\t");
   Serial.print(bme.readAltitudeFeet());
   Serial.println("ft");
