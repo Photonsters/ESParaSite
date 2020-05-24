@@ -1,6 +1,6 @@
 // ESParaSite_HttpHandler.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -23,27 +23,25 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 
-//#include <ESPAsyncTCP.h>
-//#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
 #include "ESP32-targz.h"
 #include "ESParaSite.h"
+#include "ESParaSite_DataToJson.h"
 #include "ESParaSite_HttpCore.h"
 #include "ESParaSite_HttpFile.h"
 #include "ESParaSite_HttpHandler.h"
 
-// extern AsyncWebServer server;
 extern ESP8266WebServer server;
 
-extern ESParaSite::printchamber chamber_resource;
-extern ESParaSite::optics optics_resource;
-extern ESParaSite::ambient ambient_resource;
-extern ESParaSite::enclosure enclosure_resource;
-extern ESParaSite::status_data status_resource;
-extern ESParaSite::config_data config_resource;
-extern ESParaSite::rtc_eeprom_data rtc_eeprom_resource;
+extern ESParaSite::printchamber chamberResource;
+extern ESParaSite::optics opticsResource;
+extern ESParaSite::ambient ambientResource;
+extern ESParaSite::enclosure enclosureResource;
+extern ESParaSite::statusData statusResource;
+extern ESParaSite::configData configResource;
+extern ESParaSite::rtcEepromData rtcEepromResource;
 
 void ESParaSite::HttpHandler::handleRoot() {
   if (!ESParaSite::HttpFile::handleFileRead("/index.html")) {
@@ -55,15 +53,10 @@ void ESParaSite::HttpHandler::handleRoot() {
         "href=\"/ambient\">Ambient</a></br><a "
         "href=\"/enclosure\">Enclosure</a></br><a href=\"/config\">Config</a>");
   }
-  // Send HTTP status 200 (Ok) and send some
-  // text to the browser/client
 }
 
 void ESParaSite::HttpHandler::handleNotFound() {
-  server.send(
-      404, "text/plain",
-      "404: Not found"); // Send HTTP status 404 (Not Found) when there's no
-                         // handler for the URI in the request
+  server.send(404, "text/plain", "404: Not found");
 }
 
 void ESParaSite::HttpHandler::handleWebRequests() {
@@ -101,29 +94,29 @@ void ESParaSite::HttpHandler::getHtmlUpload() {
 void ESParaSite::HttpHandler::handleResetScreen() {
   server.send(200, "text/html", "Success!");
   Serial.print(F("Resetting LCD Screen Counter"));
-  rtc_eeprom_resource.screen_life_seconds = 0;
+  rtcEepromResource.eepromScreenLifeSec = 0;
 }
 
 void ESParaSite::HttpHandler::handleResetFep() {
   server.send(200, "text/html", "Success!");
   Serial.print(F("Resetting FEP Counter"));
-  rtc_eeprom_resource.fep_life_seconds = 0;
+  rtcEepromResource.eepromVatLifeSec = 0;
 }
 
 void ESParaSite::HttpHandler::handleResetLed() {
   server.send(200, "text/html", "Success!");
   Serial.print(F("Resetting LED Counter"));
-  rtc_eeprom_resource.led_life_seconds = 0;
+  rtcEepromResource.eepromLedLifeSec = 0;
 }
 
 void ESParaSite::HttpHandler::getJsonChamber() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
-  doc["timestamp"] = status_resource.rtc_current_second;
-  doc["chmb_temp_c"] = chamber_resource.dht_temp_c;
-  doc["chmb_humidity"] = chamber_resource.dht_humidity;
-  doc["chmb_dewpoint"] = chamber_resource.dht_dewpoint;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["chmb_temp_c"] = chamberResource.chamberTempC;
+  doc["chmb_humidity"] = chamberResource.chamberHumidity;
+  doc["chmb_dewpoint"] = chamberResource.chamberDewPoint;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -140,12 +133,12 @@ void ESParaSite::HttpHandler::getJsonOptics() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "optics";
-  doc["timestamp"] = status_resource.rtc_current_second;
-  doc["uvindex"] = optics_resource.si_uvindex;
-  doc["visible"] = optics_resource.si_visible;
-  doc["infrared"] = optics_resource.si_infrared;
-  doc["led_temp_c"] = optics_resource.mlx_amb_temp_c;
-  doc["screen_temp_c"] = optics_resource.mlx_obj_temp_c;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["uvindex"] = opticsResource.ledUVIndex;
+  doc["visible"] = opticsResource.ledVisible;
+  doc["infrared"] = opticsResource.ledInfrared;
+  doc["led_temp_c"] = opticsResource.ledTempC;
+  doc["screen_temp_c"] = opticsResource.screenTempC;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -162,11 +155,11 @@ void ESParaSite::HttpHandler::getJsonAmbient() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
-  doc["timestamp"] = status_resource.rtc_current_second;
-  doc["amb_temp_c"] = ambient_resource.bme_temp_c;
-  doc["amb_humidity"] = ambient_resource.bme_humidity;
-  doc["amb_pressure"] = ambient_resource.bme_barometer;
-  doc["altitude"] = ambient_resource.bme_altitude;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["amb_temp_c"] = ambientResource.ambientTempC;
+  doc["amb_humidity"] = ambientResource.ambientHumidity;
+  doc["amb_pressure"] = ambientResource.ambientBarometer;
+  doc["altitude"] = ambientResource.ambientAltitude;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -183,12 +176,12 @@ void ESParaSite::HttpHandler::getJsonEnclosure() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "enclosure";
-  doc["timestamp"] = status_resource.rtc_current_second;
-  doc["case_temp_c"] = enclosure_resource.case_temp;
-  doc["lifetime_sec"] = enclosure_resource.life_sec;
-  doc["screen_sec"] = enclosure_resource.lcd_sec;
-  doc["led_sec"] = enclosure_resource.led_sec;
-  doc["fep_sec"] = enclosure_resource.fep_sec;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["caseTempC_c"] = enclosureResource.caseTempC;
+  doc["lifetime_sec"] = enclosureResource.printerLifeSec;
+  doc["screen_sec"] = enclosureResource.lcdLifeSec;
+  doc["ledLifeSec"] = enclosureResource.ledLifeSec;
+  doc["vatLifeSec"] = enclosureResource.vatLifeSec;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -206,12 +199,12 @@ void ESParaSite::HttpHandler::getJsonConfig() {
   StaticJsonDocument<256> doc2;
 
   doc["class"] = "eeprom";
-  doc["timestamp"] = status_resource.rtc_current_second;
-  doc["first_on_time64"] = rtc_eeprom_resource.first_on_timestamp;
-  doc["last_write_time64"] = rtc_eeprom_resource.last_write_timestamp;
-  doc["screen_life_sec"] = rtc_eeprom_resource.screen_life_seconds;
-  doc["led_life_sec"] = rtc_eeprom_resource.led_life_seconds;
-  doc["fep_life_sec"] = rtc_eeprom_resource.fep_life_seconds;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["first_on_time64"] = rtcEepromResource.firstOnTimestamp;
+  doc["last_write_time64"] = rtcEepromResource.lastWriteTimestamp;
+  doc["screen_printerLifeSec"] = rtcEepromResource.eepromScreenLifeSec;
+  doc["led_printerLifeSec"] = rtcEepromResource.eepromLedLifeSec;
+  doc["fep_printerLifeSec"] = rtcEepromResource.eepromVatLifeSec;
 
   serializeJson(doc, Serial);
   Serial.println();
@@ -259,4 +252,10 @@ void ESParaSite::HttpHandler::getResetLed() {
               "</form>"
               "Please do not immediately turn off your printer. This change"
               "may take up to 30 seconds to be saved.<br>");
+}
+
+void ESParaSite::HttpHandler::handleHistory() {
+
+  ESParaSite::DataToJson::historyToJson();
+
 }

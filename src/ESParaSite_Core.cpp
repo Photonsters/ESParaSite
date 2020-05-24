@@ -1,6 +1,6 @@
 // ESParaSite_Core.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -24,6 +24,7 @@
 #include "ESParaSite.h"
 #include "ESParaSite_ConfigPortal.h"
 #include "ESParaSite_Core.h"
+#include "ESParaSite_DataDigest.h"
 #include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
 #include "ESParaSite_HttpCore.h"
@@ -76,21 +77,22 @@ const int TRIGGER_PIN = 0;
 // D0 on NodeMCU and WeMos.
 const int TRIGGER_PIN2 = 16;
 
-uint8_t is_printing_counter = 0;
+uint8_t isPrinting_counter = 0;
 
 const uint16_t sensors_read_msec = (ALL_SENSOR_POLLING_SEC * 1000);
 const uint16_t dht_read_msec = (DHT_SENSOR_POLLING_SEC * 1000);
 const uint16_t eeprom_write_msec = (EEPROM_WRITE_INTERVAL_SEC * 1000);
+const uint16_t history_msec = 5000;
 
-extern ESParaSite::enclosure enclosure_resource;
-extern ESParaSite::optics optics_resource;
-extern ESParaSite::rtc_eeprom_data rtc_eeprom_resource;
-extern ESParaSite::status_data status_resource;
+extern ESParaSite::enclosure enclosureResource;
+extern ESParaSite::optics opticsResource;
+extern ESParaSite::rtcEepromData rtcEepromResource;
+extern ESParaSite::statusData statusResource;
 
 WiFiClient Wifi;
 
-uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
-                                           uint16_t prev_sensor_msec) {
+uint16_t ESParaSite::Core::doReadSensors(uint16_t cur_loop_msec,
+                                         uint16_t prev_sensor_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
       sensors_read_msec) {
 
@@ -99,23 +101,23 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
     Serial.println();
 #endif
 
-    status_resource.rtc_current_second = Sensors::read_rtc_epoch();
-    enclosure_resource.life_sec = (status_resource.rtc_current_second -
-                                   rtc_eeprom_resource.first_on_timestamp);
+    statusResource.rtcCurrentSecond = Sensors::readRtcEpoch();
+    enclosureResource.printerLifeSec =
+        (statusResource.rtcCurrentSecond - rtcEepromResource.firstOnTimestamp);
 
 #ifdef DEBUG_L2
     Serial.print(F("This Printer has been on for:\t"));
-    Serial.print(enclosure_resource.life_sec);
+    Serial.print(enclosureResource.printerLifeSec);
     Serial.println(F("  seconds"));
     Serial.println();
 #endif
 
-    ESParaSite::Sensors::read_bme_sensor();
-    ESParaSite::Sensors::read_mlx_sensor();
-    ESParaSite::Sensors::read_rtc_temp();
-    ESParaSite::Sensors::read_si_sensor();
+    ESParaSite::Sensors::readBmeSensor();
+    ESParaSite::Sensors::readMlxSensor();
+    ESParaSite::Sensors::readRtcTemp();
+    ESParaSite::Sensors::readSiSensor();
 
-    do_check_printing();
+    doCheckPrinting();
 
     return millis();
   } else {
@@ -129,8 +131,8 @@ uint16_t ESParaSite::Core::do_read_sensors(uint16_t cur_loop_msec,
   }
 }
 
-uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
-                                       uint16_t prev_dht_msec) {
+uint16_t ESParaSite::Core::doReadDht(uint16_t cur_loop_msec,
+                                     uint16_t prev_dht_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_dht_msec) >= dht_read_msec) {
 
 #ifdef DEBUG_L1
@@ -138,7 +140,7 @@ uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
     Serial.println();
 #endif
 
-    ESParaSite::Sensors::read_dht_sensor(true);
+    ESParaSite::Sensors::readDhtSensor(true);
     return millis();
   } else {
 
@@ -151,8 +153,8 @@ uint16_t ESParaSite::Core::do_read_dht(uint16_t cur_loop_msec,
   }
 }
 
-uint16_t ESParaSite::Core::do_handle_eeprom(uint16_t cur_loop_msec,
-                                            uint16_t prev_eeprom_msec) {
+uint16_t ESParaSite::Core::doHandleEeprom(uint16_t cur_loop_msec,
+                                          uint16_t prev_eeprom_msec) {
   if (static_cast<uint16_t>(cur_loop_msec - prev_eeprom_msec) >=
       eeprom_write_msec) {
 
@@ -161,17 +163,17 @@ uint16_t ESParaSite::Core::do_handle_eeprom(uint16_t cur_loop_msec,
     Serial.println();
 #endif
 
-    status_resource.is_printing_flag = static_cast<uint8_t>(is_printing());
+    statusResource.isPrintingFlag = static_cast<uint8_t>(isPrinting());
 
 #ifdef DEBUG_L1
     Serial.print(F("Printing Status:\t"));
-    Serial.println(status_resource.is_printing_flag);
+    Serial.println(statusResource.isPrintingFlag);
     Serial.println();
     Serial.println(F("Writing the EEPROM"));
     Serial.println();
 #endif
 
-    ESParaSite::RtcEeprom::do_eeprom_write();
+    ESParaSite::RtcEeprom::doEepromWrite();
 
     return millis();
   } else {
@@ -185,34 +187,57 @@ uint16_t ESParaSite::Core::do_handle_eeprom(uint16_t cur_loop_msec,
   }
 }
 
-void do_check_printing() {
-  if (optics_resource.si_visible >= VISIBLE_THRESHOLD) {
+uint16_t ESParaSite::Core::doHandleHistory(uint16_t cur_loop_msec,
+                                           uint16_t prev_history_msec) {
+  if (static_cast<uint16_t>(cur_loop_msec - prev_history_msec) >=
+      history_msec) {
 
 #ifdef DEBUG_L1
-    Serial.println(F("Incrementing is_printing_counter"));
+    Serial.println(F("Processing the History"));
     Serial.println();
 #endif
 
-    is_printing_counter++;
+    ESParaSite::DataDigest::fillRow();
+    return millis();
   } else {
 
 #ifdef DEBUG_L1
-    Serial.println(F("Not incrementing is_printing_counter"));
+    Serial.println(F("We did NOT process the history"));
+    Serial.println();
+#endif
+
+    return (prev_history_msec);
+  }
+}
+
+void doCheckPrinting() {
+  if (opticsResource.ledVisible >= VISIBLE_THRESHOLD) {
+
+#ifdef DEBUG_L1
+    Serial.println(F("Incrementing isPrinting_counter"));
+    Serial.println();
+#endif
+
+    isPrinting_counter++;
+  } else {
+
+#ifdef DEBUG_L1
+    Serial.println(F("Not incrementing isPrinting_counter"));
     Serial.println();
 #endif
   }
 }
 
-bool is_printing() {
+bool isPrinting() {
   // if 50% or more of our poll intervals detect light we will set our
   // flag for the full write Interval.
-  if (is_printing_counter >=
+  if (isPrinting_counter >=
       (static_cast<uint8_t>(
           (EEPROM_WRITE_INTERVAL_SEC / ALL_SENSOR_POLLING_SEC) / 2))) {
-    is_printing_counter = 0;
-    rtc_eeprom_resource.screen_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
-    rtc_eeprom_resource.led_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
-    rtc_eeprom_resource.fep_life_seconds += EEPROM_WRITE_INTERVAL_SEC;
+    isPrinting_counter = 0;
+    rtcEepromResource.eepromScreenLifeSec += EEPROM_WRITE_INTERVAL_SEC;
+    rtcEepromResource.eepromLedLifeSec += EEPROM_WRITE_INTERVAL_SEC;
+    rtcEepromResource.eepromVatLifeSec += EEPROM_WRITE_INTERVAL_SEC;
 
 #ifdef DEBUG_L1
     Serial.println(F("Currently printing during this interval"));
@@ -221,7 +246,7 @@ bool is_printing() {
 
     return 1;
   } else {
-    is_printing_counter = 0;
+    isPrinting_counter = 0;
 
 #ifdef DEBUG_L1
     Serial.println(F("Not printing during this interval"));

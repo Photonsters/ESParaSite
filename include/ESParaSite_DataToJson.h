@@ -1,4 +1,4 @@
-// ESParaSite_HttpHandler.h
+// ESParaSite_DatatoJson.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -19,32 +19,15 @@
 
 */
 
-#ifndef INCLUDE_ESPARASITE_HTTP_HANDLERS_H_
-#define INCLUDE_ESPARASITE_HTTP_HANDLERS_H_
-
-class http_rest_server;
+#ifndef INCLUDE_ESPARASITE_DATATOJSON_H_
+#define INCLUDE_ESPARASITE_DATATOJSON_H_
 
 namespace ESParaSite {
-namespace HttpHandler {
+namespace DataToJson {
 
-void handleRoot();
-void handleNotFound();
-void handleWebRequests();
-void handleResetScreen();
-void handleResetFep();
-void handleResetLed();
-void getHtmlUpload();
-void getJsonChamber();
-void getJsonOptics();
-void getJsonAmbient();
-void getJsonEnclosure();
-void getJsonConfig();
-void getResetScreen();
-void getResetFep();
-void getResetLed();
-void handleHistory();
+void historyToJson();
 
-}; // namespace HttpHandler
-}; // namespace ESParaSite
+} // namespace DataToJson
+} // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_HTTP_HANDLERS_H_
+#endif // INCLUDE_ESPARASITE_DATATOJSON_H_

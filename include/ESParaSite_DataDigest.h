@@ -1,4 +1,4 @@
-// ESParaSite_RtcEepromCore.h
+// ESParaSite_DataDigest.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -18,21 +18,38 @@
         web standards, etc.
 
 */
+#include <time.h>
 
-#ifndef INCLUDE_ESPARASITE_EEPROM_H_
-#define INCLUDE_ESPARASITE_EEPROM_H_
+#ifndef INCLUDE_ESPARASITE_DIGEST_H_
+#define INCLUDE_ESPARASITE_DIGEST_H_
+
+#define FIVESECMAXELEMENT (5)
+#define THIRTYSECMAXELEMENT (9)
+#define THREEHSECMAXELEMENT (11)
+
+struct history {
+  time_t dataTimestamp;
+  float chamberTempC;
+  float chamberHumidity;
+  float ambientTempC;
+  float ambientHumidity;
+  float screenTempC;
+  float ledTempC;
+  bool ledOn;
+};
+
+void fivesToThirty();
+void thirtysToThreeH();
+
+#define FIVESECMAXELEMENT (5)
 
 namespace ESParaSite {
-namespace RtcEeprom {
-void initRtcEeprom();
-void dumpEEPROM(uint16_t, uint16_t);
-int doEepromFirstRead();
-uint8_t doEepromRead(uint16_t);
-uint8_t doEepromWrite();
+namespace DataDigest {
 
-}; // namespace RtcEeprom
-}; // namespace ESParaSite
+void fillRow();
+void printRows();
 
-void do_eeprom_format(uint8_t);
+} // namespace DataDigest
+} // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_EEPROM_H_
+#endif // INCLUDE_ESPARASITE_DIGEST_H_

@@ -1,6 +1,6 @@
 // ESParaSite_ConfigFile.cpp
 
-/* ESParasite Data Logger v0.6
+/* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -36,7 +36,7 @@
 #include "ESParaSite_FileCore.h"
 
 
-extern ESParaSite::config_data config_resource;
+extern ESParaSite::configData configResource;
 
 bool ESParaSite::FileCore::loadConfig() {
   //  Serial.println(F("Inside loadconfig()"));
@@ -97,54 +97,54 @@ bool ESParaSite::FileCore::loadConfig() {
   }
 
   //  Serial.println(F("JSON deserialized about to place values in
-  //  config_resource")); Serial.println(F("Waiting 3 Seconds..."));
+  //  configResource")); Serial.println(F("Waiting 3 Seconds..."));
   //  delay(3000);
 
-  config_resource.cfg_wifi_ssid = doc["wifi_ssid"];
+  configResource.cfgWifiSsid = doc["wifi_ssid"];
   //  Serial.println(F("wifi_ssid"));
-  config_resource.cfg_wifi_password = doc["wifi_password"];
+  configResource.cfgWifiPassword = doc["wifi_password"];
   //  Serial.println(F("wifi_password"));
-  config_resource.cfg_pin_sda = doc["sda_pin"];
+  configResource.cfgPinSda = doc["sda_pin"];
   //  Serial.println(F("sda_pin"));
-  config_resource.cfg_pin_scl = doc["scl_pin"];
+  configResource.cfgPinScl = doc["scl_pin"];
   //  Serial.println(F("scl_pin"));
-  config_resource.cfg_mdns_enabled = doc["mdns_enabled"];
+  configResource.cfgMdnsEnabled = doc["mdns_enabled"];
   //  Serial.println(F("mdns_enabled"));
-  strncpy(config_resource.cfg_mdns_name, doc["mdns_name"], 32);
-  int len = strlen(config_resource.cfg_mdns_name);
-    if (len > 0 && config_resource.cfg_mdns_name[len - 1] == '\n') {
-    config_resource.cfg_mdns_name[len - 1] = '\0';
+  strncpy(configResource.cfgMdnsName, doc["mdns_name"], 32);
+  int len = strlen(configResource.cfgMdnsName);
+    if (len > 0 && configResource.cfgMdnsName[len - 1] == '\n') {
+    configResource.cfgMdnsName[len - 1] = '\0';
   }
   //  Serial.println(F("mdns_name"));
 
   // This if statement currently crashes the system due to an interaction between strncmp and Null vlaues.
   // We need to clean this up when we fully implement backing up wifi config to config.json.
   /*
-  if (!strncmp(config_resource.cfg_wifi_ssid, "", 32 )) {
+  if (!strncmp(configResource.cfgWifiSsid, "", 32 )) {
     Serial.println("No Wifi config set in config.json");
     Serial.println("");
   } else {
     Serial.println("Wifi Config loaded from config.json");
     Serial.print("SSID: ");
-    Serial.println(config_resource.cfg_wifi_ssid);
+    Serial.println(configResource.cfgWifiSsid);
     Serial.print("PASSWORD: ");
-    Serial.println(config_resource.cfg_wifi_password);
+    Serial.println(configResource.cfgWifiPassword);
     Serial.println("");
   }
   */
 
-  if (config_resource.cfg_mdns_enabled == 1) {
+  if (configResource.cfgMdnsEnabled == 1) {
     Serial.println(F("mDNS enabled on URL:"));
     Serial.print(F("http://"));
-    Serial.print(config_resource.cfg_mdns_name);
+    Serial.print(configResource.cfgMdnsName);
     Serial.println(F(".local"));
     Serial.println();
   }
 
   Serial.print(F("I2C Bus on Pins (SDA,SCL): "));
-  Serial.print(config_resource.cfg_pin_sda);
+  Serial.print(configResource.cfgPinSda);
   Serial.print(F(", "));
-  Serial.println(config_resource.cfg_pin_scl);
+  Serial.println(configResource.cfgPinScl);
   Serial.println();
 
   return true;
@@ -152,12 +152,12 @@ bool ESParaSite::FileCore::loadConfig() {
 
 bool ESParaSite::FileCore::saveConfig() {
   StaticJsonDocument<200> doc;
-  doc["wifi_ssid"] = config_resource.cfg_wifi_ssid;
-  doc["wifi_password"] = config_resource.cfg_wifi_password;
-  doc["sda_pin"] = config_resource.cfg_pin_sda;
-  doc["scl_pin"] = config_resource.cfg_pin_scl;
-  doc["mdns_enabled"] = config_resource.cfg_mdns_enabled;
-  doc["mdns_name"] = config_resource.cfg_mdns_name;
+  doc["wifi_ssid"] = configResource.cfgWifiSsid;
+  doc["wifi_password"] = configResource.cfgWifiPassword;
+  doc["sda_pin"] = configResource.cfgPinSda;
+  doc["scl_pin"] = configResource.cfgPinScl;
+  doc["mdns_enabled"] = configResource.cfgMdnsEnabled;
+  doc["mdns_name"] = configResource.cfgMdnsName;
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
