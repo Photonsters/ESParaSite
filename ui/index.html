@@ -13,6 +13,17 @@
 
 		$(function () {
 
+			$('.load-home').on('click', function (e) {
+				window.location.reload();
+				e.preventDefault();
+				$('#content').load($(this).data('url'));
+				return false;
+			});
+
+		});
+
+		$(function () {
+
 			$('.load-content').on('click', function (e) {
 				e.preventDefault();
 				$('#content').load($(this).data('url'));
@@ -105,10 +116,11 @@
 			padding: 8px;
 		}
 
-		.content{
+		.content {
 			min-height: fit-content;
 			min-height: 600px;
 		}
+
 		/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
 		@media screen and (max-width: 600px) {
 
@@ -199,28 +211,29 @@
 				<br>
 				<ul>
 					<li>
-						<a href="" data-url="home.html" class="load-content"> Home </a>
+						<a href="" data-url="home.html" class="load-home"> Home </a>
 					</li>
 					<li>
 						<a href=""> Status </a>
 					</li>
 					<li>
-						<a href="" data-url="printchamber" class="load-content"> Print Chamber </a>
+						<a href="" data-url="http://esparasite.local/printchamber" class="load-content"> Print Chamber
+						</a>
 					</li>
 					<li>
-						<a href="" data-url="ambient" class="load-content"> Ambient </a>
+						<a href="" data-url="http://esparasite.local/ambient" class="load-content"> Ambient </a>
 					</li>
 					<li>
-						<a href="" data-url="optics" class="load-content"> Optics </a>
+						<a href="" data-url="http://esparasite.local/optics" class="load-content"> Optics </a>
 					</li>
 					<li>
-						<a href="" data-url="enclosure" class="load-content"> Diagnostics </a>
+						<a href="" data-url="http://esparasite.local/enclosure" class="load-content"> Diagnostics </a>
 					</li>
 					<li>
 						<a href=""> WiFi </a>
 					</li>
 					<li>
-						<a href="upload"> Upload </a>
+						<a href="" data-url="http://esparasite.local/upload" class="load-content"> Upload </a>
 					</li>
 				</ul>
 				<br>

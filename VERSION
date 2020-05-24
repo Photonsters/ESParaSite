@@ -20,27 +20,42 @@
 */
 
 /*
-v0.9 - 
-	- Implemented chart.js and jquery.js in order to start creating a better web GUI
-	- DARK MODE GUI
-	- Completed renaming variables and functions from_my_convention to moreCommonConventions
+v0.9 - Iodamoeba buetschlii - 2020-05-24
+	- Implemented locally served chart.js and jquery.js in order to start 
+		creating a better web GUI
+	- DARK MODE Web GUI Phase 1
+		- GUI dispalys chart of 4 common values and table of 7 important 
+			values
+		- GUI has links to all major JSON feeds
+		- GUI has link to upload page.
+		- GUI home page graph and table leverage reduced data and on refresh 
+			show current and historical state
+		* GUI must be currently uploaded file by file.
+		* Warning: Currently for development we use some hardcoded URLs in 
+		  index.html, home.html and home.js. If you reneame your esparasite
+		  this will cause issues.
+	- Continued renaming variables and functions from_my_convention to 
+		moreCommonConventions
+	- Implemented data parsing and reduction feature.
+		- We now hold 6 ticks of 5 seconds, 10 ticks of 20 seconds and 12 ticks 
+			of 5 minutes
 
 
 v0.8 - Heterophyiasis - 2020-05-15
 	- Separated HTTP routines into Core and Handler files. This will make 
 		code easier to scale.
 	- Implemented ESP32-Targz as a hardcoded library.
-		- This will allow us to upload and unarchive .gz, .tar.gz and .tar 
-			files
-		- gunzip is extremely memory intensive and may not be supported 
-			long term
+		- This will eventually allow us to upload and unarchive .gz, .tar.gz 
+			and .tar files
+		- gunzip is extremely memory intensive and may not be supportable 
 		- the main point of adding this is to be able to upload a website
 			"package" so the web GUI can be uploaded and upgraded 
 			separately from the core code.
 	- Implemented HTTP Uploads to SPIFFS
-	- Implemented HTTP POST methods to allow reset of lifetime counters for LCD 
-		Screen, LED Array and Vat FEP 
-	- Started to rename variables and functions from_my_convention to moreCommonConventions
+	- Implemented HTTP POST methods to allow reset of lifetime counters for 
+		LCD Screen, LED Array and Vat FEP 
+	- Started to rename variables and functions from_my_convention to 
+		moreCommonConventions
 
 
 v0.7 - Seventh Release - Giardiasis 2020-05-13
