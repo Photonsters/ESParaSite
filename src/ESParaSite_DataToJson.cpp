@@ -22,11 +22,21 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <cppQueue.h>
 
 #include "ESParaSite.h"
 #include "ESParaSite_DataDigest.h"
 #include "ESParaSite_DataToJson.h"
+
+extern ESParaSite::printchamber chamberResource;
+extern ESParaSite::optics opticsResource;
+extern ESParaSite::ambient ambientResource;
+extern ESParaSite::enclosure enclosureResource;
+extern ESParaSite::statusData statusResource;
+extern ESParaSite::configData configResource;
+extern ESParaSite::rtcEepromData rtcEepromResource;
 
 extern Queue fiveSecHistory;
 extern Queue thirtySecHistory;
@@ -39,51 +49,49 @@ void ESParaSite::DataToJson::historyToJson() {
   const int capacity =
       28 * JSON_ARRAY_SIZE(1) + 28 * JSON_OBJECT_SIZE(8) + JSON_OBJECT_SIZE(28);
   DynamicJsonDocument doc(capacity);
-  
-    for (int i = 0; i <= THREEHSECMAXELEMENT; i++) {
-      history tempStruct = {0};
-      threeHSecHistory.peekIdx(&tempStruct, i);
 
-      if (tempStruct.dataTimestamp != 0) {
-        String nest = String(position, DEC);
-        JsonObject obj = doc.createNestedObject(nest);
-        obj["ts"] = tempStruct.dataTimestamp;
-        obj["at"] = tempStruct.ambientTempC;
-        obj["ah"] = tempStruct.ambientHumidity;
-        obj["ct"] = tempStruct.chamberTempC;
-        obj["ch"] = tempStruct.chamberHumidity;
-        obj["lt"] = tempStruct.ledTempC;
-        obj["st"] = tempStruct.screenTempC;
-        obj["lo"] = tempStruct.ledOn;
+  for (int i = 0; i <= THREEHSECMAXELEMENT; i++) {
+    history tempStruct = {0};
+    threeHSecHistory.peekIdx(&tempStruct, i);
 
-        position++;
-      } else {
-        position++;
-      }
+    if (tempStruct.dataTimestamp != 0) {
+      String nest = String(position, DEC);
+      JsonObject obj = doc.createNestedObject(nest);
+      obj["ts"] = tempStruct.dataTimestamp;
+      obj["at"] = tempStruct.ambientTempC;
+      obj["ah"] = tempStruct.ambientHumidity;
+      obj["ct"] = tempStruct.chamberTempC;
+      obj["ch"] = tempStruct.chamberHumidity;
+      obj["lt"] = tempStruct.ledTempC;
+      obj["st"] = tempStruct.screenTempC;
+      obj["lo"] = tempStruct.ledOn;
+
+      position++;
+    } else {
+      position++;
     }
+  }
 
+  for (int i = 0; i <= THIRTYSECMAXELEMENT; i++) {
+    history tempStruct = {0};
+    thirtySecHistory.peekIdx(&tempStruct, i);
 
-    for (int i = 0; i <= THIRTYSECMAXELEMENT; i++)
-    {
-      history tempStruct = {0};
-      thirtySecHistory.peekIdx(&tempStruct, i);
+    if (tempStruct.dataTimestamp != 0) {
+      String nest = String(position, DEC);
+      JsonObject obj = doc.createNestedObject(nest);
+      obj["ts"] = tempStruct.dataTimestamp;
+      obj["at"] = tempStruct.ambientTempC;
+      obj["ah"] = tempStruct.ambientHumidity;
+      obj["ct"] = tempStruct.chamberTempC;
+      obj["ch"] = tempStruct.chamberHumidity;
+      obj["lt"] = tempStruct.ledTempC;
+      obj["st"] = tempStruct.screenTempC;
+      obj["lo"] = tempStruct.ledOn;
 
-      if (tempStruct.dataTimestamp != 0) {
-        String nest = String(position, DEC);
-        JsonObject obj = doc.createNestedObject(nest);
-        obj["ts"] = tempStruct.dataTimestamp;
-        obj["at"] = tempStruct.ambientTempC;
-        obj["ah"] = tempStruct.ambientHumidity;
-        obj["ct"] = tempStruct.chamberTempC;
-        obj["ch"] = tempStruct.chamberHumidity;
-        obj["lt"] = tempStruct.ledTempC;
-        obj["st"] = tempStruct.screenTempC;
-        obj["lo"] = tempStruct.ledOn;
-
-        position++;
-      } else {
-        position++;
-      }
+      position++;
+    } else {
+      position++;
+    }
   }
 
   for (int i = 0; i <= FIVESECMAXELEMENT; i++) {
@@ -106,16 +114,36 @@ void ESParaSite::DataToJson::historyToJson() {
     } else {
       position++;
     }
+  }
+
+  String output; //= "JSON = ";
+  serializeJson(doc, output);
+  server.send(200, "application/json", output);
+
+  /*
+  size_t size = serializeJson(doc, Serial);
+  Serial.println();
+  Serial.println(size);
+  Serial.println();
+  */
 }
 
-String output; //= "JSON = ";
-serializeJson(doc, output);
-server.send(200, "application/json", output);
+void ESParaSite::DataToJson::statusToJson() {
+  StaticJsonDocument<256> doc;
+  String tempArray[5];
+  tempArray[0] = WiFi.SSID();
+  tempArray[1] = WiFi.RSSI();
+  tempArray[2] = WiFi.localIP().toString();
+  tempArray[3] = MDNS.isRunning();
+  tempArray[4] = configResource.cfgMdnsName;
 
-/*
-size_t size = serializeJson(doc, Serial);
-Serial.println();
-Serial.println(size);
-Serial.println();
-*/
+  doc["ssid"] = tempArray[0];
+  doc["rssi"] = tempArray[1];
+  doc["ipaddr"] = tempArray[2];
+  doc["mdnsS"] = tempArray[3];
+  doc["mdnsN"] = tempArray[4];
+
+  String output; //= "JSON = ";
+  serializeJson(doc, output);
+  server.send(200, "application/json", output);
 }

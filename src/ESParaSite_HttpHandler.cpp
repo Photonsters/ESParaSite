@@ -109,115 +109,6 @@ void ESParaSite::HttpHandler::handleResetLed() {
   rtcEepromResource.eepromLedLifeSec = 0;
 }
 
-void ESParaSite::HttpHandler::getJsonChamber() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "chamber";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["chmb_temp_c"] = chamberResource.chamberTempC;
-  doc["chmb_humidity"] = chamberResource.chamberHumidity;
-  doc["chmb_dewpoint"] = chamberResource.chamberDewPoint;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonOptics() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "optics";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["uvindex"] = opticsResource.ledUVIndex;
-  doc["visible"] = opticsResource.ledVisible;
-  doc["infrared"] = opticsResource.ledInfrared;
-  doc["led_temp_c"] = opticsResource.ledTempC;
-  doc["screen_temp_c"] = opticsResource.screenTempC;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonAmbient() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "ambient";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["amb_temp_c"] = ambientResource.ambientTempC;
-  doc["amb_humidity"] = ambientResource.ambientHumidity;
-  doc["amb_pressure"] = ambientResource.ambientBarometer;
-  doc["altitude"] = ambientResource.ambientAltitude;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonEnclosure() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "enclosure";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["caseTempC_c"] = enclosureResource.caseTempC;
-  doc["lifetime_sec"] = enclosureResource.printerLifeSec;
-  doc["screen_sec"] = enclosureResource.lcdLifeSec;
-  doc["ledLifeSec"] = enclosureResource.ledLifeSec;
-  doc["vatLifeSec"] = enclosureResource.vatLifeSec;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonConfig() {
-  StaticJsonDocument<256> doc;
-  StaticJsonDocument<256> doc2;
-
-  doc["class"] = "eeprom";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["first_on_time64"] = rtcEepromResource.firstOnTimestamp;
-  doc["last_write_time64"] = rtcEepromResource.lastWriteTimestamp;
-  doc["screen_printerLifeSec"] = rtcEepromResource.eepromScreenLifeSec;
-  doc["led_printerLifeSec"] = rtcEepromResource.eepromLedLifeSec;
-  doc["fep_printerLifeSec"] = rtcEepromResource.eepromVatLifeSec;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  serializeJson(doc2, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  serializeJsonPretty(doc2, output);
-  server.send(200, "application/json", output);
-}
-
 void ESParaSite::HttpHandler::getResetScreen() {
   server.send(200, "text/html",
               "<font size=\"+3\">WARNING - This will reset the lifetime"
@@ -257,5 +148,18 @@ void ESParaSite::HttpHandler::getResetLed() {
 void ESParaSite::HttpHandler::handleHistory() {
 
   ESParaSite::DataToJson::historyToJson();
+}
 
+void ESParaSite::HttpHandler::handleGuiData() {
+  String message = ("Feed not Found.");
+
+  for (int i = 0; i < server.args(); i++) {
+
+    if (server.argName(i) == "readHistory") {
+      ESParaSite::DataToJson::historyToJson();
+    } else if (server.argName(i) == "status") {
+      ESParaSite::DataToJson::statusToJson();
+    }
+  }
+  server.send(200, "text/plain", message); // Response to the HTTP request
 }

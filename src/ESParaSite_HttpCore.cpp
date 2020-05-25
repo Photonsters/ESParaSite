@@ -66,6 +66,7 @@ void ESParaSite::HttpCore::configHttpServerRouting() {
   server.on("/reset_screen", HTTP_GET, ESParaSite::HttpHandler::getResetScreen);
   server.on("/reset_fep", HTTP_GET, ESParaSite::HttpHandler::getResetFep);
   server.on("/reset_led", HTTP_GET, ESParaSite::HttpHandler::getResetLed);
+  server.on("/guiFeed", HTTP_GET, ESParaSite::HttpHandler::handleGuiData);
 
   server.on(
       "/upload", HTTP_POST, []() { server.send(200); },
