@@ -43,6 +43,7 @@ void getResetScreen();
 void getResetFep();
 void getResetLed();
 void handleHistory();
+void handleGuiData();
 
 }; // namespace HttpHandler
 }; // namespace ESParaSite

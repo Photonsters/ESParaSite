@@ -89,8 +89,8 @@ void fivesToThirty() {
   int tempLOArray[] = {0};
 
   history thirtySecFill;
-  Serial.print("Size of Queue: ");
-  Serial.print(fiveSecHistory.getCount());
+  //Serial.print("Size of Queue: ");
+  //Serial.print(fiveSecHistory.getCount());
   // Now we crack open all of the structs in the queue and reassemble them
   // into arrays so we can do math against them.
   for (int i = 0; i <= n; i++)

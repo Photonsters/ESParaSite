@@ -203,9 +203,8 @@ void setup(void) {
   delay(500);
 #endif
 
-#ifdef DEBUG_L1
+
   Serial.println(F("Mounting FS..."));
-#endif
 
   // Mount the LittleFS Filesystem
   if (!LittleFS.begin()) {
@@ -213,10 +212,7 @@ void setup(void) {
                      "Config Portal mode."));
     ESParaSite::ConfigPortal::doConfigPortal();
   } else {
-
-#ifdef DEBUG_L1
     Serial.println(F("File system mounted"));
-#endif
   }
 
 #ifdef DEBUG_L1

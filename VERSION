@@ -20,6 +20,11 @@
 */
 
 /*
+v.10 - Kala-azar 
+	- Moved GUI data feeds to be a single page with query strings
+	- Moved all HTTP_GET handlers that return JSON to their own cpp file
+	- Moved all HTTP Handlers for the web GUI to their own file.
+
 v0.9 - Iodamoeba buetschlii - 2020-05-24
 	- Implemented locally served chart.js and jquery.js in order to start 
 		creating a better web GUI

@@ -107,7 +107,7 @@ function showGraph() {
                 backgroundColor: 'rgba( 234, 119, 4, 1)', //Dot marker color
                 borderColor: 'rgba( 234, 119, 4, 1)', //Graph Line Color
                 fontColor: 'rgba(236 ,236, 236, 1)',
-                data: cHValues,
+                data: cHValues, 
             },
             {
                 label: "Ambient Temperature",
@@ -124,8 +124,8 @@ function showGraph() {
                 fill: false,  //Try with true
                 pointBackgroundColor: 'rgba(255 ,255 ,255 ,1)',
                 pointRadius: '2',
-                backgroundColor: 'rgba( 59, 1, 160, 1)', //Dot marker color
-                borderColor: 'rgba( 59, 1, 160, 1)', //Graph Line Color
+                backgroundColor: 'rgba( 146, 160, 254, 1)', //Dot marker color
+                borderColor: 'rgba(146, 160, 254, 1)', //Graph Line Color
                 fontColor: 'rgba(236 ,236, 236, 1)',
                 data: aHValues,
             }],
@@ -174,10 +174,11 @@ function showGraph() {
 
 //On Page load show graphs
 window.onload = function () {
-
+ 
 };
 
 generateTableHead(table);
+getData();
 
 let timerId = setTimeout(function tick() {
     getData();
@@ -256,7 +257,7 @@ function getData() {
         } else {
         };
     };
-    xhttp.open("GET", "http://esparasite.local/readHistory", true); //Handle readHistory server on ESP8266
+    xhttp.open("GET", "http://esparasite.local/guiFeed?readHistory=1", true); //Handle readHistory server on ESP8266
     xhttp.send();
 }
 
