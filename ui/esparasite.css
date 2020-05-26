@@ -2,11 +2,17 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+}
+
 body {
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
   color: #dadada;
   background-color: #1c1c1c;
-  margin: 1;
+  height: 100%;
+  margin: 0;
+  padding: 5px;
 }
 
 canvas {
@@ -36,8 +42,8 @@ h1 {
   font-size: x-large;
   color: #dadada;
   text-align: center;
-  padding-top: 2px;
-  padding-bottom: 0px;
+  line-height: 64px;
+  margin: 0;
 }
 
 h2 {
@@ -52,8 +58,7 @@ h2 {
   background-color: #444444;
   color: #dadada;
   text-align: center;
-  padding-bottom: 1px;
-  position: fixed;
+  height: 64px;
   width: 100%;
 }
 
@@ -61,6 +66,7 @@ h2 {
   overflow: hidden;
   background-color: #333333;
   width: 145px;
+  padding: 1em 0;
 }
 
 /* Navbar links */
@@ -74,39 +80,48 @@ h2 {
 }
 
 /* Links - change color on hover */
-.navigation a:hover {
+.navigation a:hover, .navigation a.active:hover {
   background-color: #a8a8a8;
   color: black;
 }
+.navigation a.active {
+  background-color: #555;
+}
+
+.row {
+  height: calc(100% - 74px);
+  display: flex;
+}
 
 .column {
-  float: left;
   align-content: center;
 }
 
 /* Left and right column */
 .column.left {
   width: 145px;
-  position: fixed;
-  top: 80px;
-}
-
-/* Left and right column */
-.column.right {
-  width: 8%;
-  position: fixed;
-  top: 80px;
 }
 
 /* Middle column */
 .column.middle {
   width: 82%;
+  height: 100%;
   text-align: center;
   align-content: center;
-  position: fixed;
-  top: 80px;
-  left: 175px;
-  min-height: 600px;
+  display: flex;
+  flex: 1;
+}
+
+.column.middle iframe {
+  flex-grow: 1;
+  border: none;
+  margin: 0;
+  padding: 0;
+  overflow:hidden;
+}
+
+.column.right {
+  width: 8%;
 }
 
 .logo {
@@ -134,13 +149,13 @@ h2 {
     width: 100%;
   }
 }
-/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other
 @media screen and (max-height: 600px) {
   .column.side,
   .column.middle {
     overflow: scroll;
   }
-}
+} */
 
 /* Clear floats after the columns */
 .row:after {
@@ -221,29 +236,30 @@ h2 {
   color: #d3d3d3;
 }
 
+#homeContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .homeTop {
-  position: fixed;
-  padding-top: 4px;
-  padding-bottom: 4px;
   background-color: #2e2e2e;
-  margin-left: 0px;
   color: #d3d3d3;
-  width: 82%;
+  flex: 6;
+  display: flex;
+  margin-bottom: 10px;
+}
+.chart-container {
+  width: 100%;
 }
 
 .homeBottom {
-  position: fixed;
-  top: 525px;
   padding-bottom: 4px;
   background-color: #222222;
-  margin-left: 0px;
   color: #d3d3d3;
-  min-height: 400px;
-  max-height: 40%;
   overflow-y: scroll;
-  justify-content: center;
-  width: 82%;
-  scrollbar-width: none;
+  /* scrollbar-width: none; */
+  flex: 4;
 }
 
 .statusTop {

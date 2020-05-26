@@ -1,24 +1,26 @@
 ﻿<!DOCTYPE html>
 <html>
-  <head>
-    <title>ESParaSite</title>
-    <script src="Chart.min.js"></script>
-    <script src="home.js"></script>
-    <link rel="stylesheet" href="esparasite.css" />
-  </head>
 
-  <body>
+<head>
+  <title>ESParaSite</title>
+  <script src="Chart.min.js"></script>
+  <link rel="stylesheet" href="esparasite.css" />
+</head>
+
+<body>
+  <div id="homeContainer">
     <div class="homeTop">
-      <div
-        class="chart-container" height="350px"width="100%">
-        <canvas id="Chart" height="400" width="400"> </canvas>
+      <div class="chart-container">
+        <canvas id="Chart" width="400"> </canvas>
       </div>
-      <br />
     </div>
     <div class="homeBottom">
       <table id="dataTable"></table>
     </div>
+  </div>
 
-    <br /><br />
-  </body>
+  <script src="home.js"></script>
+
+</body>
+
 </html>

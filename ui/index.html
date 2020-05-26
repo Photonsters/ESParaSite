@@ -16,10 +16,9 @@
 				<img src="ESParaSite_Logo_inv.png" width="125px"></img>
 			</div>
 			<div class="navigation">
-				<br>
 				<ul>
 					<li>
-						<a target='content' href="home.html" class="load-content">Home</a>
+						<a target='content' href="home.html" class="active">Home</a>
 					</li>
 					<li>
 						<a target='content' href="status.html">Status</a>
@@ -28,28 +27,24 @@
 						<a target='content' href="wifi.html">WiFi</a>
 					</li>
 					<li>
-						<a target='content' href="diagnostics.html">WiFi</a>
+						<a target='content' href="diagnostics.html">Diagnostics</a>
 					</li>
 					<li>
-						<a target='content' href="http://esparasite.local/printchamber" class="load-content">Print
-							Chamber</a>
+						<a target='content' href="http://esparasite.local/printchamber">Print Chamber</a>
 					</li>
 					<li>
-						<a target='content' href="http://esparasite.local/ambient" class="load-content">Ambient</a>
+						<a target='content' href="http://esparasite.local/ambient">Ambient</a>
 					</li>
 					<li>
-						<a target='content' href="http://esparasite.local/optics" class="load-content">Optics</a>
+						<a target='content' href="http://esparasite.local/optics">Optics</a>
 					</li>
 					<li>
-						<a target='content' href="http://esparasite.local/enclosure"
-							class="load-content">Enclosure</a>
+						<a target='content' href="http://esparasite.local/enclosure">Enclosure</a>
 					</li>
-
 					<li>
-						<a target='content' href="http://esparasite.local/upload" class="load-content">Upload</a>
+						<a target='content' href="http://esparasite.local/upload">Upload</a>
 					</li>
 				</ul>
-				<br>
 			</div>
 		</div>
 		<div class="column middle">
@@ -58,6 +53,15 @@
 		<div class="column right">
 		</div>
 	</div>
+
+	<script>
+		document.querySelectorAll('.navigation a').forEach(function (a) {
+			a.onclick = function (e) {
+				document.querySelector('a.active').classList.remove('active');
+				a.classList.add('active');
+			}
+		});
+	</script>
 </body>
 
 </html>
