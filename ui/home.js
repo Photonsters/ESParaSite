@@ -174,10 +174,9 @@ function showGraph() {
 
 //On Page load show graphs
 window.onload = function () {
-
+    generateTableHead(table);
 };
 
-generateTableHead(table);
 
 let timerId = setTimeout(function tick() {
     getData();
