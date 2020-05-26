@@ -7,46 +7,18 @@ window.onload = function () {
 
 let table = document.getElementById("dataTable");
 
-generateTableHead(table);
-getData();
+generateNetworkTableHead(table);
+getNetworkData();
 
 function generateNetworkTableHead(table) {
     let thead = table.createTHead();
     let row = thead.insertRow();
     let th = document.createElement("th");
-    let text = document.createTextNode("TimeStamp");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("Chamber Temperature (°C)");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("Chamber Humidity (%)");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("Ambient Temperature (°C)");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("Ambient Humidity (%)");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("LED Temperature (°C)");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("Screen Temperature (°C)");
-    th.appendChild(text);
-    row.appendChild(th);
-    th = document.createElement("th");
-    text = document.createTextNode("LED On");
+    let text = document.createTextNode("Networking Status");
     th.appendChild(text);
     row.appendChild(th);
 }
-function getData() {
+function getNetworkData() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
@@ -75,7 +47,7 @@ function getData() {
             text = document.createTextNode(obj["ssid"]);
             cell.appendChild(text);
 
-            let row = table.insertRow();
+            row = table.insertRow();
             cell = row.insertCell();
             text = "Signal Strength";
             cell.appendChild(text);
@@ -83,7 +55,7 @@ function getData() {
             text = document.createTextNode(obj[k]["rssi"]);
             cell.appendChild(text);
 
-            let row = table.insertRow();
+            row = table.insertRow();
             cell = row.insertCell();
             text = "IP address";
             cell.appendChild(text);
@@ -91,7 +63,7 @@ function getData() {
             text = document.createTextNode(obj[k]["ipaddr"]);
             cell.appendChild(text);
 
-            let row = table.insertRow();
+            row = table.insertRow();
             cell = row.insertCell();
             text = "MDNS Active";
             cell.appendChild(text);
@@ -103,7 +75,7 @@ function getData() {
             }
             cell.appendChild(text);
 
-            let row = table.insertRow();
+            row = table.insertRow();
             cell = row.insertCell();
             text = "MDNS Name";
             cell.appendChild(text);

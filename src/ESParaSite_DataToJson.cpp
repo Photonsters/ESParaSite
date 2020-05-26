@@ -128,7 +128,7 @@ void ESParaSite::DataToJson::historyToJson() {
   */
 }
 
-void ESParaSite::DataToJson::statusToJson() {
+void ESParaSite::DataToJson::networkToJson() {
   StaticJsonDocument<256> doc;
   String tempArray[5];
   tempArray[0] = WiFi.SSID();
@@ -142,6 +142,28 @@ void ESParaSite::DataToJson::statusToJson() {
   doc["ipaddr"] = tempArray[2];
   doc["mdnsS"] = tempArray[3];
   doc["mdnsN"] = tempArray[4];
+
+  String output; //= "JSON = ";
+  serializeJson(doc, output);
+  server.send(200, "application/json", output);
+}
+
+void ESParaSite::DataToJson::statusToJson(){
+  StaticJsonDocument<256> doc;
+  String tempArray[6];
+  tempArray[0] = rtcEepromResource.lastWriteTimestamp;
+  tempArray[1] = enclosureResource.printerLifeSec;
+  tempArray[2] = enclosureResource.lcdLifeSec;
+  tempArray[3] = enclosureResource.vatLifeSec;
+  tempArray[4] = enclosureResource.ledLifeSec;
+  tempArray[5] = enclosureResource.caseTempC;
+
+  doc["lwts"] = tempArray[0];
+  doc["prls"] = tempArray[1];
+  doc["scrls"] = tempArray[2];
+  doc["vatls"] = tempArray[3];
+  doc["ledls"] = tempArray[4];
+  doc["castc"] = tempArray[4];
 
   String output; //= "JSON = ";
   serializeJson(doc, output);

@@ -174,11 +174,8 @@ function showGraph() {
 
 //On Page load show graphs
 window.onload = function () {
- 
+    generateTableHead(table);
 };
-
-generateTableHead(table);
-getData();
 
 let timerId = setTimeout(function tick() {
     getData();
@@ -257,7 +254,7 @@ function getData() {
         } else {
         };
     };
-    xhttp.open("GET", "http://esparasite.local/guiFeed?readHistory=1", true); //Handle readHistory server on ESP8266
+    xhttp.open("GET", "readHistory.html", true); //Handle readHistory server on ESP8266
     xhttp.send();
 }
 
