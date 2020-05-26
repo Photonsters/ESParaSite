@@ -26,6 +26,7 @@ namespace ESParaSite {
 namespace DataToJson {
 
 void historyToJson();
+void networkToJson();
 void statusToJson();
 
 } // namespace DataToJson

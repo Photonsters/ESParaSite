@@ -157,6 +157,8 @@ void ESParaSite::HttpHandler::handleGuiData() {
 
     if (server.argName(i) == "readHistory") {
       ESParaSite::DataToJson::historyToJson();
+    } else if (server.argName(i) == "network") {
+      ESParaSite::DataToJson::networkToJson();
     } else if (server.argName(i) == "status") {
       ESParaSite::DataToJson::statusToJson();
     }
