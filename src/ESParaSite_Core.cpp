@@ -96,6 +96,9 @@ uint16_t ESParaSite::Core::doReadSensors(uint16_t cur_loop_msec,
   if (static_cast<uint16_t>(cur_loop_msec - prev_sensor_msec) >=
       sensors_read_msec) {
 
+    //HEARTBEAT X
+    Serial.print(".");
+
 #ifdef DEBUG_L1
     Serial.println(F("Reading the sensors"));
     Serial.println();

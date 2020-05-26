@@ -288,10 +288,13 @@ uint8_t ESParaSite::RtcEeprom::doEepromWrite() {
   // ESParaSite::Sensors::dumpSensor(true);
   uint16_t segment_addr = rtcEepromResource.lastSegmentAddress +
                           (BYTES_PER_PAGE * PAGES_PER_SEGMENT);
+  Serial.println("");
+  
   if (segment_addr >= (static_cast<uint16_t>(MEMORY_SIZE) / 8)) {
     Serial.print(F("Rolling over to first segment:\t"));
     segment_addr = FIRST_SEGMENT_OFFSET;
   }
+
   Serial.print(F("Writing EEPROM Values to segment:\t"));
   Serial.println(segment_addr);
 
