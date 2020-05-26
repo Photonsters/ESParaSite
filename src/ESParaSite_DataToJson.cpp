@@ -47,25 +47,29 @@ extern ESP8266WebServer server;
 void ESParaSite::DataToJson::historyToJson() {
   int position = 0;
   const int capacity =
-      28 * JSON_ARRAY_SIZE(1) + 28 * JSON_OBJECT_SIZE(8) + JSON_OBJECT_SIZE(28);
-  DynamicJsonDocument doc(capacity);
+      JSON_ARRAY_SIZE(28) + 28 * JSON_OBJECT_SIZE(8);
+  DynamicJsonDocument parentDoc(capacity);
+  DynamicJsonDocument nestedDoc(128);
+  //JsonObject parentArray = parentDoc.to<JsonObject>();
 
   for (int i = 0; i <= THREEHSECMAXELEMENT; i++) {
     history tempStruct = {0};
     threeHSecHistory.peekIdx(&tempStruct, i);
-
     if (tempStruct.dataTimestamp != 0) {
-      String nest = String(position, DEC);
-      JsonObject obj = doc.createNestedObject(nest);
-      obj["ts"] = tempStruct.dataTimestamp;
-      obj["at"] = tempStruct.ambientTempC;
-      obj["ah"] = tempStruct.ambientHumidity;
-      obj["ct"] = tempStruct.chamberTempC;
-      obj["ch"] = tempStruct.chamberHumidity;
-      obj["lt"] = tempStruct.ledTempC;
-      obj["st"] = tempStruct.screenTempC;
-      obj["lo"] = tempStruct.ledOn;
+      //JsonArray tempArray = nestedDoc.to<JsonArray>();
+      JsonObject nested = nestedDoc.to<JsonObject>();
+      nested["ts"] = tempStruct.dataTimestamp;
+      nested["at"] = tempStruct.ambientTempC;
+      nested["ah"] = tempStruct.ambientHumidity;
+      nested["ct"] = tempStruct.chamberTempC;
+      nested["ch"] = tempStruct.chamberHumidity;
+      nested["lt"] = tempStruct.ledTempC;
+      nested["st"] = tempStruct.screenTempC;
+      nested["lo"] = tempStruct.ledOn;
 
+      String child;
+      serializeJson(nestedDoc, child);
+      parentDoc.add(serialized(child));
       position++;
     } else {
       position++;
@@ -77,16 +81,20 @@ void ESParaSite::DataToJson::historyToJson() {
     thirtySecHistory.peekIdx(&tempStruct, i);
 
     if (tempStruct.dataTimestamp != 0) {
-      String nest = String(position, DEC);
-      JsonObject obj = doc.createNestedObject(nest);
-      obj["ts"] = tempStruct.dataTimestamp;
-      obj["at"] = tempStruct.ambientTempC;
-      obj["ah"] = tempStruct.ambientHumidity;
-      obj["ct"] = tempStruct.chamberTempC;
-      obj["ch"] = tempStruct.chamberHumidity;
-      obj["lt"] = tempStruct.ledTempC;
-      obj["st"] = tempStruct.screenTempC;
-      obj["lo"] = tempStruct.ledOn;
+      // JsonArray tempArray = nestedDoc.to<JsonArray>();
+      JsonObject nested = nestedDoc.to<JsonObject>();
+      nested["ts"] = tempStruct.dataTimestamp;
+      nested["at"] = tempStruct.ambientTempC;
+      nested["ah"] = tempStruct.ambientHumidity;
+      nested["ct"] = tempStruct.chamberTempC;
+      nested["ch"] = tempStruct.chamberHumidity;
+      nested["lt"] = tempStruct.ledTempC;
+      nested["st"] = tempStruct.screenTempC;
+      nested["lo"] = tempStruct.ledOn;
+
+      String child;
+      serializeJson(nestedDoc, child);
+      parentDoc.add(serialized(child));
 
       position++;
     } else {
@@ -99,16 +107,20 @@ void ESParaSite::DataToJson::historyToJson() {
     fiveSecHistory.peekIdx(&tempStruct, i);
 
     if (tempStruct.dataTimestamp != 0) {
-      String nest = String(position, DEC);
-      JsonObject obj = doc.createNestedObject(nest);
-      obj["ts"] = tempStruct.dataTimestamp;
-      obj["at"] = tempStruct.ambientTempC;
-      obj["ah"] = tempStruct.ambientHumidity;
-      obj["ct"] = tempStruct.chamberTempC;
-      obj["ch"] = tempStruct.chamberHumidity;
-      obj["lt"] = tempStruct.ledTempC;
-      obj["st"] = tempStruct.screenTempC;
-      obj["lo"] = tempStruct.ledOn;
+      // JsonArray tempArray = nestedDoc.to<JsonArray>();
+      JsonObject nested = nestedDoc.to<JsonObject>();
+      nested["ts"] = tempStruct.dataTimestamp;
+      nested["at"] = tempStruct.ambientTempC;
+      nested["ah"] = tempStruct.ambientHumidity;
+      nested["ct"] = tempStruct.chamberTempC;
+      nested["ch"] = tempStruct.chamberHumidity;
+      nested["lt"] = tempStruct.ledTempC;
+      nested["st"] = tempStruct.screenTempC;
+      nested["lo"] = tempStruct.ledOn;
+
+      String child;
+      serializeJson(nestedDoc, child);
+      parentDoc.add(serialized(child));
 
       position++;
     } else {
@@ -117,7 +129,7 @@ void ESParaSite::DataToJson::historyToJson() {
   }
 
   String output; //= "JSON = ";
-  serializeJson(doc, output);
+  serializeJson(parentDoc, output);
   server.send(200, "application/json", output);
 
   /*
