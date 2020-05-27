@@ -15,7 +15,7 @@ body {
   padding: 5px;
 }
 
-canvas {
+canvas, .header {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -80,7 +80,8 @@ h2 {
 }
 
 /* Links - change color on hover */
-.navigation a:hover, .navigation a.active:hover {
+.navigation a:hover,
+.navigation a.active:hover {
   background-color: #a8a8a8;
   color: black;
 }
@@ -117,7 +118,7 @@ h2 {
   border: none;
   margin: 0;
   padding: 0;
-  overflow:hidden;
+  overflow: hidden;
 }
 
 .column.right {
@@ -142,21 +143,6 @@ h2 {
   border: none;
 }
 
-/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 600px) {
-  .column.side,
-  .column.middle {
-    width: 100%;
-  }
-}
-/* Responsive layout - makes the three columns stack on top of each other instead of next to each other
-@media screen and (max-height: 600px) {
-  .column.side,
-  .column.middle {
-    overflow: scroll;
-  }
-} */
-
 /* Clear floats after the columns */
 .row:after {
   content: "";
@@ -170,23 +156,6 @@ h2 {
   text-align: center;
   background: #ddd;
   margin-top: 20px;
-}
-
-/* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 800px) {
-  .leftcolumn,
-  .rightcolumn {
-    width: 100%;
-    padding: 0;
-  }
-}
-
-/* Responsive layout - when the screen is less than 400px wide, make the navigation links stack on top of each other instead of next to each other */
-@media screen and (max-width: 400px) {
-  .navigation a {
-    float: none;
-    width: 100%;
-  }
 }
 
 /* Data Table Styling */
@@ -270,4 +239,56 @@ h2 {
   margin-left: 0px;
   color: #d3d3d3;
   width: 82%;
+}
+
+#mobileMenu {
+  display: none;
+}
+
+@media screen and (max-width: 720px) {
+  .header {
+    height: 40px;
+  }
+  h1 {
+    line-height: 40px;
+  }
+  .row {
+    height: calc(100% - 74px);
+    display: block;
+  }
+  .column.middle {
+    width: 100%;
+  }
+  .column.right,
+  .column.left {
+    width: 100%;
+  }
+  .logo {
+    position: absolute;
+    top: 0px;
+    right: 10px;
+  }
+  .logo img {
+    width: 30px;
+  }
+  .navigation {
+    left: -155px;
+    position: absolute;
+    border-right: 5px solid #222;
+    border-bottom: 5px solid #222;
+    transition: left 0.3s ease-in-out;
+  }
+  .navigation.open {
+    left: 5px;
+  }
+  #mobileMenu {
+    display: block;
+    float: left;
+  }
+  #mobileMenu button {
+    color: #eee;
+    font-size: 28px;
+    background: none;
+    border: 0;
+  }
 }

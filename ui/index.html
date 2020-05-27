@@ -8,6 +8,9 @@
 
 <body>
 	<div class="header" style="text-align: center">
+		<div id="mobileMenu">
+			<button onclick="toggleMenuOpen()">&#9776;</button>
+		</div>
 		<h1>ESParaSite</h1>
 	</div>
 	<div class="row">
@@ -59,8 +62,13 @@
 			a.onclick = function (e) {
 				document.querySelector('a.active').classList.remove('active');
 				a.classList.add('active');
+				document.querySelector('.navigation').classList.remove("open");
 			}
 		});
+
+		function toggleMenuOpen() {
+			document.querySelector('.navigation').classList.toggle("open");
+		}
 	</script>
 </body>
 
