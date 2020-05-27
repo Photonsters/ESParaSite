@@ -1,5 +1,7 @@
 //Graphs https://www.chartjs.org
-var timeStamp = [];
+var chartInstance;
+
+var timeStamps = [];
 var cTValues = [];
 var cHValues = [];
 var aTValues = [];
@@ -11,16 +13,11 @@ var lOValues = [];
 //On Page load show graphs
 document.addEventListener("DOMContentLoaded", function () {
     generateTableHead();
-    getData();
     showGraph();
+    getData();
 });
 
-//setInterval(function () {
-// Call a function repetatively with 5 Second interval
-//   getData();
-//}, 5000); //5000mSeconds update rate
-
-
+// Generates the html table header part
 function generateTableHead() {
     var table = document.getElementById("dataTable");
     var thead = table.createTHead();
@@ -33,76 +30,18 @@ function generateTableHead() {
     row.appendChild(createHeadCell("LED Temperature (°C)"));
     row.appendChild(createHeadCell("Screen Temperature (°C)"));
     row.appendChild(createHeadCell("LED"));
+    var tbody = document.createElement("tbody");
+    tbody.setAttribute('id', 'tableBody');
+    table.appendChild(tbody);
 }
 
-function createHeadCell(text) {
-    var th = document.createElement("th");
-    th.appendChild(document.createTextNode(text));
-    return th;
-}
-
-function createRowCell(text) {
-    var td = document.createElement("td");
-    td.appendChild(document.createTextNode(text));
-    return td;
-}
-
-function getData() {
-    var table = document.getElementById("dataTable");
-    var xhttp = new XMLHttpRequest();
-    var offset = new Date().getTimezoneOffset();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            timeStamp.length = 0;
-            cTValues.length = 0;
-            cHValues.length = 0;
-            aTValues.length = 0;
-            aHValues.length = 0;
-            var json = this.responseText;
-            var obj = JSON.parse(json);
-
-            for (var i = table.rows.length - 1; i > 0; i--) {
-                table.deleteRow(i);
-            }
-
-            for (var k in obj) {
-                var row = table.insertRow();
-                var d = (obj[k]["ts"]);
-                var utc = d + (offset * 60);  //This converts to UTC 00:00
-                dutc = new Date(utc * 1000);
-
-                timeStamp.push(dutc.toLocaleTimeString());
-                cTValues.push(obj[k]["ct"]);
-                cHValues.push(obj[k]["ch"]);
-                aTValues.push(obj[k]["at"]);
-                aHValues.push(obj[k]["ah"]);
-
-                row.appendChild(createRowCell(dutc.toLocaleTimeString()));
-                row.appendChild(createRowCell(obj[k]["ct"]));
-                row.appendChild(createRowCell(obj[k]["ch"]));
-                row.appendChild(createRowCell(obj[k]["at"]));
-                row.appendChild(createRowCell(obj[k]["ah"]));
-                row.appendChild(createRowCell(obj[k]["lt"]));
-                row.appendChild(createRowCell(obj[k]["st"]));
-                row.appendChild(createRowCell(obj[k]["lo"] ? "On" : "Off"));
-
-            }
-
-            updateGraph();
-
-        }
-    }
-
-    xhttp.open("GET", "readHistory.html", true); //Handle readHistory server on ESP8266
-    xhttp.send();
-}
-
+// Creates the chart, sets visuals for it, links the datasources to the global variables
 function showGraph() {
     var ctx = document.getElementById("Chart").getContext('2d');
-    var Chart2 = new Chart(ctx, {
+    chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: timeStamp,  //Bottom Labeling
+            labels: timeStamps,  //Bottom Labeling
             datasets: [{
                 label: "Chamber Temperature",
                 fill: false,  //Try with true
@@ -184,9 +123,75 @@ function showGraph() {
     });
 }
 
-function updateGraph() {
-    showGraph();
+// Fetches the data to show and calls the chart and table update
+function getData() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var json = this.responseText;
+            var data = JSON.parse(json);
+            updateGraphAndTable(data);
+        }
+    }
+    xhttp.open("GET", "readHistory.json?v=" + (new Date().getTime()), true); //Handle readHistory server on ESP8266
+    xhttp.send();
+
 }
 
+// Updates the chart and table with the new data received
+function updateGraphAndTable(data) {
+    var tbody = document.getElementById("tableBody");
+    var offset = new Date().getTimezoneOffset();
+    timeStamps.length = 0;
+    cTValues.length = 0;
+    cHValues.length = 0;
+    aTValues.length = 0;
+    aHValues.length = 0;
 
+    tbody.innerHTML = "";
+
+    data.forEach(function (dataItem) {
+        var row = tbody.insertRow();
+        var d = dataItem["ts"];
+        var utc = d + (offset * 60);  //This converts to UTC 00:00
+        dutc = new Date(utc * 1000);
+
+        timeStamps.push(dutc.toLocaleTimeString());
+        cTValues.push(dataItem["ct"]);
+        cHValues.push(dataItem["ch"]);
+        aTValues.push(dataItem["at"]);
+        aHValues.push(dataItem["ah"]);
+
+        row.appendChild(createRowCell(dutc.toLocaleTimeString()));
+        row.appendChild(createRowCell(dataItem["ct"]));
+        row.appendChild(createRowCell(dataItem["ch"]));
+        row.appendChild(createRowCell(dataItem["at"]));
+        row.appendChild(createRowCell(dataItem["ah"]));
+        row.appendChild(createRowCell(dataItem["lt"]));
+        row.appendChild(createRowCell(dataItem["st"]));
+        row.appendChild(createRowCell(dataItem["lo"] ? "On" : "Off"));
+    });
+
+    chartInstance.update();
+
+    // Get the data again in 5 seconds
+    setTimeout(function () {
+        getData();
+    }, 5000);
+
+}
+
+// helper method
+function createHeadCell(text) {
+    var th = document.createElement("th");
+    th.appendChild(document.createTextNode(text));
+    return th;
+}
+
+// helper method
+function createRowCell(text) {
+    var td = document.createElement("td");
+    td.appendChild(document.createTextNode(text));
+    return td;
+}
 
