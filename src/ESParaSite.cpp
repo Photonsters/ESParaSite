@@ -23,8 +23,6 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 
-//#include <ESPAsyncTCP.h>
-//#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 
 #include "ESParaSite.h"
@@ -32,7 +30,7 @@
 #include "ESParaSite_Core.h"
 #include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
-#include "ESParaSite_HttpCore.h"
+#include "ESParaSite_Http.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"

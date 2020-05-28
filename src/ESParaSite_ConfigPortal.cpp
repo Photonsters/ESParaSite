@@ -29,7 +29,7 @@
 #include "ESParaSite_ConfigPortal.h"
 #include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
-#include "ESParaSite_HttpCore.h"
+#include "ESParaSite_Http.h"
 
 using namespace ESParaSite;
 

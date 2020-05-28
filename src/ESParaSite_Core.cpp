@@ -27,7 +27,7 @@
 #include "ESParaSite_DataDigest.h"
 #include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
-#include "ESParaSite_HttpCore.h"
+#include "ESParaSite_Http.h"
 #include "ESParaSite_RtcEepromCore.h"
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"

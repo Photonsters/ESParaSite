@@ -175,7 +175,7 @@ void ESParaSite::DataToJson::statusToJson(){
   doc["scrls"] = tempArray[2];
   doc["vatls"] = tempArray[3];
   doc["ledls"] = tempArray[4];
-  doc["castc"] = tempArray[4];
+  doc["castc"] = tempArray[5];
 
   String output; //= "JSON = ";
   serializeJson(doc, output);

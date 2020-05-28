@@ -133,7 +133,8 @@ function getData() {
             updateGraphAndTable(data);
         }
     }
-    xhttp.open("GET", "readHistory.json?v=" + (new Date().getTime()), true); //Handle readHistory server on ESP8266
+    xhttp.open("GET", "guiFeed?rh=1" + (new Date().getTime()), true); //Handle readHistory server on ESP8266
+    //xhttp.open("GET", "readHistory.json?v=" + (new Date().getTime()), true); //Handle readHistory server on ESP8266
     xhttp.send();
 
 }

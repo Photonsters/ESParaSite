@@ -197,6 +197,44 @@ h2 {
   color: white;
 }
 
+#dataTable2 {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  scrollbar-width: none;
+}
+
+#dataTable2 td,
+#dataTable2 th {
+  border: 1px solid #303030;
+  padding: 8px;
+  font-size: small;
+}
+
+#dataTable2 tr:nth-child(even) {
+  background-color: #2b2b2b;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+#dataTable2 tr:nth-child(odd) {
+  background-color: #3a3a3a;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+#dataTable2 tr:hover {
+  background-color: #666666;
+}
+
+#dataTable2 th {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  text-align: left;
+  background-color: #222222;
+  color: white;
+}
+
 .style4 {
   padding-top: 4px;
   padding-bottom: 4px;
@@ -231,14 +269,30 @@ h2 {
   flex: 4;
 }
 
-.statusTop {
+.statusContainer {
   position: fixed;
   padding-top: 4px;
   padding-bottom: 4px;
   background-color: #222222;
   margin-left: 0px;
   color: #d3d3d3;
-  width: 82%;
+  width: 50%;
+}
+
+.statusTop {
+  background-color: #2e2e2e;
+  color: #d3d3d3;
+  flex: 6;
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.statusTop {
+  background-color: #2e2e2e;
+  color: #d3d3d3;
+  flex: 6;
+  display: flex;
+  margin-bottom: 10px;
 }
 
 #mobileMenu {
