@@ -30,20 +30,24 @@ namespace HttpHandler {
 void handleRoot();
 void handleNotFound();
 void handleWebRequests();
-void handleResetScreen();
+void getHtmlUpload();
+
 void handleResetFep();
 void handleResetLed();
-void getHtmlUpload();
-void getJsonChamber();
-void getJsonOptics();
+void handleResetScreen();
+
 void getJsonAmbient();
-void getJsonEnclosure();
+void getJsonChamber();
 void getJsonConfig();
-void getResetScreen();
+void getJsonEnclosure();
+void getJsonOptics();
+
 void getResetFep();
 void getResetLed();
+void getResetScreen();
+
 void handleHistory();
-void handleGuiData();
+void getGuiData();
 
 }; // namespace HttpHandler
 }; // namespace ESParaSite

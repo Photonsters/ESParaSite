@@ -29,9 +29,7 @@
 #include "ESP32-targz.h"
 #include "ESParaSite.h"
 #include "ESParaSite_DataToJson.h"
-#include "ESParaSite_HttpCore.h"
-#include "ESParaSite_HttpFile.h"
-#include "ESParaSite_HttpHandler.h"
+#include "ESParaSite_Http.h"
 
 extern ESP8266WebServer server;
 
@@ -77,9 +75,7 @@ void ESParaSite::HttpHandler::handleWebRequests() {
   server.send(404, "text/plain", message);
   Serial.println(message);
 }
-// if the client requests the upload page
-// send it if it exists
-// otherwise, respond with a basic HTML form
+
 void ESParaSite::HttpHandler::getHtmlUpload() {
 
   if (!ESParaSite::HttpFile::handleFileRead("/upload.html")) {
@@ -91,75 +87,21 @@ void ESParaSite::HttpHandler::getHtmlUpload() {
   }
 }
 
-void ESParaSite::HttpHandler::handleResetScreen() {
-  server.send(200, "text/html", "Success!");
-  Serial.print(F("Resetting LCD Screen Counter"));
-  rtcEepromResource.eepromScreenLifeSec = 0;
-}
-
-void ESParaSite::HttpHandler::handleResetFep() {
-  server.send(200, "text/html", "Success!");
-  Serial.print(F("Resetting FEP Counter"));
-  rtcEepromResource.eepromVatLifeSec = 0;
-}
-
-void ESParaSite::HttpHandler::handleResetLed() {
-  server.send(200, "text/html", "Success!");
-  Serial.print(F("Resetting LED Counter"));
-  rtcEepromResource.eepromLedLifeSec = 0;
-}
-
-void ESParaSite::HttpHandler::getResetScreen() {
-  server.send(200, "text/html",
-              "<font size=\"+3\">WARNING - This will reset the lifetime"
-              "counter of your LCD Screen to 0!!!</font><br>"
-              "<form method=\"post\">"
-              "<input type=\"submit\" name=\"name\" "
-              "value=\"Reset\">"
-              "</form>"
-              "Please do not immediately turn off your printer. This change"
-              "may take up to 30 seconds to be saved.<br>");
-}
-
-void ESParaSite::HttpHandler::getResetFep() {
-  server.send(200, "text/html",
-              "<font size=\"+3\">WARNING - This will reset the lifetime"
-              "counter of your Vat FEP to 0!!!</font><br>"
-              "<form method=\"post\">"
-              "<input type=\"submit\" name=\"name\" "
-              "value=\"Reset\">"
-              "</form>"
-              "Please do not immediately turn off your printer. This change"
-              "may take up to 30 seconds to be saved.<br>");
-}
-
-void ESParaSite::HttpHandler::getResetLed() {
-  server.send(200, "text/html",
-              "<font size=\"+3\">WARNING - This will reset the lifetime"
-              "counter of your LED Array to 0!!!</font><br>"
-              "<form method=\"post\">"
-              "<input type=\"submit\" name=\"name\" "
-              "value=\"Reset\">"
-              "</form>"
-              "Please do not immediately turn off your printer. This change"
-              "may take up to 30 seconds to be saved.<br>");
-}
-
 void ESParaSite::HttpHandler::handleHistory() {
 
   ESParaSite::DataToJson::historyToJson();
 }
 
-void ESParaSite::HttpHandler::handleGuiData() {
+void ESParaSite::HttpHandler::getGuiData() {
   String message = ("Feed not Found.");
 
   for (int i = 0; i < server.args(); i++) {
 
-    if (server.argName(i) == "readHistory") {
+    if (server.argName(i) == "rh") {
       ESParaSite::DataToJson::historyToJson();
-    } else if (server.argName(i) == "network") {
+    } else if (server.argName(i) == "rn") {
       ESParaSite::DataToJson::networkToJson();
-    } else if (server.argName(i) == "status") {
+    } else if (server.argName(i) == "rs") {
       ESParaSite::DataToJson::statusToJson();
     }
   }

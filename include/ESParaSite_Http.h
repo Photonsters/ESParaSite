@@ -19,7 +19,9 @@
 
 */
 
-//#include <ESPAsyncWebServer.h>
+#include <arduino.h>
+
+class http_rest_server;
 
 #ifndef INCLUDE_ESPARASITE_REST_H_
 #define INCLUDE_ESPARASITE_REST_H_
@@ -32,11 +34,46 @@ void startHttpServer();
 void stopHttpServer();
 void serveHttpClient();
 
-// void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
-//               AwsEventType type, void *arg, uint8_t *data, size_t len);
-// void cleanup_http_client();
-
 }; // namespace HttpCore
+}; // namespace ESParaSite
+
+namespace ESParaSite {
+namespace HttpFile {
+
+String getContentType(String filename);
+bool handleFileRead(String path);
+void handleFileUpload();
+bool loadFromLittleFS(String path);
+
+}; // namespace HttpFile
+}; // namespace ESParaSite
+
+namespace ESParaSite {
+namespace HttpHandler {
+
+void handleRoot();
+void handleNotFound();
+void handleWebRequests();
+void getHtmlUpload();
+
+void handleResetFep();
+void handleResetLed();
+void handleResetScreen();
+
+void getJsonAmbient();
+void getJsonChamber();
+void getJsonConfig();
+void getJsonEnclosure();
+void getJsonOptics();
+
+void getResetFep();
+void getResetLed();
+void getResetScreen();
+
+void handleHistory();
+void getGuiData();
+
+}; // namespace HttpHandler
 }; // namespace ESParaSite
 
 #endif // INCLUDE_ESPARASITE_REST_H_

@@ -19,11 +19,11 @@
 
 */
 
-#include "ESParaSite_HttpFile.h"
-#include "ESParaSite_HttpCore.h"
 #include <Arduino.h>
 #include <ESP8266WebServer.h>
 #include <LittleFS.h>
+
+#include "ESParaSite_Http.h"
 
 extern ESP8266WebServer server;
 

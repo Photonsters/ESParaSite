@@ -30,10 +30,7 @@
 
 #include "ESP32-targz.h"
 #include "ESParaSite.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_HttpCore.h"
-#include "ESParaSite_HttpFile.h"
-#include "ESParaSite_HttpHandler.h"
+#include "ESParaSite_Http.h"
 
 //+++ User Settings +++
 
@@ -66,7 +63,7 @@ void ESParaSite::HttpCore::configHttpServerRouting() {
   server.on("/reset_screen", HTTP_GET, ESParaSite::HttpHandler::getResetScreen);
   server.on("/reset_fep", HTTP_GET, ESParaSite::HttpHandler::getResetFep);
   server.on("/reset_led", HTTP_GET, ESParaSite::HttpHandler::getResetLed);
-  server.on("/guiFeed", HTTP_GET, ESParaSite::HttpHandler::handleGuiData);
+  server.on("/guiFeed", HTTP_GET, ESParaSite::HttpHandler::getGuiData);
 
   server.on(
       "/upload", HTTP_POST, []() { server.send(200); },
