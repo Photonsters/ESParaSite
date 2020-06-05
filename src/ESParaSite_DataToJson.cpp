@@ -28,119 +28,102 @@
 
 #include "ESParaSite.h"
 #include "ESParaSite_DataDigest.h"
-#include "ESParaSite_DataToJson.h"
+#include "ESParaSite_Http.h"
 
-extern ESParaSite::printchamber chamberResource;
+extern ESParaSite::chamber chamberResource;
 extern ESParaSite::optics opticsResource;
 extern ESParaSite::ambient ambientResource;
 extern ESParaSite::enclosure enclosureResource;
 extern ESParaSite::statusData statusResource;
 extern ESParaSite::configData configResource;
 extern ESParaSite::rtcEepromData rtcEepromResource;
-
-extern Queue fiveSecHistory;
-extern Queue thirtySecHistory;
-extern Queue threeHSecHistory;
+extern ESParaSite::sensorExists existsResource;
 
 extern ESP8266WebServer server;
 
-void ESParaSite::DataToJson::historyToJson() {
-  int position = 0;
-  const int capacity =
-      JSON_ARRAY_SIZE(28) + 28 * JSON_OBJECT_SIZE(8);
-  DynamicJsonDocument parentDoc(capacity);
-  DynamicJsonDocument nestedDoc(128);
-  //JsonObject parentArray = parentDoc.to<JsonObject>();
+void ESParaSite::DataToJson::getJsonAmbient() {
+  StaticJsonDocument<256> doc;
 
-  for (int i = 0; i <= THREEHSECMAXELEMENT; i++) {
-    history tempStruct = {0};
-    threeHSecHistory.peekIdx(&tempStruct, i);
-    if (tempStruct.dataTimestamp != 0) {
-      //JsonArray tempArray = nestedDoc.to<JsonArray>();
-      JsonObject nested = nestedDoc.to<JsonObject>();
-      nested["ts"] = tempStruct.dataTimestamp;
-      nested["at"] = tempStruct.ambientTempC;
-      nested["ah"] = tempStruct.ambientHumidity;
-      nested["ct"] = tempStruct.chamberTempC;
-      nested["ch"] = tempStruct.chamberHumidity;
-      nested["lt"] = tempStruct.ledTempC;
-      nested["st"] = tempStruct.screenTempC;
-      nested["lo"] = tempStruct.ledOn;
+  doc["class"] = "ambient";
+  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["ambTempC"] = ambientResource.ambientTempC;
+  doc["ambHumidity"] = ambientResource.ambientHumidity;
+  doc["ambPressure"] = ambientResource.ambientBarometer;
+  doc["ambAltitude"] = ambientResource.ambientAltitude;
 
-      String child;
-      serializeJson(nestedDoc, child);
-      parentDoc.add(serialized(child));
-      position++;
-    } else {
-      position++;
-    }
-  }
-
-  for (int i = 0; i <= THIRTYSECMAXELEMENT; i++) {
-    history tempStruct = {0};
-    thirtySecHistory.peekIdx(&tempStruct, i);
-
-    if (tempStruct.dataTimestamp != 0) {
-      // JsonArray tempArray = nestedDoc.to<JsonArray>();
-      JsonObject nested = nestedDoc.to<JsonObject>();
-      nested["ts"] = tempStruct.dataTimestamp;
-      nested["at"] = tempStruct.ambientTempC;
-      nested["ah"] = tempStruct.ambientHumidity;
-      nested["ct"] = tempStruct.chamberTempC;
-      nested["ch"] = tempStruct.chamberHumidity;
-      nested["lt"] = tempStruct.ledTempC;
-      nested["st"] = tempStruct.screenTempC;
-      nested["lo"] = tempStruct.ledOn;
-
-      String child;
-      serializeJson(nestedDoc, child);
-      parentDoc.add(serialized(child));
-
-      position++;
-    } else {
-      position++;
-    }
-  }
-
-  for (int i = 0; i <= FIVESECMAXELEMENT; i++) {
-    history tempStruct = {0};
-    fiveSecHistory.peekIdx(&tempStruct, i);
-
-    if (tempStruct.dataTimestamp != 0) {
-      // JsonArray tempArray = nestedDoc.to<JsonArray>();
-      JsonObject nested = nestedDoc.to<JsonObject>();
-      nested["ts"] = tempStruct.dataTimestamp;
-      nested["at"] = tempStruct.ambientTempC;
-      nested["ah"] = tempStruct.ambientHumidity;
-      nested["ct"] = tempStruct.chamberTempC;
-      nested["ch"] = tempStruct.chamberHumidity;
-      nested["lt"] = tempStruct.ledTempC;
-      nested["st"] = tempStruct.screenTempC;
-      nested["lo"] = tempStruct.ledOn;
-
-      String child;
-      serializeJson(nestedDoc, child);
-      parentDoc.add(serialized(child));
-
-      position++;
-    } else {
-      position++;
-    }
-  }
-
-  String output; //= "JSON = ";
-  serializeJson(parentDoc, output);
-  server.send(200, "application/json", output);
-
-  /*
-  size_t size = serializeJson(doc, Serial);
-  Serial.println();
-  Serial.println(size);
-  Serial.println();
-  */
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
 
-void ESParaSite::DataToJson::networkToJson() {
+void ESParaSite::DataToJson::getJsonChamber() {
+  StaticJsonDocument<256> doc;
+
+  doc["class"] = "chamber";
+  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["cmbTempC"] = chamberResource.chamberTempC;
+  doc["cmbHumidity"] = chamberResource.chamberHumidity;
+  doc["cmbDewpoint"] = chamberResource.chamberDewPoint;
+
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
+}
+
+void ESParaSite::DataToJson::getJsonEeprom() {
+  StaticJsonDocument<256> doc;
+  String tempArray[6];
+  tempArray[0] = rtcEepromResource.lastWriteTimestamp;
+  tempArray[1] = rtcEepromResource.firstOnTimestamp;
+  tempArray[2] = rtcEepromResource.eepromLedLifeSec;
+  tempArray[3] = rtcEepromResource.eepromScreenLifeSec;
+  tempArray[4] = rtcEepromResource.eepromVatLifeSec;
+  tempArray[5] = rtcEepromResource.lastSegmentAddress;
+
+  doc["class"] = "eeprom";
+  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["lstwrts"] = tempArray[0];
+  doc["frstonts"] = tempArray[1];
+  doc["eledls"] = tempArray[2];
+  doc["escrls"] = tempArray[3];
+  doc["evatls"] = tempArray[4];
+  doc["lsegaddr"] = tempArray[5];
+
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
+}
+
+void ESParaSite::DataToJson::getJsonEnclosure() {
+  StaticJsonDocument<256> doc;
+
+  doc["class"] = "enclosure";
+  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["caseTempC"] = enclosureResource.caseTempC;
+  doc["lifetimeSec"] = enclosureResource.printerLifeSec;
+  doc["scrnLifeSec"] = enclosureResource.lcdLifeSec;
+  doc["ledLifeSec"] = enclosureResource.ledLifeSec;
+  doc["vatLifeSec"] = enclosureResource.vatLifeSec;
+
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
+}
+
+void ESParaSite::DataToJson::getJsonI2C() {
+  StaticJsonDocument<256> doc;
+  String tempArray[6];
+  tempArray[0] = configResource.cfgPinSda;
+  tempArray[1] = configResource.cfgPinScl;
+  tempArray[2] = existsResource.dhtDetected;
+  tempArray[3] = existsResource.bmeDetected;
+  tempArray[4] = existsResource.mlxDetected;
+  tempArray[5] = existsResource.siDetected;
+
+  doc["class"] = "i2c";
+  doc["sdaPin"] = tempArray[0];
+  doc["sclPin"] = tempArray[1];
+  doc["dhtExist"] = tempArray[2];
+  doc["bmeExist"] = tempArray[3];
+  doc["mlxExist"] = tempArray[4];
+  doc["siExist"] = tempArray[5];
+
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
+}
+
+void ESParaSite::DataToJson::getJsonNetwork() {
   StaticJsonDocument<256> doc;
   String tempArray[5];
   tempArray[0] = WiFi.SSID();
@@ -155,12 +138,24 @@ void ESParaSite::DataToJson::networkToJson() {
   doc["mdnsS"] = tempArray[3];
   doc["mdnsN"] = tempArray[4];
 
-  String output; //= "JSON = ";
-  serializeJson(doc, output);
-  server.send(200, "application/json", output);
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
 
-void ESParaSite::DataToJson::statusToJson(){
+void ESParaSite::DataToJson::getJsonOptics() {
+  StaticJsonDocument<256> doc;
+
+  doc["class"] = "optics";
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["uvIndex"] = opticsResource.ledUVIndex;
+  doc["visible"] = opticsResource.ledVisible;
+  doc["infrared"] = opticsResource.ledInfrared;
+  doc["ledTempC"] = opticsResource.ledTempC;
+  doc["scrnTempC"] = opticsResource.screenTempC;
+
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
+}
+
+void ESParaSite::DataToJson::getJsonStatus(){
   StaticJsonDocument<256> doc;
   String tempArray[6];
   tempArray[0] = rtcEepromResource.lastWriteTimestamp;
@@ -177,7 +172,5 @@ void ESParaSite::DataToJson::statusToJson(){
   doc["ledls"] = tempArray[4];
   doc["castc"] = tempArray[5];
 
-  String output; //= "JSON = ";
-  serializeJson(doc, output);
-  server.send(200, "application/json", output);
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }

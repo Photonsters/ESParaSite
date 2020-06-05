@@ -28,7 +28,6 @@
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-#include "ESP32-targz.h"
 #include "ESParaSite.h"
 #include "ESParaSite_Http.h"
 
@@ -53,25 +52,20 @@ void ESParaSite::HttpCore::configHttpServerRouting() {
                                                    // something other than "/"),
                                                    // call function
                                                    // "handleNotFound"
-  server.on("/readHistory", ESParaSite::HttpHandler::handleHistory);
-  server.on("/printchamber", HTTP_GET, ESParaSite::HttpHandler::getJsonChamber);
-  server.on("/optics", HTTP_GET, ESParaSite::HttpHandler::getJsonOptics);
-  server.on("/ambient", HTTP_GET, ESParaSite::HttpHandler::getJsonAmbient);
-  server.on("/enclosure", HTTP_GET, ESParaSite::HttpHandler::getJsonEnclosure);
-  server.on("/config", HTTP_GET, ESParaSite::HttpHandler::getJsonConfig);
-  server.on("/upload", HTTP_GET, ESParaSite::HttpHandler::getHtmlUpload);
+  server.on("/guiFeed", HTTP_GET, ESParaSite::HttpHandler::getGuiData);
+
   server.on("/reset_screen", HTTP_GET, ESParaSite::HttpHandler::getResetScreen);
   server.on("/reset_fep", HTTP_GET, ESParaSite::HttpHandler::getResetFep);
   server.on("/reset_led", HTTP_GET, ESParaSite::HttpHandler::getResetLed);
-  server.on("/guiFeed", HTTP_GET, ESParaSite::HttpHandler::getGuiData);
-
-  server.on(
-      "/upload", HTTP_POST, []() { server.send(200); },
-      ESParaSite::HttpFile::handleFileUpload);
   server.on(
       "/reset_screen", HTTP_POST, ESParaSite::HttpHandler::handleResetScreen);
   server.on("/reset_fep", HTTP_POST, ESParaSite::HttpHandler::handleResetFep);
   server.on("/reset_led", HTTP_POST, ESParaSite::HttpHandler::handleResetLed);
+
+  server.on("/upload", HTTP_GET, ESParaSite::HttpHandler::getHtmlUpload);
+  server.on(
+      "/upload", HTTP_POST, []() { server.send(200); },
+      ESParaSite::HttpFile::handleFileUpload);
 
   Serial.println("HTTP REST config complete");
 }

@@ -35,6 +35,8 @@
 #include "ESParaSite_SensorsCore.h"
 #include "ESParaSite_Util.h"
 
+// #define FORMAT_SPIFFS //for development only!
+
 // Trigger for inititating config mode is Pin D3 and also flash button on
 // NodeMCU.  Flash button is convenient to use but if it is pressed it will
 // hang the serial port device driver until the computer is rebooted on
@@ -66,7 +68,7 @@ ESParaSite::ambient ambientResource;
 ESParaSite::configData configResource;
 ESParaSite::enclosure enclosureResource;
 ESParaSite::optics opticsResource;
-ESParaSite::printchamber chamberResource;
+ESParaSite::chamber chamberResource;
 ESParaSite::rtcEepromData rtcEepromResource;
 ESParaSite::statusData statusResource;
 ESParaSite::sensorExists existsResource;
@@ -179,6 +181,11 @@ void setup(void) {
                           // password printed
 #endif
 
+#ifdef FORMAT_SPIFFS
+  Serial.println(F("Formatting SPIFFS..."));
+  LittleFS.format();
+#endif
+
   Serial.println(F("Mounting FS..."));
 
   // Mount the LittleFS Filesystem
@@ -202,6 +209,8 @@ void setup(void) {
     Serial.println(F("config.json loaded"));
     Serial.println("");
   }
+
+  ESParaSite::FileCore::getFSInfo(1);
 
   Serial.println(F("Configuring Wifi..."));
   Serial.println();

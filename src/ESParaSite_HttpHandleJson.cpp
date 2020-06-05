@@ -26,121 +26,19 @@
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-#include "ESP32-targz.h"
 #include "ESParaSite.h"
-#include "ESParaSite_DataToJson.h"
 #include "ESParaSite_Http.h"
 
 extern ESP8266WebServer server;
 
-extern ESParaSite::printchamber chamberResource;
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::ambient ambientResource;
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::rtcEepromData rtcEepromResource;
+void ESParaSite::HttpHandleJson::serializeSendJson(const JsonDocument& doc) {
 
-void ESParaSite::HttpHandler::getJsonChamber() {
-  StaticJsonDocument<256> doc;
+  //serializeJsonPretty(doc, Serial);
+  //Serial.println();
 
-  doc["class"] = "chamber";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["chmb_temp_c"] = chamberResource.chamberTempC;
-  doc["chmb_humidity"] = chamberResource.chamberHumidity;
-  doc["chmb_dewpoint"] = chamberResource.chamberDewPoint;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
+  String output = ""; //"JSON = ";
+  serializeJson(doc, output);
   server.send(200, "application/json", output);
 
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonOptics() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "optics";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["uvindex"] = opticsResource.ledUVIndex;
-  doc["visible"] = opticsResource.ledVisible;
-  doc["infrared"] = opticsResource.ledInfrared;
-  doc["led_temp_c"] = opticsResource.ledTempC;
-  doc["screen_temp_c"] = opticsResource.screenTempC;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonAmbient() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "ambient";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["amb_temp_c"] = ambientResource.ambientTempC;
-  doc["amb_humidity"] = ambientResource.ambientHumidity;
-  doc["amb_pressure"] = ambientResource.ambientBarometer;
-  doc["altitude"] = ambientResource.ambientAltitude;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonEnclosure() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "enclosure";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["caseTempC_c"] = enclosureResource.caseTempC;
-  doc["lifetime_sec"] = enclosureResource.printerLifeSec;
-  doc["screen_sec"] = enclosureResource.lcdLifeSec;
-  doc["ledLifeSec"] = enclosureResource.ledLifeSec;
-  doc["vatLifeSec"] = enclosureResource.vatLifeSec;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-}
-
-void ESParaSite::HttpHandler::getJsonConfig() {
-  StaticJsonDocument<256> doc;
-
-  doc["class"] = "eeprom";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["first_on_time64"] = rtcEepromResource.firstOnTimestamp;
-  doc["last_write_time64"] = rtcEepromResource.lastWriteTimestamp;
-  doc["screen_printerLifeSec"] = rtcEepromResource.eepromScreenLifeSec;
-  doc["led_printerLifeSec"] = rtcEepromResource.eepromLedLifeSec;
-  doc["fep_printerLifeSec"] = rtcEepromResource.eepromVatLifeSec;
-
-  serializeJson(doc, Serial);
-  Serial.println();
-
-  String output = "JSON = ";
-  serializeJsonPretty(doc, output);
-  server.send(200, "application/json", output);
+  return;
 }

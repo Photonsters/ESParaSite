@@ -24,7 +24,7 @@
 
 #include "ESParaSite.h"
 #include "ESParaSite_DataDigest.h"
-#include "ESParaSite_DataToJson.h"
+#include "ESParaSite_Http.h"
 #include "ESParaSite_SensorsCore.h"
 
 typedef struct history history;
@@ -33,7 +33,7 @@ Queue fiveSecHistory(sizeof(history), 6, FIFO);
 Queue thirtySecHistory(sizeof(history), 10, FIFO);
 Queue threeHSecHistory(sizeof(history), 12, FIFO);
 
-extern ESParaSite::printchamber chamberResource;
+extern ESParaSite::chamber chamberResource;
 extern ESParaSite::optics opticsResource;
 extern ESParaSite::ambient ambientResource;
 extern ESParaSite::enclosure enclosureResource;
@@ -60,19 +60,19 @@ void ESParaSite::DataDigest::fillRow() {
   if (!fiveSecHistory.isFull()) {
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount = FIVESECMAXELEMENT;
-    ESParaSite::DataToJson::historyToJson();
+    ESParaSite::DataToJson::getJsonHistory();
     // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() && fiveSecCycleCount < FIVESECMAXELEMENT) {
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount++;
-    ESParaSite::DataToJson::historyToJson();
+    ESParaSite::DataToJson::getJsonHistory();
     // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() && fiveSecCycleCount == FIVESECMAXELEMENT) {
     fivesToThirty();
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
-    ESParaSite::DataToJson::historyToJson();
+    ESParaSite::DataToJson::getJsonHistory();
     // ESParaSite::DataDigest::printRows();
     fiveSecCycleCount = 0;
   }
