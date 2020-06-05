@@ -26,14 +26,11 @@
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-#include "ESP32-targz.h"
 #include "ESParaSite.h"
-#include "ESParaSite_DataToJson.h"
 #include "ESParaSite_Http.h"
 
 
 extern ESP8266WebServer server;
-
 
 extern ESParaSite::rtcEepromData rtcEepromResource;
 

@@ -34,10 +34,13 @@
 #include "ESParaSite.h"
 #include "ESParaSite_DebugUtils.h"
 #include "ESParaSite_FileCore.h"
+#include "ESParaSite_Http.h"
 
-extern ESParaSite::configData configResource;
+using namespace ESParaSite;
 
-bool ESParaSite::FileCore::loadConfig() {
+extern configData configResource;
+
+bool FileCore::loadConfig() {
   File configFile = LittleFS.open("/config.json", "r");
   if (!configFile) {
 
@@ -62,8 +65,6 @@ bool ESParaSite::FileCore::loadConfig() {
     return false;
   }
 
-  configResource.cfgWifiSsid = doc["wifi_ssid"];
-  configResource.cfgWifiPassword = doc["wifi_password"];
   configResource.cfgPinSda = doc["sda_pin"];
   configResource.cfgPinScl = doc["scl_pin"];
   configResource.cfgMdnsEnabled = doc["mdns_enabled"];
@@ -72,23 +73,6 @@ bool ESParaSite::FileCore::loadConfig() {
   if (len > 0 && configResource.cfgMdnsName[len - 1] == '\n') {
     configResource.cfgMdnsName[len - 1] = '\0';
   }
-  
-  // This if statement currently crashes the system due to an interaction
-  // between strncmp and Null vlaues. We need to clean this up when we fully
-  // implement backing up wifi config to config.json.
-  /*
-  if (!strncmp(configResource.cfgWifiSsid, "", 32 )) {
-    Serial.println("No Wifi config set in config.json");
-    Serial.println("");
-  } else {
-    Serial.println("Wifi Config loaded from config.json");
-    Serial.print("SSID: ");
-    Serial.println(configResource.cfgWifiSsid);
-    Serial.print("PASSWORD: ");
-    Serial.println(configResource.cfgWifiPassword);
-    Serial.println("");
-  }
-  */
 
   Serial.print(F("I2C Bus on Pins (SDA,SCL): "));
   Serial.print(configResource.cfgPinSda);
@@ -98,10 +82,8 @@ bool ESParaSite::FileCore::loadConfig() {
   return true;
 }
 
-bool ESParaSite::FileCore::saveConfig() {
+bool FileCore::saveConfig() {
   StaticJsonDocument<200> doc;
-  doc["wifi_ssid"] = configResource.cfgWifiSsid;
-  doc["wifi_password"] = configResource.cfgWifiPassword;
   doc["sda_pin"] = configResource.cfgPinSda;
   doc["scl_pin"] = configResource.cfgPinScl;
   doc["mdns_enabled"] = configResource.cfgMdnsEnabled;
@@ -118,4 +100,52 @@ bool ESParaSite::FileCore::saveConfig() {
 
   serializeJson(doc, configFile);
   return true;
+}
+
+void FileCore::getFSInfo(int mode) {
+
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+  if (mode == 1) {
+    Serial.print("Total Filesystem Bytes:\t");
+    Serial.println(fs_info.totalBytes);
+    Serial.print("Used Filesystem Bytes:\t");
+    Serial.println(fs_info.usedBytes);
+  } else if (mode == 2) {
+    StaticJsonDocument<200> doc;
+    doc["tfsb"] = fs_info.totalBytes;
+    doc["ufsb"] = fs_info.usedBytes;
+    HttpHandleJson::serializeSendJson(doc);
+    return;
+  }
+
+  File root = LittleFS.open("/", "r");
+  File file = root.openNextFile();
+  if (mode == 1) {
+    while (file) {
+      Serial.print(file.name());
+      Serial.print("\t\t");
+      Serial.println(file.size());
+      file = root.openNextFile();
+    }
+  } else if (mode == 3) {
+    // We need to find a better way to do this since we can only fit ~50
+    // files in thsi JSON Doc. look into splitting this and doing HTTP Chunks.
+    // https://gist.github.com/spacehuhn/6c89594ad0edbdb0aad60541b72b2388
+    DynamicJsonDocument parentDoc(4096);
+    DynamicJsonDocument nestedDoc(64);
+    while (file) {
+      JsonObject nested = nestedDoc.to<JsonObject>();
+
+      String fName = file.name();
+      nested["fName"] = fName;
+      nested["fSize"] = file.size();
+      file = root.openNextFile();
+
+      String child;
+      serializeJson(nestedDoc, child);
+      parentDoc.add(serialized(child));
+    }
+    HttpHandleJson::serializeSendJson(parentDoc);
+  }
 }

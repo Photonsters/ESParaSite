@@ -82,7 +82,7 @@ bool dump_sensor_data = 1;
 int bme_i2c_address;
 int eeprom_i2c_address;
 
-extern ESParaSite::printchamber chamberResource;
+extern ESParaSite::chamber chamberResource;
 extern ESParaSite::optics opticsResource;
 extern ESParaSite::ambient ambientResource;
 extern ESParaSite::enclosure enclosureResource;

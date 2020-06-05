@@ -26,14 +26,13 @@
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-#include "ESP32-targz.h"
 #include "ESParaSite.h"
-#include "ESParaSite_DataToJson.h"
 #include "ESParaSite_Http.h"
+#include "ESParaSite_FileCore.h"
 
 extern ESP8266WebServer server;
 
-extern ESParaSite::printchamber chamberResource;
+extern ESParaSite::chamber chamberResource;
 extern ESParaSite::optics opticsResource;
 extern ESParaSite::ambient ambientResource;
 extern ESParaSite::enclosure enclosureResource;
@@ -43,18 +42,9 @@ extern ESParaSite::rtcEepromData rtcEepromResource;
 
 void ESParaSite::HttpHandler::handleRoot() {
   if (!ESParaSite::HttpFile::handleFileRead("/index.html")) {
-    server.send(
-        200, "text/html",
-        "<p>Please Browse to:</p><a "
-        "href=\"/printchamber\">Printchamber</a></br><a "
-        "href=\"/optics\">Optics</a></br><a "
-        "href=\"/ambient\">Ambient</a></br><a "
-        "href=\"/enclosure\">Enclosure</a></br><a href=\"/config\">Config</a>");
+    server.send(200, "text/html",
+                "<p>Please upload GUI using ESParaSite GUI Uploader!</p>");
   }
-}
-
-void ESParaSite::HttpHandler::handleNotFound() {
-  server.send(404, "text/plain", "404: Not found");
 }
 
 void ESParaSite::HttpHandler::handleWebRequests() {
@@ -82,28 +72,41 @@ void ESParaSite::HttpHandler::getHtmlUpload() {
     server.send(200, "text/html",
                 "<form method=\"post\" enctype=\"multipart/form-data\">"
                 "<input type=\"file\" name=\"name\">"
-                "<input class=\"button\" type=\"submit\" value=\"Upload\">"
+                "<input class=\"button\" type=\"submit\" formmethod=\"post\" "
+                "value=\"Upload\">"
                 "</form>");
   }
 }
 
-void ESParaSite::HttpHandler::handleHistory() {
-
-  ESParaSite::DataToJson::historyToJson();
-}
-
 void ESParaSite::HttpHandler::getGuiData() {
-  String message = ("Feed not Found.");
+  String message = ("Data feed not found.");
 
   for (int i = 0; i < server.args(); i++) {
 
-    if (server.argName(i) == "rh") {
-      ESParaSite::DataToJson::historyToJson();
-    } else if (server.argName(i) == "rn") {
-      ESParaSite::DataToJson::networkToJson();
-    } else if (server.argName(i) == "rs") {
-      ESParaSite::DataToJson::statusToJson();
+    if (server.argName(i) == "readAmbient") {
+      ESParaSite::DataToJson::getJsonAmbient();
+    } else if (server.argName(i) == "readChamber") {
+      ESParaSite::DataToJson::getJsonChamber();
+    } else if (server.argName(i) == "readEeprom") {
+      ESParaSite::DataToJson::getJsonEeprom();
+    } else if (server.argName(i) == "readEnclosure") {
+      ESParaSite::DataToJson::getJsonEnclosure();
+    } else if (server.argName(i) == "readHistory") {
+      ESParaSite::DataToJson::getJsonHistory();
+    } else if (server.argName(i) == "readI2C") {
+      ESParaSite::DataToJson::getJsonI2C();
+    } else if (server.argName(i) == "readNetwork") {
+      ESParaSite::DataToJson::getJsonNetwork();
+    } else if (server.argName(i) == "readOptics") {
+      ESParaSite::DataToJson::getJsonOptics();
+    } else if (server.argName(i) == "readStatus") {
+      ESParaSite::DataToJson::getJsonStatus();
+    } else if (server.argName(i) == "readFSInfo"){
+      ESParaSite::FileCore::getFSInfo(2);
+    } else if (server.argName(i) == "readFSList") {
+      ESParaSite::FileCore::getFSInfo(3);
+    } else {
+      server.send(404, "text/plain", message); // Response to the HTTP request
     }
   }
-  server.send(200, "text/plain", message); // Response to the HTTP request
 }

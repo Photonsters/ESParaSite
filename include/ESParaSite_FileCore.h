@@ -27,6 +27,7 @@ namespace FileCore {
 
 bool loadConfig();
 bool saveConfig();
+void getFSInfo(int);
 } // namespace FileCore
 } // namespace ESParaSite
 

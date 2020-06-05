@@ -20,6 +20,7 @@
 */
 
 #include <arduino.h>
+#include <ArduinoJson.h>
 
 class http_rest_server;
 
@@ -35,20 +36,17 @@ void stopHttpServer();
 void serveHttpClient();
 
 }; // namespace HttpCore
-}; // namespace ESParaSite
 
-namespace ESParaSite {
 namespace HttpFile {
 
 String getContentType(String filename);
 bool handleFileRead(String path);
 void handleFileUpload();
 bool loadFromLittleFS(String path);
+void handleGuiUpdate();
 
 }; // namespace HttpFile
-}; // namespace ESParaSite
 
-namespace ESParaSite {
 namespace HttpHandler {
 
 void handleRoot();
@@ -60,12 +58,6 @@ void handleResetFep();
 void handleResetLed();
 void handleResetScreen();
 
-void getJsonAmbient();
-void getJsonChamber();
-void getJsonConfig();
-void getJsonEnclosure();
-void getJsonOptics();
-
 void getResetFep();
 void getResetLed();
 void getResetScreen();
@@ -73,7 +65,30 @@ void getResetScreen();
 void handleHistory();
 void getGuiData();
 
+void getGuiUpdate();
+
 }; // namespace HttpHandler
-}; // namespace ESParaSite
+
+namespace DataToJson {
+
+void getJsonHistory();
+void getJsonNetwork();
+void getJsonStatus();
+void getJsonAmbient();
+void getJsonChamber();
+void getJsonConfig();
+void getJsonEnclosure();
+void getJsonOptics();
+void getJsonI2C();
+void getJsonEeprom();
+
+} // namespace DataToJson
+
+namespace HttpHandleJson {
+
+void serializeSendJson(const JsonDocument&);
+
+} // namespace HttpHandleJson
+} // namespace ESParaSite
 
 #endif // INCLUDE_ESPARASITE_REST_H_
