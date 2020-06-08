@@ -1,4 +1,4 @@
-// ESParaSite_ConfigFile.h
+// Util.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -19,16 +19,22 @@
 
 */
 
-#ifndef INCLUDE_ESPARASITE_FILECONFIG_H_
-#define INCLUDE_ESPARASITE_FILECONFIG_H_
+#ifndef INCLUDE_UTIL_H_
+#define INCLUDE_UTIL_H_
+
+#include <RtcDS3231.h>
 
 namespace ESParaSite {
-namespace FileCore {
+namespace Util {
+int convertCtoF(int temp_c);
+double dewPoint(double celsius, double humidity);
 
-bool loadConfig();
-bool saveConfig();
-void getFSInfo(int);
-} // namespace FileCore
-} // namespace ESParaSite
+void printDateTime(const RtcDateTime &dt);
 
-#endif // INCLUDE_ESPARASITE_FILECONFIG_H_
+uint64_t join_64(uint32_t first_word, uint32_t second_word);
+void SerializeUint32(unsigned char (&buf)[4], uint32_t val);
+uint32_t ParseUint32(const char (&buf)[4]);
+}; // namespace Util
+}; // namespace ESParaSite
+
+#endif // INCLUDE_UTIL_H_

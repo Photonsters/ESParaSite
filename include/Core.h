@@ -1,4 +1,4 @@
-// ESParaSite_DataDigest.h
+// Core.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -18,38 +18,25 @@
         web standards, etc.
 
 */
-#include <time.h>
 
-#ifndef INCLUDE_ESPARASITE_DIGEST_H_
-#define INCLUDE_ESPARASITE_DIGEST_H_
+#ifndef INCLUDE_CORE_H_
+#define INCLUDE_CORE_H_
 
-#define FIVESECMAXELEMENT (5)
-#define THIRTYSECMAXELEMENT (9)
-#define THREEHSECMAXELEMENT (11)
+#include <stdint.h>
 
-struct history {
-  time_t dataTimestamp;
-  float chamberTempC;
-  float chamberHumidity;
-  float ambientTempC;
-  float ambientHumidity;
-  float screenTempC;
-  float ledTempC;
-  bool ledOn;
-};
-
-void fivesToThirty();
-void thirtysToThreeH();
-
-#define FIVESECMAXELEMENT (5)
 
 namespace ESParaSite {
-namespace DataDigest {
+namespace Core {
+        
+uint16_t doReadSensors(uint16_t, uint16_t);
+uint16_t doHandleEeprom(uint16_t, uint16_t);
+uint16_t doReadDht(uint16_t, uint16_t);
+uint16_t doHandleHistory(uint16_t, uint16_t);
 
-void fillRow();
-void printRows();
-
-} // namespace DataDigest
+} // namespace Core
 } // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_DIGEST_H_
+void doCheckPrinting();
+bool isPrinting();
+
+#endif // INCLUDE_CORE_H_

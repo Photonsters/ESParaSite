@@ -1,4 +1,4 @@
-// ESParaSite_ConfigPortal.cpp
+// RtcEepromCore.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -19,15 +19,20 @@
 
 */
 
-#include <stdint.h>
-
-#ifndef INCLUDE_ESPARASITE_CONFIGPORTAL_H_
-#define INCLUDE_ESPARASITE_CONFIGPORTAL_H_
+#ifndef INCLUDE_EEPROM_H_
+#define INCLUDE_EEPROM_H_
 
 namespace ESParaSite {
-namespace ConfigPortal {
-void doConfigPortal();
-} // namespace ConfigPortal
-} // namespace ESParaSite
+namespace RtcEeprom {
+void initRtcEeprom();
+void dumpEEPROM(uint16_t, uint16_t);
+int doEepromFirstRead();
+uint8_t doEepromRead(uint16_t);
+uint8_t doEepromWrite();
 
-#endif // INCLUDE_ESPARASITE_CONFIGPORTAL_H_
+}; // namespace RtcEeprom
+}; // namespace ESParaSite
+
+void do_eeprom_format(uint8_t);
+
+#endif // INCLUDE_EEPROM_H_

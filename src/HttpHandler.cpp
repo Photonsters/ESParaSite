@@ -1,4 +1,4 @@
-// ESParaSite_HttpHandler.cpp
+// HttpHandler.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -27,8 +27,8 @@
 #include <WiFiClient.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_Http.h"
-#include "ESParaSite_FileCore.h"
+#include "Http.h"
+#include "FileCore.h"
 
 extern ESP8266WebServer server;
 

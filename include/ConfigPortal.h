@@ -1,4 +1,4 @@
-// ESParaSite_HttpHandler.cpp
+// ConfigPortal.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -16,29 +16,20 @@
         The Author(s) are extremely grateful for the amazing open source
         communities that work to support all of the sensors, microcontrollers,
         web standards, etc.
+
 */
 
-#include <ArduinoJson.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
+#include <stdint.h>
 
-#include <LittleFS.h>
-#include <WiFiClient.h>
+#ifndef INCLUDE_CONFIGPORTAL_H_
+#define INCLUDE_CONFIGPORTAL_H_
 
-#include "ESParaSite.h"
-#include "ESParaSite_Http.h"
+namespace ESParaSite {
+namespace ConfigPortal {
 
-extern ESP8266WebServer server;
+void doConfigPortal();
 
-void ESParaSite::HttpHandleJson::serializeSendJson(const JsonDocument& doc) {
+} // namespace ConfigPortal
+} // namespace ESParaSite
 
-  //serializeJsonPretty(doc, Serial);
-  //Serial.println();
-
-  String output = ""; //"JSON = ";
-  serializeJson(doc, output);
-  server.send(200, "application/json", output);
-
-  return;
-}
+#endif // INCLUDE_CONFIGPORTAL_H_

@@ -1,4 +1,4 @@
-// ESParaSite_DataToJson.cpp
+// DataToJson.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -27,8 +27,8 @@
 #include <cppQueue.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_DataDigest.h"
-#include "ESParaSite_Http.h"
+#include "DataDigest.h"
+#include "Http.h"
 
 extern ESParaSite::chamber chamberResource;
 extern ESParaSite::optics opticsResource;

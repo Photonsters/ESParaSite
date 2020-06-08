@@ -1,4 +1,4 @@
-// ESParaSite_Util.cpp
+// Util.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -21,8 +21,8 @@
 #include <Arduino.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_Util.h"
+#include "DebugUtils.h"
+#include "Util.h"
 
 
 using namespace ESParaSite;

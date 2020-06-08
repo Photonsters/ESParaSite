@@ -1,4 +1,4 @@
-// ESParaSite_Util.h
+// HttpHandler.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -16,25 +16,29 @@
         The Author(s) are extremely grateful for the amazing open source
         communities that work to support all of the sensors, microcontrollers,
         web standards, etc.
-
 */
 
-#ifndef INCLUDE_ESPARASITE_UTIL_H_
-#define INCLUDE_ESPARASITE_UTIL_H_
+#include <ArduinoJson.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 
-#include <RtcDS3231.h>
+#include <LittleFS.h>
+#include <WiFiClient.h>
 
-namespace ESParaSite {
-namespace Util {
-int convertCtoF(int temp_c);
-double dewPoint(double celsius, double humidity);
+#include "ESParaSite.h"
+#include "Http.h"
 
-void printDateTime(const RtcDateTime &dt);
+extern ESP8266WebServer server;
 
-uint64_t join_64(uint32_t first_word, uint32_t second_word);
-void SerializeUint32(unsigned char (&buf)[4], uint32_t val);
-uint32_t ParseUint32(const char (&buf)[4]);
-}; // namespace Util
-}; // namespace ESParaSite
+void ESParaSite::HttpHandleJson::serializeSendJson(const JsonDocument& doc) {
 
-#endif // INCLUDE_ESPARASITE_UTIL_H_
+  //serializeJsonPretty(doc, Serial);
+  //Serial.println();
+
+  String output = ""; //"JSON = ";
+  serializeJson(doc, output);
+  server.send(200, "application/json", output);
+
+  return;
+}

@@ -1,4 +1,4 @@
-// ESParaSite_HttpFile.cpp
+// HttpFile.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -23,7 +23,7 @@
 #include <ESP8266WebServer.h>
 #include <LittleFS.h>
 
-#include "ESParaSite_Http.h"
+#include "Http.h"
 
 extern ESP8266WebServer server;
 

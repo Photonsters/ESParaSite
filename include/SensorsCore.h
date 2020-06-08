@@ -1,4 +1,4 @@
-// ESParaSite_SensorsCore.h
+// SensorsCore.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -19,28 +19,36 @@
 
 */
 
-#ifndef INCLUDE_ESPARASITE_SENSORSCORE_H_
-#define INCLUDE_ESPARASITE_SENSORSCORE_H_
+#ifndef INCLUDE_SENSORSCORE_H_
+#define INCLUDE_SENSORSCORE_H_
 
 namespace ESParaSite {
 namespace Sensors {
-void initDhtSensor();
-void initSiSensor();
-void initMlxSensor();
-void initBmeSensor();
-void initRtcClock();
-void readDhtSensor(bool);
-void readSiSensor();
-void readMlxSensor();
-void readBmeSensor();
-void readRtcData();
-void checkRtcStatus();
-void readRtcTemp();
-time_t readRtcEpoch();
+// Core Functions
 void initI2cSensors();
 int pingSensor(uint16_t);
 void dumpSensor(bool);
+// Chamber Sensor Functions
+void initDhtSensor();
+void readDhtSensor(bool);
+// UV Light Sensor Functions
+void initSiSensor();
+void readSiSensor();
+// IR Temp Sensor Functions
+void initMlxSensor();
+void readMlxSensor();
+// Ambient Sensor Functions
+void initBmeSensor();
+void readBmeSensor();
+// RTC Functions
+void initRtcClock();
+void readRtcData();
+void readRtcTemp();
+time_t readRtcEpoch();
+void checkRtcStatus();
+void setRtcfromEpoch(time_t);
+
 }; // namespace Sensors
 }; // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_SENSORSCORE_H_
+#endif // INCLUDE_SENSORSCORE_H_

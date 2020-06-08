@@ -1,4 +1,4 @@
-// ESParaSite_HttpCore.h
+// HttpCore.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -24,8 +24,8 @@
 
 class http_rest_server;
 
-#ifndef INCLUDE_ESPARASITE_REST_H_
-#define INCLUDE_ESPARASITE_REST_H_
+#ifndef INCLUDE_REST_H_
+#define INCLUDE_REST_H_
 
 namespace ESParaSite {
 namespace HttpCore {
@@ -62,6 +62,8 @@ void getResetFep();
 void getResetLed();
 void getResetScreen();
 
+void handleSetClock();
+
 void handleHistory();
 void getGuiData();
 
@@ -91,4 +93,4 @@ void serializeSendJson(const JsonDocument&);
 } // namespace HttpHandleJson
 } // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_REST_H_
+#endif // INCLUDE_REST_H_

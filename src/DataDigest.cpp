@@ -1,4 +1,4 @@
-// ESParaSite_DataDigest.cpp
+// DataDigest.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy (DocMadmag) Eakin
@@ -23,9 +23,9 @@
 #include <cppQueue.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_DataDigest.h"
-#include "ESParaSite_Http.h"
-#include "ESParaSite_SensorsCore.h"
+#include "DataDigest.h"
+#include "Http.h"
+#include "SensorsCore.h"
 
 typedef struct history history;
 
