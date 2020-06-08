@@ -1,4 +1,4 @@
-// ESParaSite_HttpHandler.cpp
+// HttpHandler.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -27,7 +27,8 @@
 #include <WiFiClient.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_Http.h"
+#include "SensorsCore.h"
+#include "Http.h"
 
 
 extern ESP8266WebServer server;
@@ -50,6 +51,27 @@ void ESParaSite::HttpHandler::handleResetLed() {
   server.send(200, "text/html", "Success!");
   Serial.print(F("Resetting LED Counter"));
   rtcEepromResource.eepromLedLifeSec = 0;
+}
+
+void ESParaSite::HttpHandler::handleSetClock(){
+  String message = "";
+  if (server.arg("TimeStamp")==""){
+    message = "Time Argument not found";
+  } else {
+    Serial.print("Old Timestamp\t");
+    Serial.println(ESParaSite::Sensors::readRtcEpoch());
+    message = "Setting RTC clock";
+    String tString = server.arg("TimeStamp");
+    Serial.print("Set Timestamp\t");
+    Serial.println(tString);
+    char tChar[(tString.length()) + 1];
+    strncpy(tChar,tString.c_str(),tString.length());
+    ESParaSite::Sensors::setRtcfromEpoch(atoll(tChar));
+    Serial.print("New Timestamp\t");
+    Serial.println(ESParaSite::Sensors::readRtcEpoch());
+  }
+
+  server.send(200, "text/plain", message);
 }
 
 void ESParaSite::HttpHandler::getResetScreen() {

@@ -1,4 +1,4 @@
-// ESParaSite_ConfigPortal.cpp
+// ConfigPortal.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -26,27 +26,27 @@
 #include <WiFiManager.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_ConfigPortal.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_FileCore.h"
-#include "ESParaSite_Http.h"
+#include "ConfigPortal.h"
+#include "DebugUtils.h"
+#include "FileCore.h"
+#include "Http.h"
 
 using namespace ESParaSite;
 
-extern ESParaSite::configData configResource;
+extern configData configResource;
 
 // Onboard LED I/O pin on NodeMCU board
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
 const int PIN_LED = 2;
 
-void ESParaSite::ConfigPortal::doConfigPortal() {
+void ConfigPortal::doConfigPortal() {
 
   Serial.println(F("Configuration portal requested"));
   Serial.println();
 
   // Stop existing HTTP server. This is required in order to start a new HTTP
   // server for the captive portal.
-  ESParaSite::HttpCore::stopHttpServer();
+  HttpCore::stopHttpServer();
 
   // We will give our Access Point a unique name based on the last 3
   uint8_t macAddr[6];
@@ -150,7 +150,7 @@ void ESParaSite::ConfigPortal::doConfigPortal() {
     Serial.println(F("mDNS Enabled"));
   }
 
-  if (!(ESParaSite::FileCore::saveConfig())) {
+  if (!(FileCore::saveConfig())) {
     Serial.println(F("Failed to save config"));
   } else {
     Serial.println(F("Config saved"));

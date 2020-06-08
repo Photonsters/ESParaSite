@@ -1,4 +1,4 @@
-// ESParaSite_ConfigPortal.cpp
+// ConfigFile.h
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -19,15 +19,16 @@
 
 */
 
-#include <stdint.h>
-
-#ifndef INCLUDE_ESPARASITE_CONFIGPORTAL_H_
-#define INCLUDE_ESPARASITE_CONFIGPORTAL_H_
+#ifndef INCLUDE_FILECONFIG_H_
+#define INCLUDE_FILECONFIG_H_
 
 namespace ESParaSite {
-namespace ConfigPortal {
-void doConfigPortal();
-} // namespace ConfigPortal
+namespace FileCore {
+
+bool loadConfig();
+bool saveConfig();
+void getFSInfo(int);
+} // namespace FileCore
 } // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_CONFIGPORTAL_H_
+#endif // INCLUDE_FILECONFIG_H_

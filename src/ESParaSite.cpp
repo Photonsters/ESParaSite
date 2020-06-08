@@ -26,14 +26,14 @@
 #include <LittleFS.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_ConfigPortal.h"
-#include "ESParaSite_Core.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_FileCore.h"
-#include "ESParaSite_Http.h"
-#include "ESParaSite_RtcEepromCore.h"
-#include "ESParaSite_SensorsCore.h"
-#include "ESParaSite_Util.h"
+#include "ConfigPortal.h"
+#include "Core.h"
+#include "DebugUtils.h"
+#include "FileCore.h"
+#include "Http.h"
+#include "RtcEepromCore.h"
+#include "SensorsCore.h"
+#include "Util.h"
 
 // #define FORMAT_SPIFFS //for development only!
 
@@ -167,7 +167,7 @@ void setup(void) {
   Serial.println();
   Serial.println(F("ESParaSite Data Logging Server"));
   Serial.println(
-      F("https://github.com/Photonsters/ESParaSite_TemperatureLogger"));
+      F("https://github.com/Photonsters/TemperatureLogger"));
   Serial.print(F("Compiled: "));
   Serial.print(F(__DATE__));
   Serial.println();

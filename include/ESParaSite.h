@@ -23,8 +23,8 @@
 
 #define SPIFFS_FIXED_LOCATION 0x100000
 
-#ifndef INCLUDE_ESPARASITE_H_
-#define INCLUDE_ESPARASITE_H_
+#ifndef INCLUDE_H_
+#define INCLUDE_H_
 
 namespace ESParaSite {
 
@@ -90,4 +90,4 @@ struct sensorExists {
 
 }; // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_H_
+#endif // INCLUDE_H_

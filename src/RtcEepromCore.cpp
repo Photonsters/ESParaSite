@@ -1,4 +1,4 @@
-// ESParaSite_RtcEepromCore.cpp
+// RtcEepromCore.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -24,10 +24,10 @@
 #include <Wire.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_RtcEepromCore.h"
-#include "ESParaSite_SensorsCore.h"
-#include "ESParaSite_Util.h"
+#include "DebugUtils.h"
+#include "RtcEepromCore.h"
+#include "SensorsCore.h"
+#include "Util.h"
 
 
 /*     The AT24C32 EEPROM is structured with 4096 x 8 bit words. Writing is

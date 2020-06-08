@@ -1,4 +1,4 @@
-// ESParaSite_ConfigFile.cpp
+// ConfigFile.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -32,9 +32,9 @@
 #include <LittleFS.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_FileCore.h"
-#include "ESParaSite_Http.h"
+#include "DebugUtils.h"
+#include "FileCore.h"
+#include "Http.h"
 
 using namespace ESParaSite;
 

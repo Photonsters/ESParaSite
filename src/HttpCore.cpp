@@ -1,4 +1,4 @@
-// ESParaSite_HttpCore.cpp
+// HttpCore.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -29,7 +29,7 @@
 #include <WiFiClient.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_Http.h"
+#include "Http.h"
 
 //+++ User Settings +++
 
@@ -57,10 +57,13 @@ void ESParaSite::HttpCore::configHttpServerRouting() {
   server.on("/reset_screen", HTTP_GET, ESParaSite::HttpHandler::getResetScreen);
   server.on("/reset_fep", HTTP_GET, ESParaSite::HttpHandler::getResetFep);
   server.on("/reset_led", HTTP_GET, ESParaSite::HttpHandler::getResetLed);
-  server.on(
-      "/reset_screen", HTTP_POST, ESParaSite::HttpHandler::handleResetScreen);
+  server.on("/reset_screen", HTTP_POST,
+            ESParaSite::HttpHandler::handleResetScreen);
   server.on("/reset_fep", HTTP_POST, ESParaSite::HttpHandler::handleResetFep);
   server.on("/reset_led", HTTP_POST, ESParaSite::HttpHandler::handleResetLed);
+
+  server.on("/setRtc", HTTP_POST,
+      ESParaSite::HttpHandler::handleSetClock);
 
   server.on("/upload", HTTP_GET, ESParaSite::HttpHandler::getHtmlUpload);
   server.on(
@@ -75,4 +78,3 @@ void ESParaSite::HttpCore::serveHttpClient() { server.handleClient(); }
 void ESParaSite::HttpCore::startHttpServer() { server.begin(); }
 
 void ESParaSite::HttpCore::stopHttpServer() { server.stop(); }
-

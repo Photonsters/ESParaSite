@@ -1,4 +1,4 @@
-// ESParaSite_RtcEepromCore.h
+// HttpHandler.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -16,23 +16,29 @@
         The Author(s) are extremely grateful for the amazing open source
         communities that work to support all of the sensors, microcontrollers,
         web standards, etc.
-
 */
 
-#ifndef INCLUDE_ESPARASITE_EEPROM_H_
-#define INCLUDE_ESPARASITE_EEPROM_H_
+#include <ArduinoJson.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 
-namespace ESParaSite {
-namespace RtcEeprom {
-void initRtcEeprom();
-void dumpEEPROM(uint16_t, uint16_t);
-int doEepromFirstRead();
-uint8_t doEepromRead(uint16_t);
-uint8_t doEepromWrite();
+#include <LittleFS.h>
+#include <WiFiClient.h>
 
-}; // namespace RtcEeprom
-}; // namespace ESParaSite
+#include "ESParaSite.h"
+#include "Http.h"
 
-void do_eeprom_format(uint8_t);
+extern ESP8266WebServer server;
 
-#endif // INCLUDE_ESPARASITE_EEPROM_H_
+void ESParaSite::HttpHandleJson::serializeSendJson(const JsonDocument& doc) {
+
+  //serializeJsonPretty(doc, Serial);
+  //Serial.println();
+
+  String output = ""; //"JSON = ";
+  serializeJson(doc, output);
+  server.send(200, "application/json", output);
+
+  return;
+}

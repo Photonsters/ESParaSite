@@ -1,4 +1,4 @@
-// ESParaSite_DataDigest.h
+// ConfigPortal.cpp
 
 /* ESParasite Data Logger v0.9
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -18,38 +18,18 @@
         web standards, etc.
 
 */
-#include <time.h>
 
-#ifndef INCLUDE_ESPARASITE_DIGEST_H_
-#define INCLUDE_ESPARASITE_DIGEST_H_
+#include <stdint.h>
 
-#define FIVESECMAXELEMENT (5)
-#define THIRTYSECMAXELEMENT (9)
-#define THREEHSECMAXELEMENT (11)
-
-struct history {
-  time_t dataTimestamp;
-  float chamberTempC;
-  float chamberHumidity;
-  float ambientTempC;
-  float ambientHumidity;
-  float screenTempC;
-  float ledTempC;
-  bool ledOn;
-};
-
-void fivesToThirty();
-void thirtysToThreeH();
-
-#define FIVESECMAXELEMENT (5)
+#ifndef INCLUDE_CONFIGPORTAL_H_
+#define INCLUDE_CONFIGPORTAL_H_
 
 namespace ESParaSite {
-namespace DataDigest {
+namespace ConfigPortal {
 
-void fillRow();
-void printRows();
+void doConfigPortal();
 
-} // namespace DataDigest
+} // namespace ConfigPortal
 } // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_DIGEST_H_
+#endif // INCLUDE_CONFIGPORTAL_H_
