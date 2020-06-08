@@ -144,10 +144,10 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell(data["ambHumidity"] + " %"));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Barometric Pressure"));
-    row.appendChild(createRowCell(data["ambPressure"] + " mb"));
+    row.appendChild(createRowCell(data["ambPressure"] + " hpa"));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Altitude"));
-    row.appendChild(createRowCell(data["ambAltitude"] + " m"));
+    row.appendChild(createRowCell(trimFloat(data["ambAltitude"]) + " m"));
     var row = tbody.insertRow();
   } else if (dataset == "Chamber") {
     var row = tbody.insertRow();
@@ -158,7 +158,7 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell(data["cmbHumidity"] + " %"));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Dew Point"));
-    row.appendChild(createRowCell(data["cmbDewpoint"] + " " + "°C"));
+    row.appendChild(createRowCell(trimFloat(data["cmbDewpoint"]) + " " + "°C"));
     var row = tbody.insertRow();
   } else if (dataset == "Eeprom") {
     var row = tbody.insertRow();
@@ -294,4 +294,9 @@ function convertSeconds(seconds) {
       new Date(seconds * 1000).toISOString().substr(11, 8);
     return dayshhmmss;
   }
+}
+
+function trimFloat(value) {
+  var trimmed = (Math.round((value * 100)) / 100);
+  return trimmed;
 }

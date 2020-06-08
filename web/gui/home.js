@@ -172,8 +172,8 @@ function updateGraphAndTable(data) {
 
   data.forEach(function (dataItem) {
     var row = tbody.insertRow();
-    var d = dataItem["ts"];
-    var utc = d + offset * 60; //This converts to UTC 00:00
+    
+    var utc = dataItem["ts"];
     dutc = new Date(utc * 1000);
 
     timeStamps.push(dutc.toLocaleTimeString());

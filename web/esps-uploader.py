@@ -20,10 +20,9 @@ import os
 import requests
 import math
 
-from datetime import datetime, timezone
-
 from os import listdir
 from os.path import isfile, join
+from datetime import datetime, timezone
 
 espsMdns = input("Enter mDNS name of ESParaSite: ")
 
@@ -32,19 +31,19 @@ filesDir = os.path.join(os.getcwd(), "gui")
 fileList = [f for f in listdir(filesDir) if isfile(join(filesDir, f))]
 
 uploadUrl = "http://" + espsMdns + "/upload"
-"""
+
 for file in fileList:
     filePath = os.path.join(filesDir, file)
+    print("Uploading " + file)
     with open(filePath, 'rb') as f:
         r = requests.post(uploadUrl, files={filePath: f})
 
-"""
 # seconds from epoch:
 now_utc = datetime.now(timezone.utc).timestamp()
 now_utc_sec = math.floor(now_utc)
-print(now_utc_sec)
+print("Setting RTC to UTC epoch: ")
 
 uploadUrl = "http://" + espsMdns + "/setRtc"
 payload = {'TimeStamp': now_utc_sec}
-
+print(payload)
 r = requests.post(uploadUrl, params=payload)
