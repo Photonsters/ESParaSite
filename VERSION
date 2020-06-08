@@ -27,25 +27,14 @@ v.10 - Kala-azar
 	- Moved all HTTP files under a unified header
 	- Moved all HTTP handlers for resetting counters to their own file.
 	- Added a GUI data feed for status page
-	- GUI - A kind gentleman contributed some of his time to rebuild the core 
-		of the GUI for us
 	- Moved all JSON handling functions to the DataToJson Namespaces
 		- Moved HistorytoJson to its own file for sake of code length.
 	- Moved all feeds to /guiFeed and renamed all to be consistent.
-	- GUI - Added Status Page to GUI showing the most critical information
-	 	on one page.
-	- GUI - Added Diagnostics Page to the GUI which shows all information 
-		we know about the printer.
 	- Changed Flash Layout on ESP12F to have a 3MB filesystem and 512K for 
 		OTA updates This update will format your flash and force you to 
 		reconfigure wifi.
 	- Removed ESP32-Targz in favor of a python GUI uploader.
-	- UPLOADER -esps-uploader.py Created to load/update GUI onto ESParaSite
-	- GUI - will now be uploaded/installed/updated via an external Python 
-		Bscript.
 	- Renamed HTTPFile.cpp to HTTPHandleFile.cpp
-	- GUI - Added File listing and FS Info to Diagnostics page.
-	- GUI - Added debug options to GUI .js pages.  Pages can either pull 
 		from a http://esparasite.local (Needs CORS Plugin) or a local json/ 
 		subdirectory with debug=1 or debug=2 enabled.
 	- Split SensorsCore.cpp into multiple files for easier maintenance and 
@@ -53,9 +42,27 @@ v.10 - Kala-azar
 	- Renamed ESParaSite_ files to remove prefix.
 	- Added routine to allow remotely setting of the Real Time Clock to UTC
 		currently performed alongside GUI upload.
+
+	- UPLOADER - esps-uploader.py Created to load/update GUI onto ESParaSite
 	- UPLOADER - added time setting function that sets the RTC to UTC
+	- UPLOADER - made uploader a bit more verbose.
+	
+	- GUI - A kind gentleman, Peter Csaki has contributed some of his time 
+		to build the core of the GUI for us
+	- GUI - Added Status Page to GUI showing the most critical information
+	 	on one page.
+	- GUI - Added Diagnostics Page to the GUI which shows all information 
+		we know about the printer.
+	- GUI - will now be uploaded/installed/updated via an external Python 
+		script.
+	- GUI - Added File listing and FS Info to Diagnostics page.
+	- GUI - Added debug options to GUI .js pages.  Pages can either pull 
 	- GUI - Removed code in home.js that converted time to UTC.
 	- GUI - Renamed logo file to logo.png
+	- GUI - added function to trim floats down to 2 decimal places
+	- GUI - removed WiFi navigation link
+	- GUI - removed Individual JSON feed navigation links
+	- GUI - swapped Chamber Humidity with Screen Temperature in Chart
 
 v0.9 - Iodamoeba buetschlii - 2020-05-24
 	- Implemented locally served chart.js and jquery.js in order to start 
