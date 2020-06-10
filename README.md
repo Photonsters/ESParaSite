@@ -4,10 +4,9 @@ ESP based temperature, LED power and power time logger for LCD/DLP/SLA Resin mac
 
 The idea for this project is to make use of the empty ESP01 slot available on the photon to make a logger to keep track of various temperatures and other data on a MSLA printer by acessing the ESP with a regular browser
 
-Here is the Dashboard
-![image](https://raw.githubusercontent.com/Photonsters/ESParaSite_TemperatureLogger/master/Docs/Images/Annotation%202020-05-24%20124211.jpg)
 
-![image](https://user-images.githubusercontent.com/11083514/54684616-ad423980-4b0c-11e9-952c-1884b7160c75.png)
+
+![image](https://raw.githubusercontent.com/Photonsters/ESParaSite_TemperatureLogger/master/Docs/Images/Annotation%202020-05-24%20124211.jpg)
 
 ![image](https://user-images.githubusercontent.com/11083514/54575800-76293680-49ed-11e9-9d85-362e04bd88fa.png)
 
