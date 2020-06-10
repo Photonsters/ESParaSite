@@ -19,22 +19,23 @@
 */
 
 #include <Arduino.h>
+#include <ESP8266Webserver.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <ESP8266Webserver.h>
-//#include <ESPAsyncTCP.h>
-//#include <ESPAsyncWebServer.h>
+
 #include <LittleFS.h>
 
 #include "ESParaSite.h"
-#include "ESParaSite_ConfigPortal.h"
-#include "ESParaSite_Core.h"
-#include "ESParaSite_DebugUtils.h"
-#include "ESParaSite_FileCore.h"
-#include "ESParaSite_HttpCore.h"
-#include "ESParaSite_RtcEepromCore.h"
-#include "ESParaSite_SensorsCore.h"
-#include "ESParaSite_Util.h"
+#include "ConfigPortal.h"
+#include "Core.h"
+#include "DebugUtils.h"
+#include "FileCore.h"
+#include "Http.h"
+#include "RtcEepromCore.h"
+#include "SensorsCore.h"
+#include "Util.h"
+
+// #define FORMAT_SPIFFS //for development only!
 
 // Trigger for inititating config mode is Pin D3 and also flash button on
 // NodeMCU.  Flash button is convenient to use but if it is pressed it will
@@ -67,7 +68,7 @@ ESParaSite::ambient ambientResource;
 ESParaSite::configData configResource;
 ESParaSite::enclosure enclosureResource;
 ESParaSite::optics opticsResource;
-ESParaSite::printchamber chamberResource;
+ESParaSite::chamber chamberResource;
 ESParaSite::rtcEepromData rtcEepromResource;
 ESParaSite::statusData statusResource;
 ESParaSite::sensorExists existsResource;
@@ -77,13 +78,6 @@ ESParaSite::sensorExists existsResource;
 //*************************************************************************
 void loop(void) {
 
-#ifdef DEBUG_L1
-  Serial.println();
-  Serial.print(F("Beginning Loop"));
-  Serial.println();
-  Serial.println();
-#endif
-
   // Check to see if Config Mode Triggered
   if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW) ||
       (initialConfig)) {
@@ -91,26 +85,11 @@ void loop(void) {
     ESParaSite::ConfigPortal::doConfigPortal();
   }
 
-#ifdef DEBUG_L1
-  Serial.println(F("updating mDNS"));
-  Serial.println();
-#endif
-
   // Refresh mDNS
   MDNS.update();
 
-#ifdef DEBUG_L1
-  Serial.println(F("servicing HTTP Client"));
-  Serial.println();
-#endif
-
   // Run the HTTP Sever
-    ESParaSite::HttpCore::serveHttpClient();
-
-#ifdef DEBUG_L1
-  Serial.println(F("refreshing curLoopMillis"));
-  Serial.println();
-#endif
+  ESParaSite::HttpCore::serveHttpClient();
 
   // Refresh the Current Loop Millisecond value
   curLoopMillis = millis();
@@ -155,6 +134,11 @@ void loop(void) {
   prevEepromMillis =
       ESParaSite::Core::doHandleEeprom(curLoopMillis, prevEepromMillis);
 
+#ifdef DEBUG_L1
+  Serial.println(F("Create History Digest"));
+  Serial.println();
+#endif
+
   // Keep track of historical data and update Web UI data
   prevHistoryMillis =
       ESParaSite::Core::doHandleHistory(curLoopMillis, prevHistoryMillis);
@@ -183,7 +167,7 @@ void setup(void) {
   Serial.println();
   Serial.println(F("ESParaSite Data Logging Server"));
   Serial.println(
-      F("https://github.com/Photonsters/ESParaSite_TemperatureLogger"));
+      F("https://github.com/Photonsters/TemperatureLogger"));
   Serial.print(F("Compiled: "));
   Serial.print(F(__DATE__));
   Serial.println();
@@ -197,15 +181,12 @@ void setup(void) {
                           // password printed
 #endif
 
-#ifdef DEBUG_L1
-  Serial.println(F("Mounting LittleFS"));
-  Serial.println();
-  delay(500);
+#ifdef FORMAT_SPIFFS
+  Serial.println(F("Formatting SPIFFS..."));
+  LittleFS.format();
 #endif
 
-#ifdef DEBUG_L1
   Serial.println(F("Mounting FS..."));
-#endif
 
   // Mount the LittleFS Filesystem
   if (!LittleFS.begin()) {
@@ -213,17 +194,11 @@ void setup(void) {
                      "Config Portal mode."));
     ESParaSite::ConfigPortal::doConfigPortal();
   } else {
-
-#ifdef DEBUG_L1
     Serial.println(F("File system mounted"));
-#endif
   }
 
-#ifdef DEBUG_L1
-  Serial.println(F("Loading config.json"));
   Serial.println();
-  delay(500);
-#endif
+  Serial.println(F("Loading config.json"));
 
   //  Load the config.json file
   if (!ESParaSite::FileCore::loadConfig()) {
@@ -232,14 +207,15 @@ void setup(void) {
     ESParaSite::ConfigPortal::doConfigPortal();
   } else {
     Serial.println(F("config.json loaded"));
+    Serial.println("");
   }
 
-#ifdef DEBUG_L1
-  Serial.println(F("Wifi Configuration"));
-  Serial.println();
-  delay(500);
-#endif
+  ESParaSite::FileCore::getFSInfo(1);
 
+  Serial.println(F("Configuring Wifi..."));
+  Serial.println();
+
+  // Check if Wifi is configured
   if (WiFi.SSID() == "") {
     Serial.println(
         F("WiFi credentials unset, Booting in AP Config Portal mode."));
@@ -251,7 +227,6 @@ void setup(void) {
 
     // Connect to Access Point
     Serial.println(F("Connecting to Wifi..."));
-    Serial.println();
     WiFi.reconnect();
 
 #ifndef DEBUG_L1
@@ -269,29 +244,23 @@ void setup(void) {
 #endif
   }
 
-#ifdef DEBUG_L1
-  Serial.println(F("Wifi Showing IP"));
-  Serial.println();
-#endif
-
+  // Print Wifi Status and IP. If Wifi connection times out, launch config
+  // portal.
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("Failed to connect, Booting in AP Config Portal mode."));
     ESParaSite::ConfigPortal::doConfigPortal();
   } else {
-    Serial.println(F("Wifi Connected"));
-    Serial.println();
+    Serial.print(F("Wifi Connected to: "));
+    Serial.println(WiFi.SSID());
     Serial.print(F("IP Address: "));
     Serial.println(WiFi.localIP());
     Serial.println();
   }
 
-#ifdef DEBUG_L1
-  Serial.println(F("mDNS Config"));
-  Serial.println();
-#endif
+  Serial.println(F("Configuring mDNS..."));
 
-  delay(500);
 
+  // Start mDNS if enabled
   if (configResource.cfgMdnsEnabled == 1) {
     const char *mdns_n = configResource.cfgMdnsName;
     if (!MDNS.begin(mdns_n)) {
@@ -300,36 +269,30 @@ void setup(void) {
       ESParaSite::ConfigPortal::doConfigPortal();
     } else {
       Serial.println(F("mDNS responder started"));
+      Serial.println(F("mDNS enabled on URL:"));
+      Serial.print(F("http://"));
+      Serial.print(configResource.cfgMdnsName);
+      Serial.println(F(".local"));
       Serial.println();
     }
   }
 
-  Serial.println(F("Starting Webserver"));
-  Serial.println();
-
-#ifdef DEBUG_L1
-  delay(1000);
-#endif
-
   // Start http server
+  Serial.println(F("Starting Webserver..."));
   ESParaSite::HttpCore::configHttpServerRouting();
   ESParaSite::HttpCore::startHttpServer();
 
-  Serial.println();
   Serial.println(F("HTTP server started"));
   Serial.println();
 
-#ifdef DEBUG_L1
-  Serial.println(F("Initialize i2c bus, sensors, rtc and eeprom"));
+  Serial.println(F("Initializing i2c bus, sensors, rtc and eeprom"));
   Serial.println();
-  delay(500);
-#endif
 
   // Initialize i2c bus, sensors, rtc and eeprom
   ESParaSite::Sensors::initI2cSensors();
 
   // Dump all sensor data to serial console
-  ESParaSite::Sensors::dumpSensor(false);
+  ESParaSite::Sensors::dumpSensor(true);
 
   // Find the most recent EEPROM segment and populate our eeprom_data struct.
   uint16_t mru_segment_addr = ESParaSite::RtcEeprom::doEepromFirstRead();

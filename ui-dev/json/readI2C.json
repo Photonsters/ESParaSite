@@ -1,0 +1,9 @@
+{
+    "class": "i2c",
+    "sdaPin": "4",
+    "sclPin": "5",
+    "dhtExist": "1",
+    "bmeExist": "1",
+    "mlxExist": "1",
+    "siExist": "0"
+}
