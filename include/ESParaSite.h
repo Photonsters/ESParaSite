@@ -21,24 +21,12 @@
 
 #include <stdbool.h>
 
-#ifndef INCLUDE_ESPARASITE_H_
-#define INCLUDE_ESPARASITE_H_
+#define SPIFFS_FIXED_LOCATION 0x100000
+
+#ifndef INCLUDE_H_
+#define INCLUDE_H_
 
 namespace ESParaSite {
-
-struct printchamber {
-  float chamberTempC{};
-  float chamberHumidity{};
-  float chamberDewPoint{};
-};
-
-struct optics {
-  float ledUVIndex{};
-  float ledVisible{};
-  float ledInfrared{};
-  float ledTempC{};
-  float screenTempC{};
-};
 
 struct ambient {
   float ambientTempC{};
@@ -47,12 +35,26 @@ struct ambient {
   float ambientAltitude{};
 };
 
+struct chamber {
+  float chamberTempC{};
+  float chamberHumidity{};
+  float chamberDewPoint{};
+};
+
 struct enclosure {
   uint32_t printerLifeSec{};
   uint32_t lcdLifeSec{};
   uint32_t ledLifeSec{};
   uint32_t vatLifeSec{};
   float caseTempC{};
+};
+
+struct optics {
+  float ledUVIndex{};
+  float ledVisible{};
+  float ledInfrared{};
+  float ledTempC{};
+  float screenTempC{};
 };
 
 struct statusData {
@@ -83,10 +85,9 @@ struct sensorExists {
   bool bmeDetected{};
   bool dhtDetected{};
   bool mlxDetected{};
-  bool rtcDetected{};
   bool siDetected{};
 };
 
 }; // namespace ESParaSite
 
-#endif // INCLUDE_ESPARASITE_H_
+#endif // INCLUDE_H_
