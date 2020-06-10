@@ -163,6 +163,8 @@ void ESParaSite::Sensors::readRtcTemp() {
 #endif
 }
 
+// The real time clock uses Jan 1, 2000 00:00:00 as a time basis so we need
+// to add or subtract 946684800 when converting to/from epoch 
 time_t ESParaSite::Sensors::readRtcEpoch() {
 
   ESParaSite::Sensors::checkRtcStatus();
