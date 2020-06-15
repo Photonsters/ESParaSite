@@ -1,6 +1,6 @@
 // ESParaSite.cpp
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -25,15 +25,17 @@
 
 #include <LittleFS.h>
 
-#include "ESParaSite.h"
 #include "ConfigPortal.h"
 #include "Core.h"
 #include "DebugUtils.h"
+#include "ESParaSite.h"
 #include "FileCore.h"
 #include "Http.h"
-#include "RtcEepromCore.h"
-#include "SensorsCore.h"
+#include "OTA.h"
+#include "Eeprom.h"
+#include "Sensors.h"
 #include "Util.h"
+
 
 // #define FORMAT_SPIFFS //for development only!
 
@@ -87,6 +89,9 @@ void loop(void) {
 
   // Refresh mDNS
   MDNS.update();
+
+  // Check for OTA
+  ESParaSite::OTA::handleOTA();
 
   // Run the HTTP Sever
   ESParaSite::HttpCore::serveHttpClient();
@@ -166,8 +171,7 @@ void setup(void) {
 
   Serial.println();
   Serial.println(F("ESParaSite Data Logging Server"));
-  Serial.println(
-      F("https://github.com/Photonsters/TemperatureLogger"));
+  Serial.println(F("https://github.com/Photonsters/TemperatureLogger"));
   Serial.print(F("Compiled: "));
   Serial.print(F(__DATE__));
   Serial.println();
@@ -259,7 +263,6 @@ void setup(void) {
 
   Serial.println(F("Configuring mDNS..."));
 
-
   // Start mDNS if enabled
   if (configResource.cfgMdnsEnabled == 1) {
     const char *mdns_n = configResource.cfgMdnsName;
@@ -313,6 +316,8 @@ void setup(void) {
   delay(3000);
 #endif
 
+  ESParaSite::OTA::configOTA();
+  ESParaSite::OTA::startOTA();
   // Turn led off as we are finished booting.
   digitalWrite(PIN_LED, HIGH);
 }

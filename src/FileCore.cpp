@@ -1,6 +1,6 @@
 // ConfigFile.cpp
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -100,52 +100,4 @@ bool FileCore::saveConfig() {
 
   serializeJson(doc, configFile);
   return true;
-}
-
-void FileCore::getFSInfo(int mode) {
-
-  FSInfo fs_info;
-  LittleFS.info(fs_info);
-  if (mode == 1) {
-    Serial.print("Total Filesystem Bytes:\t");
-    Serial.println(fs_info.totalBytes);
-    Serial.print("Used Filesystem Bytes:\t");
-    Serial.println(fs_info.usedBytes);
-  } else if (mode == 2) {
-    StaticJsonDocument<200> doc;
-    doc["tfsb"] = fs_info.totalBytes;
-    doc["ufsb"] = fs_info.usedBytes;
-    HttpHandleJson::serializeSendJson(doc);
-    return;
-  }
-
-  File root = LittleFS.open("/", "r");
-  File file = root.openNextFile();
-  if (mode == 1) {
-    while (file) {
-      Serial.print(file.name());
-      Serial.print("\t\t");
-      Serial.println(file.size());
-      file = root.openNextFile();
-    }
-  } else if (mode == 3) {
-    // We need to find a better way to do this since we can only fit ~50
-    // files in thsi JSON Doc. look into splitting this and doing HTTP Chunks.
-    // https://gist.github.com/spacehuhn/6c89594ad0edbdb0aad60541b72b2388
-    DynamicJsonDocument parentDoc(4096);
-    DynamicJsonDocument nestedDoc(64);
-    while (file) {
-      JsonObject nested = nestedDoc.to<JsonObject>();
-
-      String fName = file.name();
-      nested["fName"] = fName;
-      nested["fSize"] = file.size();
-      file = root.openNextFile();
-
-      String child;
-      serializeJson(nestedDoc, child);
-      parentDoc.add(serialized(child));
-    }
-    HttpHandleJson::serializeSendJson(parentDoc);
-  }
 }
