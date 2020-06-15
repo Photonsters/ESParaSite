@@ -1,6 +1,6 @@
 // Core.cpp
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -28,8 +28,8 @@
 #include "DebugUtils.h"
 #include "FileCore.h"
 #include "Http.h"
-#include "RtcEepromCore.h"
-#include "SensorsCore.h"
+#include "Eeprom.h"
+#include "Sensors.h"
 #include "Util.h"
 
 // +++ Advanced Settings +++

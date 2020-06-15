@@ -1,6 +1,6 @@
 // Util.cpp
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info

@@ -1,6 +1,6 @@
 // HttpCore.h
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -71,24 +71,11 @@ void getGuiUpdate();
 
 }; // namespace HttpHandler
 
-namespace DataToJson {
-
-void getJsonHistory();
-void getJsonNetwork();
-void getJsonStatus();
-void getJsonAmbient();
-void getJsonChamber();
-void getJsonConfig();
-void getJsonEnclosure();
-void getJsonOptics();
-void getJsonI2C();
-void getJsonEeprom();
-
-} // namespace DataToJson
-
 namespace HttpHandleJson {
 
 void serializeSendJson(const JsonDocument&);
+void sendContentLengthUnknown();
+void serializeSendJsonPartN(const JsonDocument &);
 
 } // namespace HttpHandleJson
 } // namespace ESParaSite

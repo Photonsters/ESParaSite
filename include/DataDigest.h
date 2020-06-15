@@ -1,6 +1,6 @@
 // DataDigest.h
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -25,7 +25,8 @@
 
 #define FIVESECMAXELEMENT (5)
 #define THIRTYSECMAXELEMENT (9)
-#define THREEHSECMAXELEMENT (11)
+#define FIVEMINMAXELEMENT (11)
+#define ONEHOURMAXELEMENT (11)
 
 struct history {
   time_t dataTimestamp;
@@ -39,9 +40,8 @@ struct history {
 };
 
 void fivesToThirty();
-void thirtysToThreeH();
-
-#define FIVESECMAXELEMENT (5)
+void thirtysTofiveMin();
+void fiveMinToOneHour();
 
 namespace ESParaSite {
 namespace DataDigest {

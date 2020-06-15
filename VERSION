@@ -1,6 +1,6 @@
 // ESParasite VERSION HISTORY
 
-/* ESParasite Data Logger v0.9
+/* ESParasite Data Logger
 	Authors: Andy  (SolidSt8Dad)Eakin
 	
 	Please see /ATTRIB for full credits and OSS License Info
@@ -20,7 +20,21 @@
 */
 
 /*
-v.10 - Kala-azar
+v 1.1
+	- Fixed BugIssue #39 api feeds for fileList and readHistory now send 2kB
+		chunks of data across multiple HTTP chunks.
+	- Changed digest of data to add hourly digests for 12 hours.  We now 
+		provide 40 datapoiints - live data every 5 seconds for 30 seconds, 
+		30 second data averages for 5 minutes, 5 minute data average for 
+		1 hour and 1 hour averages for 12 hours.
+	- Renamed RtcEepromCore.h and .cpp to EepromCore.h and .cpp.
+	- Numerous changes to header and source file naming and src folder layout
+		- This should make the code groupings a bit simpler for humans to 
+			follow and keep the root sprawl to a minimum 
+	- GUI - added regex parsing prior to parsing json data from fileList and 
+		readHistory api calls to deal with extraneous characters created by 
+		chunking responses
+v1.0 - Kala-azar
 	- Moved GUI data feeds to be a single URL with query strings
 	- Moved all HTTP_GET handlers that return JSON to their own cpp file
 	- Moved all HTTP Handlers for the web GUI to their own file.
