@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 2;
 
 //Graphs https://www.chartjs.org
 var chartInstance;
@@ -48,8 +48,8 @@ function showGraph() {
         {
           label: "Chamber Temperature",
           fill: false, //Try with true
-          pointBackgroundColor: "rgba(255 ,255 ,255 ,1)",
-          pointRadius: "2",
+          pointBackgroundColor: "rgba(215 ,13 ,13 ,1)",
+          pointRadius: "3",
           backgroundColor: "rgba(215 ,13 ,13 ,1)", //Dot marker color
           borderColor: "rgba(215 ,13 ,13 ,1)", //Graph Line Color
           fontColor: "rgba(236 ,236, 236, 1)",
@@ -58,8 +58,8 @@ function showGraph() {
         {
           label: "Screen Temperature",
           fill: false, //Try with true
-          pointBackgroundColor: "rgba(255 ,255 ,255 ,1)",
-          pointRadius: "2",
+          pointBackgroundColor: "rgba( 234, 119, 4, 1)",
+          pointRadius: "3",
           backgroundColor: "rgba( 234, 119, 4, 1)", //Dot marker color
           borderColor: "rgba( 234, 119, 4, 1)", //Graph Line Color
           fontColor: "rgba(236 ,236, 236, 1)",
@@ -68,8 +68,8 @@ function showGraph() {
         {
           label: "Ambient Temperature",
           fill: false, //Try with true
-          pointBackgroundColor: "rgba(255 ,255 ,255 ,1)",
-          pointRadius: "2",
+          pointBackgroundColor: "rgba(82, 99, 255, 1)",
+          pointRadius: "3",
           backgroundColor: "rgba(82, 99, 255, 1)", //Dot marker color
           borderColor: "rgba(82, 99, 255, 1)", //Graph Line Color
           fontColor: "rgba(236 ,236, 236, 1)",
@@ -78,8 +78,8 @@ function showGraph() {
         {
           label: "Ambient Humidity",
           fill: false, //Try with true
-          pointBackgroundColor: "rgba(255 ,255 ,255 ,1)",
-          pointRadius: "2",
+          pointBackgroundColor: "rgba( 146, 160, 254, 1)",
+          pointRadius: "3",
           backgroundColor: "rgba( 146, 160, 254, 1)", //Dot marker color
           borderColor: "rgba(146, 160, 254, 1)", //Graph Line Color
           fontColor: "rgba(236 ,236, 236, 1)",
@@ -137,7 +137,9 @@ function getData() {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
     if (this.readyState == 4 && this.status == 200) {
-      var json = this.responseText;
+      var raw = this.responseText;
+      var raw = raw.replace(/(null)/g, "");
+      var json = raw.replace(/(\]\[)/g, ",");
       var data = JSON.parse(json);
       updateGraphAndTable(data);
     }
@@ -148,12 +150,12 @@ function getData() {
   } else if (debug == 2) {
     xhttp.open(
       "GET",
-      "http://esparasite.local/guiFeed?readHistory=" + new Date().getTime(),
+      "http://esparasite.local/api?readHistory=" + new Date().getTime(),
       true
     );
     xhttp.send();
   } else {
-    xhttp.open("GET", "guiFeed?readHistory=" + new Date().getTime(), true);
+    xhttp.open("GET", "api?readHistory=" + new Date().getTime(), true);
     xhttp.send();
   }
 }

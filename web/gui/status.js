@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 2;
 
 //On Page load show graphs
 document.addEventListener("DOMContentLoaded", function () {
@@ -39,21 +39,21 @@ function getData(elementID, dataset) {
     if (dataset == "Network") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readNetwork=" + new Date().getTime(),
+        "http://esparasite.local/api?readNetwork=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Status") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readStatus=" + new Date().getTime(),
+        "http://esparasite.local/api?readStatus=" + new Date().getTime(),
         true
       );
     }
   } else {
     if (dataset == "Network") {
-      xhttp.open("GET", "guiFeed?readNetwork=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readNetwork=" + new Date().getTime(), true);
     } else if (dataset == "Status") {
-      xhttp.open("GET", "guiFeed?readStatus=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readStatus=" + new Date().getTime(), true);
     }
   }
   xhttp.send();
