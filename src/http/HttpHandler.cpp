@@ -80,7 +80,7 @@ void ESParaSite::HttpHandler::getHtmlUpload() {
   }
 }
 
-void ESParaSite::HttpHandler::getGuiData() {
+void ESParaSite::HttpHandler::handleApiRequest() {
   String message = ("Data feed not found.");
 
   for (int i = 0; i < server.args(); i++) {
@@ -107,6 +107,14 @@ void ESParaSite::HttpHandler::getGuiData() {
       ESParaSite::FileCore::getFSInfo(2);
     } else if (server.argName(i) == "readFSList") {
       ESParaSite::FileCore::getFSInfo(3);
+    } else if (server.argName(i) == "reset_fep") {
+      ESParaSite::HttpHandler::handleResetFep();
+    } else if (server.argName(i) == "reset_led") {
+      ESParaSite::HttpHandler::handleResetLed();
+    } else if (server.argName(i) == "reset_screen") {
+      ESParaSite::HttpHandler::handleResetScreen();
+    } else if (server.argName(i) == "set_rtc_clock") {
+      ESParaSite::HttpHandler::handleSetClock();
     } else {
       server.send(404, "text/plain", message); // Response to the HTTP request
     }

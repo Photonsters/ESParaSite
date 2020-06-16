@@ -73,7 +73,7 @@ void ESParaSite::HttpHandler::handleSetClock(){
 
   server.send(200, "text/plain", message);
 }
-
+/*
 void ESParaSite::HttpHandler::getResetScreen() {
   server.send(200, "text/html",
               "<font size=\"+3\">WARNING - This will reset the lifetime"
@@ -109,3 +109,4 @@ void ESParaSite::HttpHandler::getResetLed() {
               "Please do not immediately turn off your printer. This change"
               "may take up to 30 seconds to be saved.<br>");
 }
+*/

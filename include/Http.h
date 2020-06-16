@@ -65,7 +65,7 @@ void getResetScreen();
 void handleSetClock();
 
 void handleHistory();
-void getGuiData();
+void handleApiRequest();
 
 void getGuiUpdate();
 

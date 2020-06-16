@@ -43,7 +43,7 @@ now_utc = datetime.now(timezone.utc).timestamp()
 now_utc_sec = math.floor(now_utc)
 print("Setting RTC to UTC epoch: ")
 
-uploadUrl = "http://" + espsMdns + "/setRtc"
+uploadUrl = "http://" + espsMdns + "/api?set_rtc_clock="
 payload = {'TimeStamp': now_utc_sec}
 print(payload)
 r = requests.post(uploadUrl, params=payload)

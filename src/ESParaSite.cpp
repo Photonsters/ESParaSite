@@ -90,11 +90,11 @@ void loop(void) {
   // Refresh mDNS
   MDNS.update();
 
-  // Check for OTA
-  ESParaSite::OTA::handleOTA();
-
   // Run the HTTP Sever
   ESParaSite::HttpCore::serveHttpClient();
+
+  // Check for OTA
+  ESParaSite::OTA::handleOTA();
 
   // Refresh the Current Loop Millisecond value
   curLoopMillis = millis();

@@ -31,9 +31,15 @@ v 1.1
 	- Numerous changes to header and source file naming and src folder layout
 		- This should make the code groupings a bit simpler for humans to 
 			follow and keep the root sprawl to a minimum 
+	- Renamed getGuiData to handleApiRequest
+	- Moved set_rtc_clock, reset_fep, reset_led and reset_screen into 
+		handleApiRequest
+	- Renamed URL /guiFeed to /api 
 	- GUI - added regex parsing prior to parsing json data from fileList and 
 		readHistory api calls to deal with extraneous characters created by 
 		chunking responses
+	- GUI - changed URL pointers from guifeed? to api?
+	
 v1.0 - Kala-azar
 	- Moved GUI data feeds to be a single URL with query strings
 	- Moved all HTTP_GET handlers that return JSON to their own cpp file

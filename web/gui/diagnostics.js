@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 2;
 
 // On Page load show graphs
 document.addEventListener("DOMContentLoaded", function () {
@@ -36,7 +36,9 @@ function getData(elementID, dataset) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
     if (this.readyState == 4 && this.status == 200) {
-      var json = this.responseText;
+      var raw = this.responseText;
+      var raw = raw.replace(/(null)/g, "");
+      var json = raw.replace(/(\]\[)/g, ",");
       var data = JSON.parse(json);
       updateTable(data, elementID, dataset);
     }
@@ -63,69 +65,69 @@ function getData(elementID, dataset) {
     if (dataset == "Ambient") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readAmbient=" + new Date().getTime(),
+        "http://esparasite.local/api?readAmbient=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Chamber") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readChamber=" + new Date().getTime(),
+        "http://esparasite.local/api?readChamber=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Eeprom") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readEeprom=" + new Date().getTime(),
+        "http://esparasite.local/api?readEeprom=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Enclosure") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readEnclosure=" + new Date().getTime(),
+        "http://esparasite.local/api?readEnclosure=" + new Date().getTime(),
         true
       );
     } else if (dataset == "I2C") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readI2C=" + new Date().getTime(),
+        "http://esparasite.local/api?readI2C=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Optics") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readOptics=" + new Date().getTime(),
+        "http://esparasite.local/api?readOptics=" + new Date().getTime(),
         true
       );
     } else if (dataset == "FSInfo") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readFSInfo=" + new Date().getTime(),
+        "http://esparasite.local/api?readFSInfo=" + new Date().getTime(),
         true
       );
     } else if (dataset == "FSContents") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readFSList=" + new Date().getTime(),
+        "http://esparasite.local/api?readFSList=" + new Date().getTime(),
         true
       );
     }
   } else {
     if (dataset == "Ambient") {
-      xhttp.open("GET", "guiFeed?readAmbient=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readAmbient=" + new Date().getTime(), true);
     } else if (dataset == "Chamber") {
-      xhttp.open("GET", "guiFeed?readChamber=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readChamber=" + new Date().getTime(), true);
     } else if (dataset == "Eeprom") {
-      xhttp.open("GET", "guiFeed?readEeprom=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readEeprom=" + new Date().getTime(), true);
     } else if (dataset == "Enclosure") {
-      xhttp.open("GET", "guiFeed?readEnclosure=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readEnclosure=" + new Date().getTime(), true);
     } else if (dataset == "I2C") {
-      xhttp.open("GET", "guiFeed?readI2C=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readI2C=" + new Date().getTime(), true);
     } else if (dataset == "Optics") {
-      xhttp.open("GET", "guiFeed?readOptics=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readOptics=" + new Date().getTime(), true);
     } else if (dataset == "FSInfo") {
-      xhttp.open("GET", "guiFeed?readFSInfo=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readFSInfo=" + new Date().getTime(), true);
     } else if (dataset == "FSContents") {
-      xhttp.open("GET", "guiFeed?readFSList=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readFSList=" + new Date().getTime(), true);
     }
   }
   xhttp.send();
