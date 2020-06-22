@@ -46,11 +46,11 @@ void ESParaSite::DataToJson::getJsonAmbient() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
-  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
   doc["ambTempC"] = ambientResource.ambientTempC;
-  doc["ambHumidity"] = ambientResource.ambientHumidity;
-  doc["ambPressure"] = ambientResource.ambientBarometer;
-  doc["ambAltitude"] = ambientResource.ambientAltitude;
+  doc["ambHumid"] = ambientResource.ambientHumidity;
+  doc["ambPres"] = ambientResource.ambientBarometer;
+  doc["ambAlt"] = ambientResource.ambientAltitude;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -59,32 +59,39 @@ void ESParaSite::DataToJson::getJsonChamber() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
-  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
   doc["cmbTempC"] = chamberResource.chamberTempC;
-  doc["cmbHumidity"] = chamberResource.chamberHumidity;
-  doc["cmbDewpoint"] = chamberResource.chamberDewPoint;
+  doc["cmbHumid"] = chamberResource.chamberHumidity;
+  doc["cmbDewPt"] = chamberResource.chamberDewPoint;
 
+  ESParaSite::HttpHandleJson::serializeSendJson(doc);
+}
+
+void ESParaSite::DataToJson::getJsonCurrent() {
+  StaticJsonDocument<256> doc;
+
+  doc["ts"] = statusResource.rtcCurrentSecond;
+  doc["at"] = ambientResource.ambientTempC;
+  doc["ah"] = ambientResource.ambientHumidity;
+  doc["ct"] = chamberResource.chamberTempC;
+  doc["ch"] = chamberResource.chamberHumidity;
+  doc["lt"] = opticsResource.ledTempC;
+  doc["st"] = opticsResource.screenTempC;
+  doc["lo"] = statusResource.isPrintingFlag;
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
 
 void ESParaSite::DataToJson::getJsonEeprom() {
   StaticJsonDocument<256> doc;
-  String tempArray[6];
-  tempArray[0] = rtcEepromResource.lastWriteTimestamp;
-  tempArray[1] = rtcEepromResource.firstOnTimestamp;
-  tempArray[2] = rtcEepromResource.eepromLedLifeSec;
-  tempArray[3] = rtcEepromResource.eepromScreenLifeSec;
-  tempArray[4] = rtcEepromResource.eepromVatLifeSec;
-  tempArray[5] = rtcEepromResource.lastSegmentAddress;
 
   doc["class"] = "eeprom";
-  doc["timestmp"] = statusResource.rtcCurrentSecond;
-  doc["lstwrts"] = tempArray[0];
-  doc["frstonts"] = tempArray[1];
-  doc["eledls"] = tempArray[2];
-  doc["escrls"] = tempArray[3];
-  doc["evatls"] = tempArray[4];
-  doc["lsegaddr"] = tempArray[5];
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
+  doc["lastWrtTS"] = rtcEepromResource.lastWriteTimestamp;
+  doc["firstOnTS"] = rtcEepromResource.firstOnTimestamp;
+  doc["eprmLedLS"] = rtcEepromResource.eepromLedLifeSec;
+  doc["eprmScrLS"] = rtcEepromResource.eepromScreenLifeSec;
+  doc["eprmVatLS"] = rtcEepromResource.eepromVatLifeSec;
+  doc["lastSegAddr"] = rtcEepromResource.lastSegmentAddress;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -93,33 +100,26 @@ void ESParaSite::DataToJson::getJsonEnclosure() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "enclosure";
-  doc["timestmp"] = statusResource.rtcCurrentSecond;
+  doc["timestamp"] = statusResource.rtcCurrentSecond;
   doc["caseTempC"] = enclosureResource.caseTempC;
-  doc["lifetimeSec"] = enclosureResource.printerLifeSec;
-  doc["scrnLifeSec"] = enclosureResource.lcdLifeSec;
-  doc["ledLifeSec"] = enclosureResource.ledLifeSec;
-  doc["vatLifeSec"] = enclosureResource.vatLifeSec;
+  doc["printerLS"] = enclosureResource.printerLifeSec;
+  doc["curScrLS"] = enclosureResource.lcdLifeSec;
+  doc["curLedLS"] = enclosureResource.ledLifeSec;
+  doc["curVatLS"] = enclosureResource.vatLifeSec;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
 
 void ESParaSite::DataToJson::getJsonI2C() {
   StaticJsonDocument<256> doc;
-  String tempArray[6];
-  tempArray[0] = configResource.cfgPinSda;
-  tempArray[1] = configResource.cfgPinScl;
-  tempArray[2] = existsResource.dhtDetected;
-  tempArray[3] = existsResource.bmeDetected;
-  tempArray[4] = existsResource.mlxDetected;
-  tempArray[5] = existsResource.siDetected;
 
   doc["class"] = "i2c";
-  doc["sdaPin"] = tempArray[0];
-  doc["sclPin"] = tempArray[1];
-  doc["dhtExist"] = tempArray[2];
-  doc["bmeExist"] = tempArray[3];
-  doc["mlxExist"] = tempArray[4];
-  doc["siExist"] = tempArray[5];
+  doc["sdaPin"] = configResource.cfgPinSda;
+  doc["sclPin"] = configResource.cfgPinScl;
+  doc["dhtExist"] = existsResource.dhtDetected;
+  doc["bmeExist"] = existsResource.bmeDetected;
+  doc["mlxExist"] = existsResource.mlxDetected;
+  doc["siExist"] = existsResource.siDetected;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -133,9 +133,10 @@ void ESParaSite::DataToJson::getJsonNetwork() {
   tempArray[3] = MDNS.isRunning();
   tempArray[4] = configResource.cfgMdnsName;
 
+  doc["class"] = "network";
   doc["ssid"] = tempArray[0];
   doc["rssi"] = tempArray[1];
-  doc["ipaddr"] = tempArray[2];
+  doc["ipAddr"] = tempArray[2];
   doc["mdnsS"] = tempArray[3];
   doc["mdnsN"] = tempArray[4];
 
@@ -147,11 +148,11 @@ void ESParaSite::DataToJson::getJsonOptics() {
 
   doc["class"] = "optics";
   doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["uvIndex"] = opticsResource.ledUVIndex;
-  doc["visible"] = opticsResource.ledVisible;
-  doc["infrared"] = opticsResource.ledInfrared;
+  doc["uvIdx"] = opticsResource.ledUVIndex;
+  doc["visLux"] = opticsResource.ledVisible;
+  doc["irLux"] = opticsResource.ledInfrared;
   doc["ledTempC"] = opticsResource.ledTempC;
-  doc["scrnTempC"] = opticsResource.screenTempC;
+  doc["scrTempC"] = opticsResource.screenTempC;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }

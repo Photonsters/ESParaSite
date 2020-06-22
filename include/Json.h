@@ -30,16 +30,20 @@ class http_rest_server;
 namespace ESParaSite {
 namespace DataToJson {
 
-void getJsonHistory();
-void getJsonNetwork();
+
 void getJsonStatus();
 void getJsonAmbient();
 void getJsonChamber();
 void getJsonConfig();
-void getJsonEnclosure();
-void getJsonOptics();
-void getJsonI2C();
+void getJsonCurrent();
 void getJsonEeprom();
+void getJsonEnclosure();
+void getJsonHistory();
+void getJsonI2C();
+void getJsonNetwork();
+void getJsonOptics();
+
+
 
 } // namespace DataToJson
 } // namespace ESParaSite

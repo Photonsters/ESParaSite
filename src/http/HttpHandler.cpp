@@ -31,7 +31,6 @@
 #include "Http.h"
 #include "Json.h"
 
-
 extern ESP8266WebServer server;
 
 extern ESParaSite::chamber chamberResource;
@@ -83,40 +82,42 @@ void ESParaSite::HttpHandler::getHtmlUpload() {
 void ESParaSite::HttpHandler::handleApiRequest() {
   String message = ("Data feed not found.");
 
-  for (int i = 0; i < server.args(); i++) {
-
-    if (server.argName(i) == "readAmbient") {
+  //for (int i = 0; i < server.args(); i++) {
+    if (server.argName(0) == "readAmbient") {
       ESParaSite::DataToJson::getJsonAmbient();
-    } else if (server.argName(i) == "readChamber") {
+    } else if (server.argName(0) == "readChamber") {
       ESParaSite::DataToJson::getJsonChamber();
-    } else if (server.argName(i) == "readEeprom") {
+    } else if (server.argName(0) == "readCurrent") {
+      ESParaSite::DataToJson::getJsonCurrent();
+    } else if (server.argName(0) == "readEeprom") {
       ESParaSite::DataToJson::getJsonEeprom();
-    } else if (server.argName(i) == "readEnclosure") {
+    } else if (server.argName(0) == "readEnclosure") {
       ESParaSite::DataToJson::getJsonEnclosure();
-    } else if (server.argName(i) == "readHistory") {
-      ESParaSite::DataToJson::getJsonHistory();
-    } else if (server.argName(i) == "readI2C") {
-      ESParaSite::DataToJson::getJsonI2C();
-    } else if (server.argName(i) == "readNetwork") {
-      ESParaSite::DataToJson::getJsonNetwork();
-    } else if (server.argName(i) == "readOptics") {
-      ESParaSite::DataToJson::getJsonOptics();
-    } else if (server.argName(i) == "readStatus") {
-      ESParaSite::DataToJson::getJsonStatus();
-    } else if (server.argName(i) == "readFSInfo") {
+    } else if (server.argName(0) == "readFSInfo") {
       ESParaSite::FileCore::getFSInfo(2);
-    } else if (server.argName(i) == "readFSList") {
+    } else if (server.argName(0) == "readFSList") {
       ESParaSite::FileCore::getFSInfo(3);
-    } else if (server.argName(i) == "reset_fep") {
-      ESParaSite::HttpHandler::handleResetFep();
-    } else if (server.argName(i) == "reset_led") {
+    } else if (server.argName(0) == "readHistory") {
+      ESParaSite::DataToJson::getJsonHistory();
+    } else if (server.argName(0) == "readI2C") {
+      ESParaSite::DataToJson::getJsonI2C();
+    } else if (server.argName(0) == "readNetwork") {
+      ESParaSite::DataToJson::getJsonNetwork();
+    } else if (server.argName(0) == "readOptics") {
+      ESParaSite::DataToJson::getJsonOptics();
+    } else if (server.argName(0) == "readStatus") {
+      ESParaSite::DataToJson::getJsonStatus();
+    } else if (server.argName(0) == "resetLedLife") {
       ESParaSite::HttpHandler::handleResetLed();
-    } else if (server.argName(i) == "reset_screen") {
+    } else if (server.argName(0) == "resetScreenLife") {
       ESParaSite::HttpHandler::handleResetScreen();
-    } else if (server.argName(i) == "set_rtc_clock") {
+    } else if (server.argName(0) == "resetVatLife") {
+      ESParaSite::HttpHandler::handleResetFep();
+    } else if (server.argName(0) == "setRtcClock") {
       ESParaSite::HttpHandler::handleSetClock();
     } else {
-      server.send(404, "text/plain", message); // Response to the HTTP request
+       server.send(404, "text/plain", message); 
+  
     }
-  }
+  //}
 }

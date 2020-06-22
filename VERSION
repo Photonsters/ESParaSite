@@ -24,7 +24,7 @@ v 1.1
 	- Fixed BugIssue #39 api feeds for fileList and readHistory now send 2kB
 		chunks of data across multiple HTTP chunks.
 	- Changed digest of data to add hourly digests for 12 hours.  We now 
-		provide 40 datapoiints - live data every 5 seconds for 30 seconds, 
+		provide 40 datapoints - live data every 5 seconds for 30 seconds, 
 		30 second data averages for 5 minutes, 5 minute data average for 
 		1 hour and 1 hour averages for 12 hours.
 	- Renamed RtcEepromCore.h and .cpp to EepromCore.h and .cpp.
@@ -38,8 +38,8 @@ v 1.1
 	- GUI - added regex parsing prior to parsing json data from fileList and 
 		readHistory api calls to deal with extraneous characters created by 
 		chunking responses
-	- GUI - changed URL pointers from guifeed? to api?
-	
+	- GUI - changed URL pointers from /guifeed to /api
+
 v1.0 - Kala-azar
 	- Moved GUI data feeds to be a single URL with query strings
 	- Moved all HTTP_GET handlers that return JSON to their own cpp file
@@ -52,6 +52,7 @@ v1.0 - Kala-azar
 	- Moved all feeds to /guiFeed and renamed all to be consistent.
 	- Changed Flash Layout on ESP12F to have a 3MB filesystem and 512K for 
 		OTA updates This update will format your flash and force you to 
+
 		reconfigure wifi.
 	- Removed ESP32-Targz in favor of a python GUI uploader.
 	- Renamed HTTPFile.cpp to HTTPHandleFile.cpp

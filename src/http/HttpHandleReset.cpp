@@ -27,48 +27,70 @@
 #include <WiFiClient.h>
 
 #include "ESParaSite.h"
-#include "Sensors.h"
 #include "Http.h"
-
+#include "Sensors.h"
 
 extern ESP8266WebServer server;
 
 extern ESParaSite::rtcEepromData rtcEepromResource;
 
 void ESParaSite::HttpHandler::handleResetScreen() {
-  server.send(200, "text/html", "Success!");
-  Serial.print(F("Resetting LCD Screen Counter"));
-  rtcEepromResource.eepromScreenLifeSec = 0;
+  String message = "";
+  if (server.arg("reset") == "true") {
+    Serial.print(F("Resetting LCD Screen Counter"));
+    rtcEepromResource.eepromScreenLifeSec = 0;
+    message = "Success!";
+  } else {
+    message = "Argument not found";
+  }
+  server.send(200, "text/html", message);
 }
 
+
 void ESParaSite::HttpHandler::handleResetFep() {
-  server.send(200, "text/html", "Success!");
-  Serial.print(F("Resetting FEP Counter"));
-  rtcEepromResource.eepromVatLifeSec = 0;
+  String message = "";
+  if (server.arg("reset") == "true") {
+    Serial.print(F("Resetting FEP Counter"));
+    rtcEepromResource.eepromVatLifeSec = 0;
+    message = "Success!";
+  } else {
+    message = "Argument not found";
+  }
+  server.send(200, "text/html", message);
 }
 
 void ESParaSite::HttpHandler::handleResetLed() {
-  server.send(200, "text/html", "Success!");
-  Serial.print(F("Resetting LED Counter"));
-  rtcEepromResource.eepromLedLifeSec = 0;
+  String message = "";
+  if (server.arg("reset") == "true") {
+    Serial.print(F("Resetting LED Counter"));
+    rtcEepromResource.eepromLedLifeSec = 0;
+    message = "Success!";
+  } else {
+    message = "Argument not found";
+  }
+  server.send(200, "text/html", message);
 }
 
-void ESParaSite::HttpHandler::handleSetClock(){
+void ESParaSite::HttpHandler::handleSetClock() {
   String message = "";
-  if (server.arg("TimeStamp")==""){
+  if (server.arg("timestamp") == "") {
     message = "Time Argument not found";
   } else {
     Serial.print("Old Timestamp\t");
     Serial.println(ESParaSite::Sensors::readRtcEpoch());
     message = "Setting RTC clock";
-    String tString = server.arg("TimeStamp");
+    String tString = server.arg("timestamp");
     Serial.print("Set Timestamp\t");
     Serial.println(tString);
     char tChar[(tString.length()) + 1];
-    strncpy(tChar,tString.c_str(),tString.length());
+    strncpy(tChar, tString.c_str(), tString.length());
     ESParaSite::Sensors::setRtcfromEpoch(atoll(tChar));
     Serial.print("New Timestamp\t");
     Serial.println(ESParaSite::Sensors::readRtcEpoch());
+
+    if (rtcEepromResource.firstOnTimestamp == 0){
+      
+    }
   }
 
   server.send(200, "text/plain", message);
