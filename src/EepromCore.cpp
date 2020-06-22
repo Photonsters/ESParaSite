@@ -162,7 +162,7 @@ void ESParaSite::RtcEeprom::initRtcEeprom() {
     Serial.println("values will be set to '0'.");
     do_eeprom_format(1);
   } else if (test_2 || test_1) {
-    Serial.println("WARNING: The firstOnTimestamp is Invalid."
+    Serial.println("WARNING: The firstOnTimestamp is Invalid. "
                    "This value will be reset to 0.");
     do_eeprom_format(2);
   } else {

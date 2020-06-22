@@ -74,7 +74,7 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell(signal));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("IP Address:"));
-    row.appendChild(createRowCell(data["ipaddr"]));
+    row.appendChild(createRowCell(data["ipAddr"]));
     var row = tbody.insertRow();
 
     if ((data["mdnsS"] = 1)) {

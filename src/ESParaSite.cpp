@@ -37,7 +37,7 @@
 #include "Util.h"
 
 
-// #define FORMAT_SPIFFS //for development only!
+//#define FORMAT_LITTLEFS //for development only!
 
 // Trigger for inititating config mode is Pin D3 and also flash button on
 // NodeMCU.  Flash button is convenient to use but if it is pressed it will
@@ -185,8 +185,8 @@ void setup(void) {
                           // password printed
 #endif
 
-#ifdef FORMAT_SPIFFS
-  Serial.println(F("Formatting SPIFFS..."));
+#ifdef FORMAT_LITTLEFS
+  Serial.println(F("Formatting LITTLEFS..."));
   LittleFS.format();
 #endif
 
