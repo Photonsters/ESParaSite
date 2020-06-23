@@ -82,13 +82,13 @@ bool dump_sensor_data = 1;
 int bme_i2c_address;
 int eeprom_i2c_address;
 
-extern ESParaSite::chamber chamberResource;
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::ambient ambientResource;
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::chamberData chamber;
+extern ESParaSite::opticsData optics;
+extern ESParaSite::ambientData ambient;
+extern ESParaSite::enclosureData enclosure;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::sensorExists exists;
 
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 Adafruit_SI1145 uv = Adafruit_SI1145();
@@ -130,7 +130,7 @@ void ESParaSite::Sensors::dumpSensor(bool in_seq_read) {
   Serial.println();
 
   Serial.print(F("This Printer has been on for:\t"));
-  Serial.print(enclosureResource.printerLifeSec);
+  Serial.print(enclosure.printerLifeSec);
   Serial.println(F("  seconds"));
   Serial.println();
 

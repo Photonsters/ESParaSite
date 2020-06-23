@@ -35,30 +35,30 @@ Queue thirtySecHistory(sizeof(history), 10, FIFO);
 Queue fiveMinHistory(sizeof(history), 12, FIFO);
 Queue oneHourHistory(sizeof(history), 12, FIFO);
 
-extern ESParaSite::chamber chamberResource;
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::ambient ambientResource;
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::chamberData chamber;
+extern ESParaSite::opticsData optics;
+extern ESParaSite::ambientData ambient;
+extern ESParaSite::enclosureData enclosure;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::sensorExists exists;
 
 int fiveSecCycleCount = 0;
 int thirtySecCycleCount = 0;
 int fiveMinCycleCount = 0;
-int oneHourCocleCount = 0;
+int oneHourCycleCount = 0;
 
 void ESParaSite::DataDigest::fillRow() {
   history fiveSecFill = {0};
 
   fiveSecFill.dataTimestamp = ESParaSite::Sensors::readRtcEpoch();
-  fiveSecFill.ambientTempC = ambientResource.ambientTempC;
-  fiveSecFill.ambientHumidity = ambientResource.ambientHumidity;
-  fiveSecFill.chamberTempC = chamberResource.chamberTempC;
-  fiveSecFill.chamberHumidity = chamberResource.chamberHumidity;
-  fiveSecFill.ledTempC = opticsResource.ledTempC;
-  fiveSecFill.screenTempC = opticsResource.screenTempC;
-  fiveSecFill.ledOn = statusResource.isPrintingFlag;
+  fiveSecFill.ambientTempC = ambient.ambientTempC;
+  fiveSecFill.ambientHumidity = ambient.ambientHumidity;
+  fiveSecFill.chamberTempC = chamber.chamberTempC;
+  fiveSecFill.chamberHumidity = chamber.chamberHumidity;
+  fiveSecFill.ledTempC = optics.ledTempC;
+  fiveSecFill.screenTempC = optics.screenTempC;
+  fiveSecFill.ledOn = status.isPrintingFlag;
 
   if (!fiveSecHistory.isFull()) {
     fiveSecHistory.push(&fiveSecFill);

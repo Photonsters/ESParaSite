@@ -27,14 +27,14 @@
 #include "OTA.h"
 #include "ESParaSite.h"
 
-extern ESParaSite::configData configResource;
+extern ESParaSite::configData config;
 
 void ESParaSite::OTA::configOTA() {
   // Port defaults to 8266
-  //ArduinoOTA.setPort(8266);
+  ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname(configResource.cfgMdnsName);
+  ArduinoOTA.setHostname(config.cfgMdnsName);
 
   // No authentication by default
   // ArduinoOTA.setPassword("admin");

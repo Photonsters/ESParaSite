@@ -38,7 +38,7 @@
 
 using namespace ESParaSite;
 
-extern configData configResource;
+extern configData config;
 
 bool FileCore::loadConfig() {
   File configFile = LittleFS.open("/config.json", "r");
@@ -65,29 +65,29 @@ bool FileCore::loadConfig() {
     return false;
   }
 
-  configResource.cfgPinSda = doc["sda_pin"];
-  configResource.cfgPinScl = doc["scl_pin"];
-  configResource.cfgMdnsEnabled = doc["mdns_enabled"];
-  strncpy(configResource.cfgMdnsName, doc["mdns_name"], 32);
-  int len = strlen(configResource.cfgMdnsName);
-  if (len > 0 && configResource.cfgMdnsName[len - 1] == '\n') {
-    configResource.cfgMdnsName[len - 1] = '\0';
+  config.cfgPinSda = doc["sda_pin"];
+  config.cfgPinScl = doc["scl_pin"];
+  config.cfgMdnsEnabled = doc["mdns_enabled"];
+  strncpy(config.cfgMdnsName, doc["mdns_name"], 32);
+  int len = strlen(config.cfgMdnsName);
+  if (len > 0 && config.cfgMdnsName[len - 1] == '\n') {
+    config.cfgMdnsName[len - 1] = '\0';
   }
 
   Serial.print(F("I2C Bus on Pins (SDA,SCL): "));
-  Serial.print(configResource.cfgPinSda);
+  Serial.print(config.cfgPinSda);
   Serial.print(F(", "));
-  Serial.println(configResource.cfgPinScl);
+  Serial.println(config.cfgPinScl);
 
   return true;
 }
 
 bool FileCore::saveConfig() {
   StaticJsonDocument<200> doc;
-  doc["sda_pin"] = configResource.cfgPinSda;
-  doc["scl_pin"] = configResource.cfgPinScl;
-  doc["mdns_enabled"] = configResource.cfgMdnsEnabled;
-  doc["mdns_name"] = configResource.cfgMdnsName;
+  doc["sda_pin"] = config.cfgPinSda;
+  doc["scl_pin"] = config.cfgPinScl;
+  doc["mdns_enabled"] = config.cfgMdnsEnabled;
+  doc["mdns_name"] = config.cfgMdnsName;
 
   serializeJsonPretty(doc, Serial);
   Serial.println();

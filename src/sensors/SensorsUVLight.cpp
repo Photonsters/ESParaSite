@@ -66,8 +66,8 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::opticsData optics;
+extern ESParaSite::sensorExists exists;
 
 extern Adafruit_SI1145 uv;
 
@@ -76,31 +76,31 @@ void ESParaSite::Sensors::initSiSensor() {
     Serial.print(F("SI1145 Initialization Failure!"));
   } else {
     Serial.print(F("OK!"));
-    existsResource.siDetected = 1;
+    exists.siDetected = 1;
   }
 }
 
 void ESParaSite::Sensors::readSiSensor() {
-  if (existsResource.siDetected == 1) {
-    opticsResource.ledUVIndex = uv.readUV();
-    opticsResource.ledUVIndex /= 100.0;
-    opticsResource.ledVisible = uv.readVisible();
-    opticsResource.ledInfrared = uv.readIR();
+  if (exists.siDetected == 1) {
+    optics.ledUVIndex = uv.readUV();
+    optics.ledUVIndex /= 100.0;
+    optics.ledVisible = uv.readVisible();
+    optics.ledInfrared = uv.readIR();
 
 #ifdef DEBUG_L2
     Serial.println(F("==========LED Light Sensor=========="));
     Serial.print(F("UV Index:\t\t\t"));
-    Serial.println(static_cast<int>(opticsResource.ledUVIndex));
+    Serial.println(static_cast<int>(optics.ledUVIndex));
     Serial.print(F("Visible:\t\t\t"));
-    Serial.println(opticsResource.ledVisible);
+    Serial.println(optics.ledVisible);
     Serial.print(F("Infrared:\t\t\t"));
-    Serial.println(opticsResource.ledInfrared);
+    Serial.println(optics.ledInfrared);
 #endif
 
   } else {
-    opticsResource.ledUVIndex = 0;
-    opticsResource.ledVisible = 0;
-    opticsResource.ledInfrared = 0;
+    optics.ledUVIndex = 0;
+    optics.ledVisible = 0;
+    optics.ledInfrared = 0;
 
 #ifdef DEBUG_L2
     Serial.print(F("SI1145 Sensor not found"));

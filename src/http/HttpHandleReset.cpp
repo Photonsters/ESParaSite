@@ -32,13 +32,13 @@
 
 extern ESP8266WebServer server;
 
-extern ESParaSite::rtcEepromData rtcEepromResource;
+extern ESParaSite::rtcEepromData eeprom;
 
 void ESParaSite::HttpHandler::handleResetScreen() {
   String message = "";
   if (server.arg("reset") == "true") {
     Serial.print(F("Resetting LCD Screen Counter"));
-    rtcEepromResource.eepromScreenLifeSec = 0;
+    eeprom.eepromScreenLifeSec = 0;
     message = "Success!";
   } else {
     message = "Argument not found";
@@ -51,7 +51,7 @@ void ESParaSite::HttpHandler::handleResetFep() {
   String message = "";
   if (server.arg("reset") == "true") {
     Serial.print(F("Resetting FEP Counter"));
-    rtcEepromResource.eepromVatLifeSec = 0;
+    eeprom.eepromVatLifeSec = 0;
     message = "Success!";
   } else {
     message = "Argument not found";
@@ -63,7 +63,7 @@ void ESParaSite::HttpHandler::handleResetLed() {
   String message = "";
   if (server.arg("reset") == "true") {
     Serial.print(F("Resetting LED Counter"));
-    rtcEepromResource.eepromLedLifeSec = 0;
+    eeprom.eepromLedLifeSec = 0;
     message = "Success!";
   } else {
     message = "Argument not found";
@@ -88,7 +88,7 @@ void ESParaSite::HttpHandler::handleSetClock() {
     Serial.print("New Timestamp\t");
     Serial.println(ESParaSite::Sensors::readRtcEpoch());
 
-    if (rtcEepromResource.firstOnTimestamp == 0){
+    if (eeprom.firstOnTimestamp == 0){
       
     }
   }

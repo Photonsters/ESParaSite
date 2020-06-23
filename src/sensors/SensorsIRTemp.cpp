@@ -43,10 +43,10 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::opticsData optics;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::sensorExists exists;
 
 extern Adafruit_MLX90614 mlx;
 
@@ -55,32 +55,32 @@ void ESParaSite::Sensors::initMlxSensor() {
     Serial.print(F("MLX90614 Initialization Failure"));
   } else {
     Serial.print(F("OK!"));
-    existsResource.mlxDetected = 1;
+    exists.mlxDetected = 1;
   }
 }
 
 void ESParaSite::Sensors::readMlxSensor() {
-  if (existsResource.mlxDetected == 1) {
-    opticsResource.ledTempC = roundf(mlx.readAmbientTempC() *100) / 100;
-    opticsResource.screenTempC = roundf(mlx.readObjectTempC() * 100) / 100;
+  if (exists.mlxDetected == 1) {
+    optics.ledTempC = roundf(mlx.readAmbientTempC() *100) / 100;
+    optics.screenTempC = roundf(mlx.readObjectTempC() * 100) / 100;
 
 #ifdef DEBUG_L2
     Serial.println("==========LCD Temp Sensor==========");
     Serial.print("Ambient:\t\t\t");
-    Serial.print(opticsResource.ledTempC);
+    Serial.print(optics.ledTempC);
     Serial.print("°C / ");
     Serial.print(mlx.readAmbientTempF());
     Serial.println("°F");
     Serial.print("LCD Panel:\t\t\t");
-    Serial.print(opticsResource.screenTempC);
+    Serial.print(optics.screenTempC);
     Serial.print("°C / ");
     Serial.print(mlx.readObjectTempF());
     Serial.println("°F");
 #endif
 
   } else {
-    opticsResource.ledTempC = 0;
-    opticsResource.screenTempC = 0;
+    optics.ledTempC = 0;
+    optics.screenTempC = 0;
 
 #ifdef DEBUG_L2
     Serial.print(F("MLX90614 Sensor not found"));

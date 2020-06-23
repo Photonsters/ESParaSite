@@ -33,7 +33,7 @@
 
 using namespace ESParaSite;
 
-extern configData configResource;
+extern configData config;
 
 // Onboard LED I/O pin on NodeMCU board
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
@@ -57,8 +57,8 @@ void ConfigPortal::doConfigPortal() {
            macAddr[3], macAddr[4], macAddr[5]);
 
   // Default configuration values
-  configResource.cfgPinSda = 4;
-  configResource.cfgPinScl = 5;
+  config.cfgPinSda = 4;
+  config.cfgPinScl = 5;
 
   pinMode(PIN_LED, OUTPUT);
 
@@ -80,10 +80,10 @@ void ConfigPortal::doConfigPortal() {
 
   char convertedValue[3];
   snprintf(convertedValue, sizeof(convertedValue), "%d",
-           configResource.cfgPinSda);
+           config.cfgPinSda);
   WiFiManagerParameter p_pinSda("pinsda", "I2C SDA pin", convertedValue, 3);
   snprintf(convertedValue, sizeof(convertedValue), "%d",
-           configResource.cfgPinScl);
+           config.cfgPinScl);
   WiFiManagerParameter p_pinScl("pinscl", "I2C SCL pin", convertedValue, 3);
 
   // Extra parameters to be configured
@@ -134,17 +134,17 @@ void ConfigPortal::doConfigPortal() {
 
   // Getting posted form values and overriding local variables parameters
   // Config file is written regardless the connection state
-  configResource.cfgPinSda = atoi(p_pinSda.getValue());
-  configResource.cfgPinScl = atoi(p_pinScl.getValue());
+  config.cfgPinSda = atoi(p_pinSda.getValue());
+  config.cfgPinScl = atoi(p_pinScl.getValue());
 
   if (strncmp(p_mdnsEnabled.getValue(), "T", 1) != 0) {
     Serial.println(F("mDNS Disabled"));
-    configResource.cfgMdnsEnabled = false;
+    config.cfgMdnsEnabled = false;
   } else {
-    configResource.cfgMdnsEnabled = true;
+    config.cfgMdnsEnabled = true;
 
-    snprintf(configResource.cfgMdnsName,
-             sizeof(configResource.cfgMdnsName), "%s\n",
+    snprintf(config.cfgMdnsName,
+             sizeof(config.cfgMdnsName), "%s\n",
              p_mdnsName.getValue());
 
     Serial.println(F("mDNS Enabled"));

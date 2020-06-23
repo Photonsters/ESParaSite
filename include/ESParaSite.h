@@ -28,20 +28,20 @@
 
 namespace ESParaSite {
 
-struct ambient {
+struct ambientData {
   float ambientTempC{};
   float ambientHumidity{};
   float ambientBarometer{};
   float ambientAltitude{};
 };
 
-struct chamber {
+struct chamberData {
   float chamberTempC{};
   float chamberHumidity{};
   float chamberDewPoint{};
 };
 
-struct enclosure {
+struct enclosureData {
   uint32_t printerLifeSec{};
   uint32_t lcdLifeSec{};
   uint32_t ledLifeSec{};
@@ -49,7 +49,7 @@ struct enclosure {
   float caseTempC{};
 };
 
-struct optics {
+struct opticsData {
   float ledUVIndex{};
   float ledVisible{};
   float ledInfrared{};
