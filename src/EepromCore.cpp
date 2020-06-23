@@ -91,9 +91,9 @@ uint32_t start, diff, totals = 0;
 
 I2C_eeprom rtc_eeprom(RTC_EEPROM_ADDR, MEMORY_SIZE);
 
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::rtcEepromData rtcEepromResource;
-extern ESParaSite::statusData statusResource;
+extern ESParaSite::enclosureData enclosure;
+extern ESParaSite::rtcEepromData eeprom;
+extern ESParaSite::statusData status;
 
 void ESParaSite::RtcEeprom::initRtcEeprom() {
   rtc_eeprom.begin();
@@ -112,29 +112,29 @@ void ESParaSite::RtcEeprom::initRtcEeprom() {
   }
 
   // Now we will check the first segment for proper format
-  int current_seg_addr = 0;
-  uint32_t read_words[8]{};
+  int curSegAddr = 0;
+  uint32_t readWords[8]{};
 
   for (int i = 0; i < 8; i++) {
-    char page_data[BYTES_PER_PAGE];
+    char pageData[BYTES_PER_PAGE];
 
-    rtc_eeprom.readBlock(current_seg_addr,
-                         reinterpret_cast<uint8_t *>(page_data),
+    rtc_eeprom.readBlock(curSegAddr,
+                         reinterpret_cast<uint8_t *>(pageData),
                          BYTES_PER_PAGE);
-    read_words[i] = ESParaSite::Util::ParseUint32(page_data);
-    current_seg_addr += (BYTES_PER_PAGE);
+    readWords[i] = ESParaSite::Util::ParseUint32(pageData);
+    curSegAddr += (BYTES_PER_PAGE);
   }
 
-  bool test_1 = false;
-  bool test_2 = false;
-  bool test_3 = false;
-  uint32_t current_rtc_epoch = ESParaSite::Sensors::readRtcEpoch();
+  bool test1 = false;
+  bool test2 = false;
+  bool test3 = false;
+  uint32_t curRtcEpoch = ESParaSite::Sensors::readRtcEpoch();
 
   // First test - Data at index [0] should be '0' if date and time is
   // currently prior to 03:14:07 on Tuesday, 19 January 2038.
-  if (read_words[0] != 0) {
-    if (current_rtc_epoch <= 2147483647) {
-      test_1 = true;
+  if (readWords[0] != 0) {
+    if (curRtcEpoch <= 2147483647) {
+      test1 = true;
     }
   }
 
@@ -142,141 +142,141 @@ void ESParaSite::RtcEeprom::initRtcEeprom() {
   // epoch time and should never exceed '2147483647', nor should the value
   // be 0, -1, null or prior to Sun 01 Jan 2017 12:00:01 AM UTC.
 
-  if (read_words[1] >= current_rtc_epoch || read_words[1] > 2147483647 ||
-      read_words[1] == 0 || read_words[1] < 1483228801 || !read_words[1]) {
-    test_2 = true;
+  if (readWords[1] >= curRtcEpoch || readWords[1] > 2147483647 ||
+      readWords[1] == 0 || readWords[1] < 1483228801 || !readWords[1]) {
+    test2 = true;
   }
 
   // Third test - The last page of the reserved segment holds the EEPROM
   // Format version number. The value should only be '0' if the rom is
   // initialized and should never be greater than 'MAX_EEPROM_FORMAT_VERSION'.
 
-  if (static_cast<int>(read_words[7]) == 0 ||
-      static_cast<int>(read_words[2]) > MAX_EEPROM_FORMAT_VERSION) {
-    test_3 = true;
+  if (static_cast<int>(readWords[7]) == 0 ||
+      static_cast<int>(readWords[2]) > MAX_EEPROM_FORMAT_VERSION) {
+    test3 = true;
   }
 
-  if (test_3) {
+  if (test3) {
     Serial.print("WARNING: The EEPROM Format is Invalid. All reserved"
                  "values will be reset and all eeprom ");
     Serial.println("values will be set to '0'.");
-    do_eeprom_format(1);
-  } else if (test_2 || test_1) {
+    doEepromFormat(1);
+  } else if (test2 || test1) {
     Serial.println("WARNING: The firstOnTimestamp is Invalid. "
                    "This value will be reset to 0.");
-    do_eeprom_format(2);
+    doEepromFormat(2);
   } else {
     Serial.print("EEPROM Format Valid - Version:\t");
-    Serial.println(read_words[7]);
+    Serial.println(readWords[7]);
 
-    rtcEepromResource.firstOnTimestamp =
-        Util::join_64(read_words[0], read_words[1]);
+    eeprom.firstOnTimestamp =
+        Util::join64(readWords[0], readWords[1]);
   }
 }
 
 int ESParaSite::RtcEeprom::doEepromFirstRead() {
-  int current_seg_addr = FIRST_SEGMENT_OFFSET;
+  int curSegAddr = FIRST_SEGMENT_OFFSET;
 
-  char first_data[BYTES_PER_PAGE];
-  char second_data[BYTES_PER_PAGE];
+  char firstPart[BYTES_PER_PAGE];
+  char secondPart[BYTES_PER_PAGE];
 
-  time_t latest_timestamp = 0;
-  uint64_t latest_timestamp_segment = 0;
+  time_t latestTimestamp = 0;
+  uint64_t latestTimestampSeg = 0;
 
   Serial.print("Looking for MRU EEPROM segment");
 
   for (int seg = 0; seg < (NUMBER_OF_EEPROM_SEGMENTS - 1); seg++) {
-    time_t read_timestamp = 0;
-    uint32_t first_part = 0;
-    uint32_t second_part = 0;
+    time_t readTimestamp = 0;
+    uint32_t firstWord = 0;
+    uint32_t secondWord = 0;
 
-    rtc_eeprom.readBlock(current_seg_addr,
-                         reinterpret_cast<uint8_t *>(first_data),
+    rtc_eeprom.readBlock(curSegAddr,
+                         reinterpret_cast<uint8_t *>(firstPart),
                          BYTES_PER_PAGE);
-    rtc_eeprom.readBlock((current_seg_addr + BYTES_PER_PAGE),
-                         reinterpret_cast<uint8_t *>(second_data),
+    rtc_eeprom.readBlock((curSegAddr + BYTES_PER_PAGE),
+                         reinterpret_cast<uint8_t *>(secondPart),
                          BYTES_PER_PAGE);
 
-    first_part = ESParaSite::Util::ParseUint32(first_data);
-    second_part = ESParaSite::Util::ParseUint32(second_data);
+    firstWord = ESParaSite::Util::ParseUint32(firstPart);
+    secondWord = ESParaSite::Util::ParseUint32(secondPart);
 
-    read_timestamp = ESParaSite::Util::join_64(first_part, second_part);
+    readTimestamp = ESParaSite::Util::join64(firstWord, secondWord);
 
-    if (read_timestamp != 0 && read_timestamp >= latest_timestamp) {
-      latest_timestamp_segment = (seg + 1);
-      latest_timestamp = read_timestamp;
+    if (readTimestamp != 0 && readTimestamp >= latestTimestamp) {
+      latestTimestampSeg = (seg + 1);
+      latestTimestamp = readTimestamp;
     }
 
-    current_seg_addr += (PAGES_PER_SEGMENT * BYTES_PER_PAGE);
+    curSegAddr += (PAGES_PER_SEGMENT * BYTES_PER_PAGE);
 
     Serial.print(".");
   }
 
   Serial.println();
 
-  if (latest_timestamp == 0 || latest_timestamp_segment == 0) {
+  if (latestTimestamp == 0 || latestTimestampSeg == 0) {
     Serial.println("EEPROM Does not contain any valid data. Data logging"
                    " will begin at first segment.");
-    rtcEepromResource.lastWriteTimestamp =
-        statusResource.rtcCurrentSecond;
+    eeprom.lastWriteTimestamp =
+        status.rtcCurrentSecond;
     return (FIRST_SEGMENT_OFFSET);
   } else {
     Serial.print("The most recent write timestamp is:\t");
-    Serial.println(latest_timestamp);
-    rtcEepromResource.lastWriteTimestamp = latest_timestamp;
-    return (latest_timestamp_segment * (PAGES_PER_SEGMENT * BYTES_PER_PAGE));
+    Serial.println(latestTimestamp);
+    eeprom.lastWriteTimestamp = latestTimestamp;
+    return (latestTimestampSeg * (PAGES_PER_SEGMENT * BYTES_PER_PAGE));
   }
 }
 
-uint8_t ESParaSite::RtcEeprom::doEepromRead(uint16_t segment_addr) {
+uint8_t ESParaSite::RtcEeprom::doEepromRead(uint16_t segAddr) {
   Serial.print("Reading EEPROM Values");
 
   for (int page = 0; page < PAGES_PER_SEGMENT; page++) {
     Serial.print(".");
 
-    uint32_t first_part = 0;
-    uint32_t second_part = 0;
+    uint32_t firstWord = 0;
+    uint32_t secondWord = 0;
 
-    char page_1[BYTES_PER_PAGE];
-    char page_2[BYTES_PER_PAGE];
+    char firstPart[BYTES_PER_PAGE];
+    char secondPart[BYTES_PER_PAGE];
 
     switch (page) {
     case 0:
-      rtc_eeprom.readBlock(segment_addr, reinterpret_cast<uint8_t *>(page_1),
+      rtc_eeprom.readBlock(segAddr, reinterpret_cast<uint8_t *>(firstPart),
                            BYTES_PER_PAGE);
-      rtc_eeprom.readBlock((segment_addr + BYTES_PER_PAGE),
-                           reinterpret_cast<uint8_t *>(page_2), BYTES_PER_PAGE);
+      rtc_eeprom.readBlock((segAddr + BYTES_PER_PAGE),
+                           reinterpret_cast<uint8_t *>(secondPart), BYTES_PER_PAGE);
 
-      first_part = ESParaSite::Util::ParseUint32(page_1);
-      second_part = ESParaSite::Util::ParseUint32(page_2);
+      firstWord = ESParaSite::Util::ParseUint32(firstPart);
+      secondWord = ESParaSite::Util::ParseUint32(secondPart);
 
-      rtcEepromResource.lastWriteTimestamp =
-          ESParaSite::Util::join_64(first_part, second_part);
+      eeprom.lastWriteTimestamp =
+          ESParaSite::Util::join64(firstWord, secondWord);
       break;
     case 4:
-      rtc_eeprom.readBlock(segment_addr + (BYTES_PER_PAGE * page),
-                           reinterpret_cast<uint8_t *>(page_1), BYTES_PER_PAGE);
-      rtcEepromResource.eepromVatLifeSec =
-          ESParaSite::Util::ParseUint32(page_1);
+      rtc_eeprom.readBlock(segAddr + (BYTES_PER_PAGE * page),
+                           reinterpret_cast<uint8_t *>(firstPart), BYTES_PER_PAGE);
+      eeprom.eepromVatLifeSec =
+          ESParaSite::Util::ParseUint32(firstPart);
       break;
     case 5:
-      rtc_eeprom.readBlock(segment_addr + (BYTES_PER_PAGE * page),
-                           reinterpret_cast<uint8_t *>(page_1), BYTES_PER_PAGE);
-      rtcEepromResource.eepromLedLifeSec =
-          ESParaSite::Util::ParseUint32(page_1);
+      rtc_eeprom.readBlock(segAddr + (BYTES_PER_PAGE * page),
+                           reinterpret_cast<uint8_t *>(firstPart), BYTES_PER_PAGE);
+      eeprom.eepromLedLifeSec =
+          ESParaSite::Util::ParseUint32(firstPart);
       break;
     case 6:
-      rtc_eeprom.readBlock(segment_addr + (BYTES_PER_PAGE * page),
-                           reinterpret_cast<uint8_t *>(page_1), BYTES_PER_PAGE);
-      rtcEepromResource.eepromScreenLifeSec =
-          ESParaSite::Util::ParseUint32(page_1);
+      rtc_eeprom.readBlock(segAddr + (BYTES_PER_PAGE * page),
+                           reinterpret_cast<uint8_t *>(firstPart), BYTES_PER_PAGE);
+      eeprom.eepromScreenLifeSec =
+          ESParaSite::Util::ParseUint32(firstPart);
       break;
     default:
       break;
     }
   }
 
-  rtcEepromResource.lastSegmentAddress = segment_addr;
+  eeprom.lastSegmentAddress = segAddr;
 
   Serial.println();
   Serial.println("DONE!");
@@ -286,81 +286,81 @@ uint8_t ESParaSite::RtcEeprom::doEepromRead(uint16_t segment_addr) {
 
 uint8_t ESParaSite::RtcEeprom::doEepromWrite() {
   // ESParaSite::Sensors::dumpSensor(true);
-  uint16_t segment_addr = rtcEepromResource.lastSegmentAddress +
+  uint16_t segAddr = eeprom.lastSegmentAddress +
                           (BYTES_PER_PAGE * PAGES_PER_SEGMENT);
   Serial.println("");
   
-  if (segment_addr >= (static_cast<uint16_t>(MEMORY_SIZE) / 8)) {
+  if (segAddr >= (static_cast<uint16_t>(MEMORY_SIZE) / 8)) {
     Serial.print(F("Rolling over to first segment:\t"));
-    segment_addr = FIRST_SEGMENT_OFFSET;
+    segAddr = FIRST_SEGMENT_OFFSET;
   }
 
   Serial.print(F("Writing EEPROM Values to segment:\t"));
-  Serial.println(segment_addr);
+  Serial.println(segAddr);
 
   for (uint8_t page = 0; page < PAGES_PER_SEGMENT; page++) {
     Serial.print(".");
 
-    uint32_t first_part = 0;
-    uint32_t second_part = 0;
+    uint32_t firstWord = 0;
+    uint32_t secondWord = 0;
 
-    unsigned char page_1[BYTES_PER_PAGE];
-    unsigned char page_2[BYTES_PER_PAGE];
+    unsigned char firstPart[BYTES_PER_PAGE];
+    unsigned char secondPart[BYTES_PER_PAGE];
 
     switch (page) {
     case 0:
-      first_part = (uint32_t)(
-          (statusResource.rtcCurrentSecond & 0xFFFFFFFF00000000LL) >> 32);
-      second_part =
-          (uint32_t)(statusResource.rtcCurrentSecond & 0xFFFFFFFFLL);
+      firstWord = (uint32_t)(
+          (status.rtcCurrentSecond & 0xFFFFFFFF00000000LL) >> 32);
+      secondWord =
+          (uint32_t)(status.rtcCurrentSecond & 0xFFFFFFFFLL);
 
-      ESParaSite::Util::SerializeUint32(page_1, first_part);
-      rtc_eeprom.writeBlock(segment_addr, reinterpret_cast<uint8_t *>(page_1),
+      ESParaSite::Util::SerializeUint32(firstPart, firstWord);
+      rtc_eeprom.writeBlock(segAddr, reinterpret_cast<uint8_t *>(firstPart),
                             BYTES_PER_PAGE);
 
-      ESParaSite::Util::SerializeUint32(page_2, second_part);
-      rtc_eeprom.writeBlock((segment_addr + BYTES_PER_PAGE),
-                            reinterpret_cast<uint8_t *>(page_2),
+      ESParaSite::Util::SerializeUint32(secondPart, secondWord);
+      rtc_eeprom.writeBlock((segAddr + BYTES_PER_PAGE),
+                            reinterpret_cast<uint8_t *>(secondPart),
                             BYTES_PER_PAGE);
 
       break;
     case 4:
 
-      ESParaSite::Util::SerializeUint32(page_1,
-                                        rtcEepromResource.eepromVatLifeSec);
-      rtc_eeprom.writeBlock(segment_addr + (BYTES_PER_PAGE * page),
-                            reinterpret_cast<uint8_t *>(page_1),
+      ESParaSite::Util::SerializeUint32(firstPart,
+                                        eeprom.eepromVatLifeSec);
+      rtc_eeprom.writeBlock(segAddr + (BYTES_PER_PAGE * page),
+                            reinterpret_cast<uint8_t *>(firstPart),
                             BYTES_PER_PAGE);
 
-      enclosureResource.vatLifeSec = rtcEepromResource.eepromVatLifeSec;
+      enclosure.vatLifeSec = eeprom.eepromVatLifeSec;
       break;
     case 5:
 
-      ESParaSite::Util::SerializeUint32(page_1,
-                                        rtcEepromResource.eepromLedLifeSec);
-      rtc_eeprom.writeBlock(segment_addr + (BYTES_PER_PAGE * page),
-                            reinterpret_cast<uint8_t *>(page_1),
+      ESParaSite::Util::SerializeUint32(firstPart,
+                                        eeprom.eepromLedLifeSec);
+      rtc_eeprom.writeBlock(segAddr + (BYTES_PER_PAGE * page),
+                            reinterpret_cast<uint8_t *>(firstPart),
                             BYTES_PER_PAGE);
 
-      enclosureResource.ledLifeSec = rtcEepromResource.eepromLedLifeSec;
+      enclosure.ledLifeSec = eeprom.eepromLedLifeSec;
       break;
     case 6:
 
       ESParaSite::Util::SerializeUint32(
-          page_1, rtcEepromResource.eepromScreenLifeSec);
-      rtc_eeprom.writeBlock(segment_addr + (BYTES_PER_PAGE * page),
-                            reinterpret_cast<uint8_t *>(page_1),
+          firstPart, eeprom.eepromScreenLifeSec);
+      rtc_eeprom.writeBlock(segAddr + (BYTES_PER_PAGE * page),
+                            reinterpret_cast<uint8_t *>(firstPart),
                             BYTES_PER_PAGE);
 
-      enclosureResource.lcdLifeSec = rtcEepromResource.eepromScreenLifeSec;
+      enclosure.lcdLifeSec = eeprom.eepromScreenLifeSec;
       break;
     default:
       break;
     }
   }
 
-  rtcEepromResource.lastSegmentAddress = segment_addr;
-  rtcEepromResource.lastWriteTimestamp = statusResource.rtcCurrentSecond;
+  eeprom.lastSegmentAddress = segAddr;
+  eeprom.lastWriteTimestamp = status.rtcCurrentSecond;
 
   Serial.println();
   Serial.println(F("DONE!"));
@@ -370,15 +370,15 @@ uint8_t ESParaSite::RtcEeprom::doEepromWrite() {
 // AT24C32 and AT24C64. It divides the reported ROM size by 8-bit pages, but
 // other ROMs could be organized differently.
 #ifdef DEBUG_L2
-  RtcEeprom::dumpEEPROM(segment_addr, ((static_cast<uint16_t>(MEMORY_SIZE)) /
+  RtcEeprom::dumpEEPROM(segAddr, ((static_cast<uint16_t>(MEMORY_SIZE)) /
                                        (BYTES_PER_PAGE * PAGES_PER_SEGMENT)));
 #endif
 
   return 0;
 }
 
-void do_eeprom_format(uint8_t format_type) {
-  int set_first_on = 0;
+void ESParaSite::RtcEeprom::doEepromFormat(uint8_t format_type) {
+  int setFirstOn = 0;
 
   // Format Type 1 -
   if (format_type == 1) {
@@ -399,29 +399,30 @@ void do_eeprom_format(uint8_t format_type) {
     rtc_eeprom.writeBlock((BYTES_PER_PAGE * 7),
                           reinterpret_cast<uint8_t *>(third_data), 4);
 
-    set_first_on = 1;
+    setFirstOn = 1;
   } else if (format_type == 2) {
-    set_first_on = 1;
+    setFirstOn = 1;
   }
 
-  if (set_first_on == 1) {
-    Serial.println("Resetting first on value to current second");
-    Serial.print("The current epoch is:\t");
-    time_t current_epoch = ESParaSite::Sensors::readRtcEpoch();
-    Serial.println(current_epoch);
+  if (setFirstOn == 1) {
+    Serial.println("Resetting first on value to 0");
+    // Serial.print("The current epoch is:\t");
+    time_t current_epoch = 0;
+    // time_t current_epoch = ESParaSite::Sensors::readRtcEpoch();
+    // Serial.println(current_epoch);
 
-    uint32_t first_part =
+    uint32_t firstWord =
         (uint32_t)((current_epoch & 0xFFFFFFFF00000000LL) >> 32);
-    uint32_t second_part = (uint32_t)(current_epoch & 0xFFFFFFFFLL);
+    uint32_t secondWord = (uint32_t)(current_epoch & 0xFFFFFFFFLL);
 
-    unsigned char first_data[4];
-    unsigned char second_data[4];
+    unsigned char firstPart[4];
+    unsigned char secondPart[4];
 
-    ESParaSite::Util::SerializeUint32(first_data, first_part);
-    rtc_eeprom.writeBlock(0, reinterpret_cast<uint8_t *>(first_data), 4);
+    ESParaSite::Util::SerializeUint32(firstPart, firstWord);
+    rtc_eeprom.writeBlock(0, reinterpret_cast<uint8_t *>(firstPart), 4);
 
-    ESParaSite::Util::SerializeUint32(second_data, second_part);
-    rtc_eeprom.writeBlock(4, reinterpret_cast<uint8_t *>(second_data), 4);
+    ESParaSite::Util::SerializeUint32(secondPart, secondWord);
+    rtc_eeprom.writeBlock(4, reinterpret_cast<uint8_t *>(secondPart), 4);
 
     // "Magic Number Warning - See Above."
     ESParaSite::RtcEeprom::dumpEEPROM(0, (static_cast<int>(MEMORY_SIZE)) / 8);

@@ -31,14 +31,14 @@
 #include "Http.h"
 #include "Json.h"
 
-extern ESParaSite::chamber chamberResource;
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::ambient ambientResource;
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::rtcEepromData rtcEepromResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::chamberData chamber;
+extern ESParaSite::opticsData optics;
+extern ESParaSite::ambientData ambient;
+extern ESParaSite::enclosureData enclosure;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::rtcEepromData eeprom;
+extern ESParaSite::sensorExists exists;
 
 extern ESP8266WebServer server;
 
@@ -46,11 +46,11 @@ void ESParaSite::DataToJson::getJsonAmbient() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "ambient";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["ambTempC"] = ambientResource.ambientTempC;
-  doc["ambHumid"] = ambientResource.ambientHumidity;
-  doc["ambPres"] = ambientResource.ambientBarometer;
-  doc["ambAlt"] = ambientResource.ambientAltitude;
+  doc["timestamp"] = status.rtcCurrentSecond;
+  doc["ambTempC"] = ambient.ambientTempC;
+  doc["ambHumid"] = ambient.ambientHumidity;
+  doc["ambPres"] = ambient.ambientBarometer;
+  doc["ambAlt"] = ambient.ambientAltitude;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -59,10 +59,10 @@ void ESParaSite::DataToJson::getJsonChamber() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "chamber";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["cmbTempC"] = chamberResource.chamberTempC;
-  doc["cmbHumid"] = chamberResource.chamberHumidity;
-  doc["cmbDewPt"] = chamberResource.chamberDewPoint;
+  doc["timestamp"] = status.rtcCurrentSecond;
+  doc["cmbTempC"] = chamber.chamberTempC;
+  doc["cmbHumid"] = chamber.chamberHumidity;
+  doc["cmbDewPt"] = chamber.chamberDewPoint;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -70,14 +70,14 @@ void ESParaSite::DataToJson::getJsonChamber() {
 void ESParaSite::DataToJson::getJsonCurrent() {
   StaticJsonDocument<256> doc;
 
-  doc["ts"] = statusResource.rtcCurrentSecond;
-  doc["at"] = ambientResource.ambientTempC;
-  doc["ah"] = ambientResource.ambientHumidity;
-  doc["ct"] = chamberResource.chamberTempC;
-  doc["ch"] = chamberResource.chamberHumidity;
-  doc["lt"] = opticsResource.ledTempC;
-  doc["st"] = opticsResource.screenTempC;
-  doc["lo"] = statusResource.isPrintingFlag;
+  doc["ts"] = status.rtcCurrentSecond;
+  doc["at"] = ambient.ambientTempC;
+  doc["ah"] = ambient.ambientHumidity;
+  doc["ct"] = chamber.chamberTempC;
+  doc["ch"] = chamber.chamberHumidity;
+  doc["lt"] = optics.ledTempC;
+  doc["st"] = optics.screenTempC;
+  doc["lo"] = status.isPrintingFlag;
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
 
@@ -85,13 +85,13 @@ void ESParaSite::DataToJson::getJsonEeprom() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "eeprom";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["lastWrtTS"] = rtcEepromResource.lastWriteTimestamp;
-  doc["firstOnTS"] = rtcEepromResource.firstOnTimestamp;
-  doc["eprmLedLS"] = rtcEepromResource.eepromLedLifeSec;
-  doc["eprmScrLS"] = rtcEepromResource.eepromScreenLifeSec;
-  doc["eprmVatLS"] = rtcEepromResource.eepromVatLifeSec;
-  doc["lastSegAddr"] = rtcEepromResource.lastSegmentAddress;
+  doc["timestamp"] = status.rtcCurrentSecond;
+  doc["lastWrtTS"] = eeprom.lastWriteTimestamp;
+  doc["firstOnTS"] = eeprom.firstOnTimestamp;
+  doc["eprmLedLS"] = eeprom.eepromLedLifeSec;
+  doc["eprmScrLS"] = eeprom.eepromScreenLifeSec;
+  doc["eprmVatLS"] = eeprom.eepromVatLifeSec;
+  doc["lastSegAddr"] = eeprom.lastSegmentAddress;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -100,12 +100,12 @@ void ESParaSite::DataToJson::getJsonEnclosure() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "enclosure";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["caseTempC"] = enclosureResource.caseTempC;
-  doc["printerLS"] = enclosureResource.printerLifeSec;
-  doc["curScrLS"] = enclosureResource.lcdLifeSec;
-  doc["curLedLS"] = enclosureResource.ledLifeSec;
-  doc["curVatLS"] = enclosureResource.vatLifeSec;
+  doc["timestamp"] = status.rtcCurrentSecond;
+  doc["caseTempC"] = enclosure.caseTempC;
+  doc["printerLS"] = enclosure.printerLifeSec;
+  doc["curScrLS"] = enclosure.lcdLifeSec;
+  doc["curLedLS"] = enclosure.ledLifeSec;
+  doc["curVatLS"] = enclosure.vatLifeSec;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -114,12 +114,12 @@ void ESParaSite::DataToJson::getJsonI2C() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "i2c";
-  doc["sdaPin"] = configResource.cfgPinSda;
-  doc["sclPin"] = configResource.cfgPinScl;
-  doc["dhtExist"] = existsResource.dhtDetected;
-  doc["bmeExist"] = existsResource.bmeDetected;
-  doc["mlxExist"] = existsResource.mlxDetected;
-  doc["siExist"] = existsResource.siDetected;
+  doc["sdaPin"] = config.cfgPinSda;
+  doc["sclPin"] = config.cfgPinScl;
+  doc["dhtExist"] = exists.dhtDetected;
+  doc["bmeExist"] = exists.bmeDetected;
+  doc["mlxExist"] = exists.mlxDetected;
+  doc["siExist"] = exists.siDetected;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -131,7 +131,7 @@ void ESParaSite::DataToJson::getJsonNetwork() {
   tempArray[1] = WiFi.RSSI();
   tempArray[2] = WiFi.localIP().toString();
   tempArray[3] = MDNS.isRunning();
-  tempArray[4] = configResource.cfgMdnsName;
+  tempArray[4] = config.cfgMdnsName;
 
   doc["class"] = "network";
   doc["ssid"] = tempArray[0];
@@ -147,12 +147,12 @@ void ESParaSite::DataToJson::getJsonOptics() {
   StaticJsonDocument<256> doc;
 
   doc["class"] = "optics";
-  doc["timestamp"] = statusResource.rtcCurrentSecond;
-  doc["uvIdx"] = opticsResource.ledUVIndex;
-  doc["visLux"] = opticsResource.ledVisible;
-  doc["irLux"] = opticsResource.ledInfrared;
-  doc["ledTempC"] = opticsResource.ledTempC;
-  doc["scrTempC"] = opticsResource.screenTempC;
+  doc["timestamp"] = status.rtcCurrentSecond;
+  doc["uvIdx"] = optics.ledUVIndex;
+  doc["visLux"] = optics.ledVisible;
+  doc["irLux"] = optics.ledInfrared;
+  doc["ledTempC"] = optics.ledTempC;
+  doc["scrTempC"] = optics.screenTempC;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -160,12 +160,12 @@ void ESParaSite::DataToJson::getJsonOptics() {
 void ESParaSite::DataToJson::getJsonStatus(){
   StaticJsonDocument<256> doc;
   String tempArray[6];
-  tempArray[0] = rtcEepromResource.lastWriteTimestamp;
-  tempArray[1] = enclosureResource.printerLifeSec;
-  tempArray[2] = enclosureResource.lcdLifeSec;
-  tempArray[3] = enclosureResource.vatLifeSec;
-  tempArray[4] = enclosureResource.ledLifeSec;
-  tempArray[5] = enclosureResource.caseTempC;
+  tempArray[0] = eeprom.lastWriteTimestamp;
+  tempArray[1] = enclosure.printerLifeSec;
+  tempArray[2] = enclosure.lcdLifeSec;
+  tempArray[3] = enclosure.vatLifeSec;
+  tempArray[4] = enclosure.ledLifeSec;
+  tempArray[5] = enclosure.caseTempC;
 
   doc["lwts"] = tempArray[0];
   doc["prls"] = tempArray[1];

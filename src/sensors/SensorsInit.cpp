@@ -74,9 +74,9 @@
 extern int bme_i2c_address;
 extern int eeprom_i2c_address;
 
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::sensorExists exists;
 
 extern Adafruit_MLX90614 mlx;
 extern Adafruit_SI1145 uv;
@@ -94,7 +94,7 @@ extern DHT12 dht;
 void ESParaSite::Sensors::initI2cSensors() {
   // initialize I2C bus
   Serial.print(F("Init I2C bus..."));
-  Wire.begin(configResource.cfgPinSda, configResource.cfgPinScl);
+  Wire.begin(config.cfgPinSda, config.cfgPinScl);
   Serial.println(F("\t\t\t\t\tOK!"));
   Serial.println();
 
@@ -104,7 +104,7 @@ void ESParaSite::Sensors::initI2cSensors() {
   if (error == 0) {
     Sensors::initDhtSensor();
   } else {
-    existsResource.dhtDetected = 0;
+    exists.dhtDetected = 0;
   }
 
   Serial.println();
@@ -116,7 +116,7 @@ void ESParaSite::Sensors::initI2cSensors() {
   if (error == 0) {
     Sensors::initSiSensor();
   } else {
-    existsResource.siDetected = 0;
+    exists.siDetected = 0;
   }
 
   Serial.println();
@@ -128,7 +128,7 @@ void ESParaSite::Sensors::initI2cSensors() {
   if (error == 0) {
     Sensors::initMlxSensor();
   } else {
-    existsResource.mlxDetected = 0;
+    exists.mlxDetected = 0;
   }
 
   Serial.println();
@@ -146,7 +146,7 @@ void ESParaSite::Sensors::initI2cSensors() {
       bme_i2c_address = (BME_ADDR_B);
       Sensors::initBmeSensor();
     } else {
-      existsResource.bmeDetected = 0;
+      exists.bmeDetected = 0;
     }
   }
 

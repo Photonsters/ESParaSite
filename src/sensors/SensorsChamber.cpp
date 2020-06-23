@@ -65,8 +65,8 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-extern ESParaSite::chamber chamberResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::chamberData chamber;
+extern ESParaSite::sensorExists exists;
 
 extern DHT12 dht;
 
@@ -75,7 +75,7 @@ void ESParaSite::Sensors::initDhtSensor() {
   switch (status) {
   case DHT12_OK:
     Serial.print(F("OK!\t"));
-    existsResource.dhtDetected = 1;
+    exists.dhtDetected = 1;
     break;
   case DHT12_ERROR_CHECKSUM:
     Serial.print(F("DHT12 Checksum error,\t"));
@@ -97,7 +97,7 @@ void ESParaSite::Sensors::readDhtSensor(bool in_seq_read) {
   // out-of-sequence or, in other words, not called by a timer in the loop() ),
   // we read, wait 2 seconds, then read again. Normal in sequence reads do not
   // need this, so we send a 'true' to skip the additional delay.
-  if (existsResource.dhtDetected == 1) {
+  if (exists.dhtDetected == 1) {
     int status = dht.read();
 
     if (!in_seq_read) {
@@ -123,25 +123,25 @@ void ESParaSite::Sensors::readDhtSensor(bool in_seq_read) {
 
     switch (status) {
     case DHT12_OK:
-      chamberResource.chamberTempC = dht.temperature;
-      chamberResource.chamberHumidity = dht.humidity;
-      chamberResource.chamberDewPoint = (Util::dewPoint(
-          chamberResource.chamberTempC, chamberResource.chamberHumidity));
+      chamber.chamberTempC = dht.temperature;
+      chamber.chamberHumidity = dht.humidity;
+      chamber.chamberDewPoint = (Util::dewPoint(
+          chamber.chamberTempC, chamber.chamberHumidity));
 
 #ifdef DEBUG_L2
       Serial.println(F("==========Print Chamber=========="));
       Serial.print(F("Temperature:\t\t\t"));
-      Serial.print(chamberResource.chamberTempC, 1);
+      Serial.print(chamber.chamberTempC, 1);
       Serial.print("°C / ");
-      Serial.print(Util::convertCtoF(chamberResource.chamberTempC));
+      Serial.print(Util::convertCtoF(chamber.chamberTempC));
       Serial.println("°F");
       Serial.print(F("Humidity:\t\t\t"));
-      Serial.print(chamberResource.chamberHumidity, 1);
+      Serial.print(chamber.chamberHumidity, 1);
       Serial.println("%");
       Serial.print(F("Dew Point:\t\t\t"));
-      Serial.print(static_cast<int>(chamberResource.chamberDewPoint));
+      Serial.print(static_cast<int>(chamber.chamberDewPoint));
       Serial.print("°C / ");
-      Serial.print(Util::convertCtoF(chamberResource.chamberDewPoint));
+      Serial.print(Util::convertCtoF(chamber.chamberDewPoint));
       Serial.println("°F");
 # endif
 
@@ -161,9 +161,9 @@ void ESParaSite::Sensors::readDhtSensor(bool in_seq_read) {
   }
 
   } else {
-    chamberResource.chamberTempC = 0;
-    chamberResource.chamberHumidity = 0;
-    chamberResource.chamberDewPoint = 0;
+    chamber.chamberTempC = 0;
+    chamber.chamberHumidity = 0;
+    chamber.chamberDewPoint = 0;
 
 #ifdef DEBUG_L2
     Serial.print(F("DHT12 Sensor not found"));

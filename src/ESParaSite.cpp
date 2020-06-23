@@ -65,15 +65,15 @@ uint16_t prevDhtMillis = 0;
 uint16_t prevEepromMillis = 0;
 uint16_t prevHistoryMillis = 0;
 
-// The _resource structs used to carry data globally
-ESParaSite::ambient ambientResource;
-ESParaSite::configData configResource;
-ESParaSite::enclosure enclosureResource;
-ESParaSite::optics opticsResource;
-ESParaSite::chamber chamberResource;
-ESParaSite::rtcEepromData rtcEepromResource;
-ESParaSite::statusData statusResource;
-ESParaSite::sensorExists existsResource;
+// The structs used to carry data globally
+ESParaSite::ambientData ambient;
+ESParaSite::configData config;
+ESParaSite::enclosureData enclosure;
+ESParaSite::opticsData optics;
+ESParaSite::chamberData chamber;
+ESParaSite::rtcEepromData eeprom;
+ESParaSite::statusData status;
+ESParaSite::sensorExists exists;
 
 //*************************************************************************
 // LOOP
@@ -264,9 +264,9 @@ void setup(void) {
   Serial.println(F("Configuring mDNS..."));
 
   // Start mDNS if enabled
-  if (configResource.cfgMdnsEnabled == 1) {
-    const char *mdns_n = configResource.cfgMdnsName;
-    if (!MDNS.begin(mdns_n)) {
+  if (config.cfgMdnsEnabled == 1) {
+    const char *mdnsN = config.cfgMdnsName;
+    if (!MDNS.begin(mdnsN)) {
       // Start the mDNS responder <cfgMdnsName>.local
       Serial.println(F("Error setting up MDNS responder!"));
       ESParaSite::ConfigPortal::doConfigPortal();
@@ -274,7 +274,7 @@ void setup(void) {
       Serial.println(F("mDNS responder started"));
       Serial.println(F("mDNS enabled on URL:"));
       Serial.print(F("http://"));
-      Serial.print(configResource.cfgMdnsName);
+      Serial.print(config.cfgMdnsName);
       Serial.println(F(".local"));
       Serial.println();
     }
@@ -298,15 +298,15 @@ void setup(void) {
   ESParaSite::Sensors::dumpSensor(true);
 
   // Find the most recent EEPROM segment and populate our eeprom_data struct.
-  uint16_t mru_segment_addr = ESParaSite::RtcEeprom::doEepromFirstRead();
+  uint16_t mruSegAddr = ESParaSite::RtcEeprom::doEepromFirstRead();
 
 #ifdef DEBUG_L1
   Serial.print(F("The most recent write address:\t"));
-  Serial.println(mru_segment_addr);
+  Serial.println(mruSegAddr);
   Serial.println();
 #endif
 
-  ESParaSite::RtcEeprom::doEepromRead(mru_segment_addr);
+  ESParaSite::RtcEeprom::doEepromRead(mruSegAddr);
 
   Serial.println(F("Startup Complete!"));
   Serial.println();

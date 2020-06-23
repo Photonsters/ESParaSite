@@ -49,10 +49,10 @@
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 extern int eeprom_i2c_address;
 
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::enclosureData enclosure;
+extern ESParaSite::sensorExists exists;
 
 extern RtcDS3231<TwoWire> rtc;
 
@@ -104,7 +104,7 @@ void ESParaSite::Sensors::initRtcClock() {
 
   Serial.println();
 
-  statusResource.rtcCurrentSecond = (rtc.GetDateTime() + 946684800);
+  status.rtcCurrentSecond = (rtc.GetDateTime() + 946684800);
 
   Serial.println();
   // never assume the Rtc was last configured by you, so
@@ -117,14 +117,14 @@ void ESParaSite::Sensors::readRtcData() {
   ESParaSite::Sensors::checkRtcStatus();
   // RtcDateTime now = rtc.GetDateTime();
   // Epoch64 Conversion
-  statusResource.rtcCurrentSecond = (rtc.GetDateTime() + 946684800);
+  status.rtcCurrentSecond = (rtc.GetDateTime() + 946684800);
 
 #ifdef DEBUG_L2
   Serial.println("==========Real Time Clock==========");
   Util::printDateTime(now);
   Serial.println();
   Serial.print("Epoch64:\t\t\t");
-  Serial.println(statusResource.rtcCurrentSecond);
+  Serial.println(status.rtcCurrentSecond);
 #endif
 
   ESParaSite::Sensors::readRtcTemp();
@@ -151,14 +151,14 @@ void ESParaSite::Sensors::checkRtcStatus() {
 
 void ESParaSite::Sensors::readRtcTemp() {
   RtcTemperature temp = (rtc.GetTemperature());
-  enclosureResource.caseTempC = (temp.AsFloatDegC());
+  enclosure.caseTempC = (temp.AsFloatDegC());
 
 #ifdef DEBUG_L2
   Serial.println("==========Case Temperature=========");
   Serial.print(F("Case Temperature:\t\t"));
   temp.Print(Serial);
   Serial.print("°C / ");
-  Serial.print(Util::convertCtoF(enclosureResource.caseTempC));
+  Serial.print(Util::convertCtoF(enclosure.caseTempC));
   Serial.println("°F");
 #endif
 }

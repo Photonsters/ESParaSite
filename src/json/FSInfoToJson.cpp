@@ -39,7 +39,7 @@
 
 using namespace ESParaSite;
 
-extern configData configResource;
+extern configData config;
 
 void FileCore::getFSInfo(int mode) {
 

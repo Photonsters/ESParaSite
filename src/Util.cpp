@@ -60,7 +60,7 @@ void Util::printDateTime(const RtcDateTime &dt) {
   Serial.print(datestring);
 }
 
-uint64 Util::join_64(uint32 first_part, uint32 second_part) {
+uint64 Util::join64(uint32 first_part, uint32 second_part) {
   uint64 joined_word = (((u64)first_part) << 32 | second_part);
   return joined_word;
 }

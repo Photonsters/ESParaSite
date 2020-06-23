@@ -54,8 +54,8 @@
 
 extern int bme_i2c_address;
 
-extern ESParaSite::ambient ambientResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::ambientData ambient;
+extern ESParaSite::sensorExists exists;
 
 extern BlueDot_BME280 bme;
 
@@ -76,42 +76,42 @@ void ESParaSite::Sensors::initBmeSensor() {
     Serial.print(F("BME280 Sensor not found!"));
   } else {
     Serial.print(F("OK!"));
-    existsResource.bmeDetected = 1;
+    exists.bmeDetected = 1;
   }
 }
 
 void ESParaSite::Sensors::readBmeSensor() {
-  if (existsResource.bmeDetected == 1) {
-    ambientResource.ambientTempC = roundf(bme.readTempC() * 100) / 100;
-    ambientResource.ambientHumidity = roundf(bme.readHumidity() * 100) / 100;
-    ambientResource.ambientBarometer = bme.readPressure();
-    ambientResource.ambientAltitude = bme.readAltitudeMeter();
+  if (exists.bmeDetected == 1) {
+    ambient.ambientTempC = roundf(bme.readTempC() * 100) / 100;
+    ambient.ambientHumidity = roundf(bme.readHumidity() * 100) / 100;
+    ambient.ambientBarometer = bme.readPressure();
+    ambient.ambientAltitude = bme.readAltitudeMeter();
 
 #ifdef DEBUG_L2
     Serial.println("==========Ambient Conditions==========");
     Serial.print(F("Temperature:\t\t\t"));
-    Serial.print(ambientResource.ambientTempC);
+    Serial.print(ambient.ambientTempC);
     Serial.print("°C / ");
     Serial.print(bme.readTempF());
     Serial.println("°F");
     Serial.print(F("Relative Humidity:\t\t"));
-    Serial.print(ambientResource.ambientHumidity);
+    Serial.print(ambient.ambientHumidity);
     Serial.println("%");
     Serial.print(F("Barometric Pressure:\t\t"));
-    Serial.print(ambientResource.ambientBarometer);
+    Serial.print(ambient.ambientBarometer);
     Serial.println(" hPa");
     Serial.print(F("Altitude:\t\t\t"));
-    Serial.print(ambientResource.ambientAltitude);
+    Serial.print(ambient.ambientAltitude);
     Serial.print("m / ");
     Serial.print(bme.readAltitudeFeet());
     Serial.println("ft");
 #endif
 
   } else {
-    ambientResource.ambientTempC = 0;
-    ambientResource.ambientHumidity = 0;
-    ambientResource.ambientBarometer = 0;
-    ambientResource.ambientAltitude = 0;
+    ambient.ambientTempC = 0;
+    ambient.ambientHumidity = 0;
+    ambient.ambientBarometer = 0;
+    ambient.ambientAltitude = 0;
 
 #ifdef DEBUG_L2
     Serial.print(F("BME280 Sensor not found"));
