@@ -52,14 +52,15 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-extern int bme_i2c_address;
+extern int8_t bme_i2c_address;
 
 extern ESParaSite::ambientData ambient;
 extern ESParaSite::sensorExists exists;
 
 extern BlueDot_BME280 bme;
 
-void ESParaSite::Sensors::initBmeSensor() {
+void ESParaSite::Sensors::initBmeSensor()
+{
   // initialize BME280 temperature sensor
   bme.parameter.communication = 0;
   bme.parameter.I2CAddress = bme_i2c_address;
@@ -72,20 +73,28 @@ void ESParaSite::Sensors::initBmeSensor() {
   bme.parameter.tempOutsideCelsius = CURRENTAVGTEMP_C;
   bme.parameter.tempOutsideFahrenheit = CURRENTAVGTEMP_F;
 
-  if (bme.init() != 0x60) {
+  if (bme.init() != 0x60)
+  {
     Serial.print(F("BME280 Sensor not found!"));
-  } else {
+  }
+  else
+  {
     Serial.print(F("OK!"));
     exists.bmeDetected = 1;
   }
 }
 
-void ESParaSite::Sensors::readBmeSensor() {
-  if (exists.bmeDetected == 1) {
-    ambient.ambientTempC = roundf(bme.readTempC() * 100) / 100;
-    ambient.ambientHumidity = roundf(bme.readHumidity() * 100) / 100;
+void ESParaSite::Sensors::readBmeSensor()
+{
+  if (exists.bmeDetected == 1)
+  {
+    float bmeTempC = bme.readTempC();
+    float bmeHumidity = bme.readHumidity();
+    ambient.ambientTempC = ESParaSite::Util::floatToInt(bmeTempC);
+    ambient.ambientHumidity = ESParaSite::Util::floatToInt(bmeHumidity);
     ambient.ambientBarometer = bme.readPressure();
     ambient.ambientAltitude = bme.readAltitudeMeter();
+    ambient.ambientDewPoint = ESParaSite::Util::dewPoint(bmeTempC, bmeHumidity);
 
 #ifdef DEBUG_L2
     Serial.println("==========Ambient Conditions==========");
@@ -106,16 +115,17 @@ void ESParaSite::Sensors::readBmeSensor() {
     Serial.print(bme.readAltitudeFeet());
     Serial.println("ft");
 #endif
-
-  } else {
+  }
+  else
+  {
     ambient.ambientTempC = 0;
     ambient.ambientHumidity = 0;
     ambient.ambientBarometer = 0;
     ambient.ambientAltitude = 0;
+    ambient.ambientDewPoint = 0;
 
 #ifdef DEBUG_L2
     Serial.print(F("BME280 Sensor not found"));
 #endif
-
   }
 }
