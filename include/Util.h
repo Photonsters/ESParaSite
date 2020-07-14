@@ -26,14 +26,14 @@
 
 namespace ESParaSite {
 namespace Util {
-int convertCtoF(int temp_c);
+        
+int16_t convertCtoF(float temp_c);
 double dewPoint(double celsius, double humidity);
-
 void printDateTime(const RtcDateTime &dt);
-
 uint64_t join64(uint32_t first_word, uint32_t second_word);
 void SerializeUint32(unsigned char (&buf)[4], uint32_t val);
 uint32_t ParseUint32(const char (&buf)[4]);
+int16_t floatToInt(float floatValue);
 }; // namespace Util
 }; // namespace ESParaSite
 

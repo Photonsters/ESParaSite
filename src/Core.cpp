@@ -65,24 +65,25 @@
 
 // *** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
+// HISTORY_DIGEST_INTERVAL_SEC determines how often we update and digest
+// the historical data maintained for charting data.
+// the function is designed to be triggered every 5 seconds.
+// Changing this value is not suggested as it will throw off the intervals.
+#define HISTORY_DIGEST_INTERVAL_SEC (5)
+
 // Trigger for inititating config mode is Pin D3 and also flash button on
 // NodeMCU.  Flash button is convenient to use but if it is pressed it will
 // hang the serial port device driver until the computer is rebooted on
 // Windows machines.
 
 // D3 on NodeMCU and WeMos.
-const int TRIGGER_PIN = 0;
+#define TRIGGER_PIN (0)
 
 // Alternate button, if an external button is desired.
 // D0 on NodeMCU and WeMos.
-const int TRIGGER_PIN2 = 16;
+#define TRIGGER_PIN2 (16)
 
-uint8_t isPrintingCounter = 0;
-
-const uint16_t sensorsReadMsec = (ALL_SENSOR_POLLING_SEC * 1000);
-const uint16_t dhtReadMsec = (DHT_SENSOR_POLLING_SEC * 1000);
-const uint16_t eepromWriteMsec = (EEPROM_WRITE_INTERVAL_SEC * 1000);
-const uint16_t historyMsec = 5000;
+int8_t isPrintingCounter = 0;
 
 extern ESParaSite::enclosureData enclosure;
 extern ESParaSite::opticsData optics;
@@ -94,7 +95,7 @@ WiFiClient Wifi;
 uint16_t ESParaSite::Core::doReadSensors(uint16_t curLoopMsec,
                                          uint16_t prevSensorMsec) {
   if (static_cast<uint16_t>(curLoopMsec - prevSensorMsec) >=
-      sensorsReadMsec) {
+      (ALL_SENSOR_POLLING_SEC * 1000)) {
 
     //HEARTBEAT X
     Serial.print(".");
@@ -104,7 +105,7 @@ uint16_t ESParaSite::Core::doReadSensors(uint16_t curLoopMsec,
     Serial.println();
 #endif
 
-    status.rtcCurrentSecond = Sensors::readRtcEpoch();
+    status.rtcCurrentSecond = ESParaSite::Sensors::readRtcEpoch();
     enclosure.printerLifeSec =
         (status.rtcCurrentSecond - eeprom.firstOnTimestamp);
 
@@ -136,7 +137,7 @@ uint16_t ESParaSite::Core::doReadSensors(uint16_t curLoopMsec,
 
 uint16_t ESParaSite::Core::doReadDht(uint16_t curLoopMsec,
                                      uint16_t prevDhtMsec) {
-  if (static_cast<uint16_t>(curLoopMsec - prevDhtMsec) >= dhtReadMsec) {
+  if (static_cast<uint16_t>(curLoopMsec - prevDhtMsec) >= (DHT_SENSOR_POLLING_SEC * 1000)) {
 
 #ifdef DEBUG_L1
     Serial.println(F("Reading the DHT sensor"));
@@ -159,7 +160,7 @@ uint16_t ESParaSite::Core::doReadDht(uint16_t curLoopMsec,
 uint16_t ESParaSite::Core::doHandleEeprom(uint16_t curLoopMsec,
                                           uint16_t prevEepromMsec) {
   if (static_cast<uint16_t>(curLoopMsec - prevEepromMsec) >=
-      eepromWriteMsec) {
+      (EEPROM_WRITE_INTERVAL_SEC * 1000)) {
 
 #ifdef DEBUG_L1
     Serial.println(F("Checking printing status before writing EEPROM"));
@@ -193,7 +194,7 @@ uint16_t ESParaSite::Core::doHandleEeprom(uint16_t curLoopMsec,
 uint16_t ESParaSite::Core::doHandleHistory(uint16_t curLoopMsec,
                                            uint16_t prevHistoryMsec) {
   if (static_cast<uint16_t>(curLoopMsec - prevHistoryMsec) >=
-      historyMsec) {
+      (HISTORY_DIGEST_INTERVAL_SEC * 1000)) {
 
 #ifdef DEBUG_L1
     Serial.println(F("Processing the History"));
