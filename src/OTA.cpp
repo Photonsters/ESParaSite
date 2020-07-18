@@ -54,7 +54,7 @@ void ESParaSite::OTA::configOTA() {
     Serial.println("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() { Serial.println("\nEnd"); });
-  ArduinoOTA.onProgress([](uint8_t progress, uint8_t total) {
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
   });
   ArduinoOTA.onError([](ota_error_t error) {

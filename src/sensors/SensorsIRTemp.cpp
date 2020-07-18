@@ -61,8 +61,8 @@ void ESParaSite::Sensors::initMlxSensor() {
 
 void ESParaSite::Sensors::readMlxSensor() {
   if (exists.mlxDetected == 1) {
-    optics.ledTempC = ESParaSite::Util::floatToInt(mlx.readAmbientTempC());
-    optics.screenTempC = ESParaSite::Util::floatToInt(mlx.readObjectTempC());
+    optics.ledTempC = roundf(mlx.readAmbientTempC() *100) / 100;
+    optics.screenTempC = roundf(mlx.readObjectTempC() * 100) / 100;
 
 #ifdef DEBUG_L2
     Serial.println("==========LCD Temp Sensor==========");

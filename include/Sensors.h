@@ -26,7 +26,7 @@ namespace ESParaSite {
 namespace Sensors {
 // Core Functions
 void initI2cSensors();
-int8_t pingSensor(uint16_t);
+int pingSensor(uint16_t);
 void dumpSensor(bool);
 // Chamber Sensor Functions
 void initDhtSensor();

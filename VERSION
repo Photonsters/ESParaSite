@@ -35,9 +35,6 @@ v 1.1
 	- Moved set_rtc_clock, reset_fep, reset_led and reset_screen into 
 		handleApiRequest
 	- Renamed URL /guiFeed to /api 
-	- Renamed Many variables for better consistency
-	- Changed int variables to int8_t
-	- Removed a few unneeded constants
 	- GUI - added regex parsing prior to parsing json data from fileList and 
 		readHistory api calls to deal with extraneous characters created by 
 		chunking responses

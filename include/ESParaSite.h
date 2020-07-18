@@ -29,15 +29,16 @@
 namespace ESParaSite {
 
 struct ambientData {
+  float ambientTempC{};
+  float ambientHumidity{};
   float ambientBarometer{};
   float ambientAltitude{};
-  int16_t ambientDewPoint{};
-  int16_t ambientTempC{};
-  int16_t ambientHumidity{};
 };
 
 struct chamberData {
-  int16_t chamberTempC{}; 
+  float chamberTempC{};
+  float chamberHumidity{};
+  float chamberDewPoint{};
 };
 
 struct enclosureData {
@@ -45,20 +46,20 @@ struct enclosureData {
   uint32_t lcdLifeSec{};
   uint32_t ledLifeSec{};
   uint32_t vatLifeSec{};
-  int16_t caseTempC{};
+  float caseTempC{};
 };
 
 struct opticsData {
-  int16_t ledTempC{};
-  int16_t screenTempC{};
-  uint16_t ledVisible{};
-  uint16_t ledInfrared{};
-  uint16_t ledUVIndex{};
+  float ledUVIndex{};
+  float ledVisible{};
+  float ledInfrared{};
+  float ledTempC{};
+  float screenTempC{};
 };
 
 struct statusData {
   time_t rtcCurrentSecond{};
-  bool isPrintingFlag{};
+  int isPrintingFlag{};
 };
 
 struct rtcEepromData {
@@ -74,9 +75,10 @@ struct configData {
   char cfgMdnsName[32];
   const char *cfgWifiSsid{};
   const char *cfgWifiPassword{};
-  int8_t cfgPinSda{};
-  int8_t cfgPinScl{};
+  int cfgPinSda{};
+  int cfgPinScl{};
   bool cfgMdnsEnabled{};
+
 };
 
 struct sensorExists {

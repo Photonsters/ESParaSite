@@ -47,7 +47,7 @@
 #define RTC_EEPROM_MAX_ADDR (0x57)
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
-extern int8_t eeprom_i2c_address;
+extern int eeprom_i2c_address;
 
 extern ESParaSite::statusData status;
 extern ESParaSite::configData config;
@@ -151,7 +151,7 @@ void ESParaSite::Sensors::checkRtcStatus() {
 
 void ESParaSite::Sensors::readRtcTemp() {
   RtcTemperature temp = (rtc.GetTemperature());
-  enclosure.caseTempC =  ESParaSite::Util::floatToInt(temp.AsFloatDegC());
+  enclosure.caseTempC = (temp.AsFloatDegC());
 
 #ifdef DEBUG_L2
   Serial.println("==========Case Temperature=========");

@@ -71,8 +71,8 @@
 #define RTC_EEPROM_MAX_ADDR (0x57)
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
-extern int8_t bme_i2c_address;
-extern int8_t eeprom_i2c_address;
+extern int bme_i2c_address;
+extern int eeprom_i2c_address;
 
 extern ESParaSite::statusData status;
 extern ESParaSite::configData config;
@@ -100,7 +100,7 @@ void ESParaSite::Sensors::initI2cSensors() {
 
   // initialize Print Chamber sensor
   Serial.println(F("Init Print Chamber Sensor..."));
-  int8_t error = pingSensor(DHT_ADDR);
+  int error = pingSensor(DHT_ADDR);
   if (error == 0) {
     Sensors::initDhtSensor();
   } else {
