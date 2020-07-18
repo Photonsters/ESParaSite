@@ -21,13 +21,12 @@
 
 #ifndef INCLUDE_EEPROM_H_
 #define INCLUDE_EEPROM_H_
-#include <arduino.h>
 
 namespace ESParaSite {
 namespace RtcEeprom {
 void initRtcEeprom();
 void dumpEEPROM(uint16_t, uint16_t);
-int8_t doEepromFirstRead();
+int doEepromFirstRead();
 uint8_t doEepromRead(uint16_t);
 uint8_t doEepromWrite();
 void doEepromFormat(uint8_t);

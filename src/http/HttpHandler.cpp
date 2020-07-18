@@ -82,7 +82,7 @@ void ESParaSite::HttpHandler::getHtmlUpload() {
 void ESParaSite::HttpHandler::handleApiRequest() {
   String message = ("Data feed not found.");
 
-  //for (int8_t i = 0; i < server.args(); i++) {
+  //for (int i = 0; i < server.args(); i++) {
     if (server.argName(0) == "readAmbient") {
       ESParaSite::DataToJson::getJsonAmbient();
     } else if (server.argName(0) == "readChamber") {

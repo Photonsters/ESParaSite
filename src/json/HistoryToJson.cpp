@@ -48,12 +48,12 @@ extern Queue oneHourHistory;
 extern ESP8266WebServer server;
 
 void ESParaSite::DataToJson::getJsonHistory() {
-  int8_t position = 0;
+  int position = 0;
   DynamicJsonDocument parentDoc(2048);
   DynamicJsonDocument nestedDoc(128);
   ESParaSite::HttpHandleJson::sendContentLengthUnknown();
 
-  for (int8_t i = 0; i <= ONEHOURMAXELEMENT; i++) {
+  for (int i = 0; i <= ONEHOURMAXELEMENT; i++) {
 
     history tempStruct = {0};
     oneHourHistory.peekIdx(&tempStruct, i);
@@ -81,7 +81,7 @@ void ESParaSite::DataToJson::getJsonHistory() {
   ESParaSite::HttpHandleJson::serializeSendJson(parentDoc);
   parentDoc.clear();
 
-  for (int8_t i = 0; i <= FIVEMINMAXELEMENT; i++) {
+  for (int i = 0; i <= FIVEMINMAXELEMENT; i++) {
 
     history tempStruct = {0};
     fiveMinHistory.peekIdx(&tempStruct, i);
@@ -109,7 +109,7 @@ void ESParaSite::DataToJson::getJsonHistory() {
   ESParaSite::HttpHandleJson::serializeSendJsonPartN(parentDoc);
   parentDoc.clear();
 
-  for (int8_t i = 0; i <= THIRTYSECMAXELEMENT; i++) {
+  for (int i = 0; i <= THIRTYSECMAXELEMENT; i++) {
     history tempStruct = {0};
     thirtySecHistory.peekIdx(&tempStruct, i);
 
@@ -137,7 +137,7 @@ void ESParaSite::DataToJson::getJsonHistory() {
   ESParaSite::HttpHandleJson::serializeSendJsonPartN(parentDoc);
   parentDoc.clear();
 
-  for (int8_t i = 0; i <= FIVESECMAXELEMENT; i++) {
+  for (int i = 0; i <= FIVESECMAXELEMENT; i++) {
     history tempStruct = {0};
     fiveSecHistory.peekIdx(&tempStruct, i);
 

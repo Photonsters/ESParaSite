@@ -43,10 +43,10 @@ extern ESParaSite::statusData status;
 extern ESParaSite::configData config;
 extern ESParaSite::sensorExists exists;
 
-int8_t fiveSecCycleCount = 0;
-int8_t thirtySecCycleCount = 0;
-int8_t fiveMinCycleCount = 0;
-int8_t oneHourCycleCount = 0;
+int fiveSecCycleCount = 0;
+int thirtySecCycleCount = 0;
+int fiveMinCycleCount = 0;
+int oneHourCycleCount = 0;
 
 void ESParaSite::DataDigest::fillRow() {
   history fiveSecFill = {0};
@@ -55,6 +55,7 @@ void ESParaSite::DataDigest::fillRow() {
   fiveSecFill.ambientTempC = ambient.ambientTempC;
   fiveSecFill.ambientHumidity = ambient.ambientHumidity;
   fiveSecFill.chamberTempC = chamber.chamberTempC;
+  fiveSecFill.chamberHumidity = chamber.chamberHumidity;
   fiveSecFill.ledTempC = optics.ledTempC;
   fiveSecFill.screenTempC = optics.screenTempC;
   fiveSecFill.ledOn = status.isPrintingFlag;
@@ -62,41 +63,41 @@ void ESParaSite::DataDigest::fillRow() {
   if (!fiveSecHistory.isFull()) {
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount = FIVESECMAXELEMENT;
-    // ESParaSite::DataToJson::getJsonHistory();
+    ESParaSite::DataToJson::getJsonHistory();
     // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() && fiveSecCycleCount < FIVESECMAXELEMENT) {
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount++;
-    // ESParaSite::DataToJson::getJsonHistory();
+    ESParaSite::DataToJson::getJsonHistory();
     // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() &&
              fiveSecCycleCount == FIVESECMAXELEMENT) {
     fivesToThirty();
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
-    // ESParaSite::DataToJson::getJsonHistory();
+    ESParaSite::DataToJson::getJsonHistory();
     // ESParaSite::DataDigest::printRows();
     fiveSecCycleCount = 0;
   }
 }
 
 void fivesToThirty() {
-  const int8_t n = fiveSecHistory.getCount();
-  int16_t tempAHArray[] = {0};
-  int16_t tempATArray[] = {0};
-  int16_t tempCHArray[] = {0};
-  int16_t tempCTArray[] = {0};
-  int16_t tempLTArray[] = {0};
-  int16_t tempSTArray[] = {0};
-  int8_t tempLOArray[] = {0};
+  const int n = fiveSecHistory.getCount();
+  float tempAHArray[] = {0};
+  float tempATArray[] = {0};
+  float tempCHArray[] = {0};
+  float tempCTArray[] = {0};
+  float tempLTArray[] = {0};
+  float tempSTArray[] = {0};
+  int tempLOArray[] = {0};
 
   history thirtySecFill;
   // Serial.print("Size of Queue: ");
   // Serial.print(fiveSecHistory.getCount());
   // Now we crack open all of the structs in the queue and reassemble them
   // into arrays so we can do math against them.
-  for (int8_t i = 0; i <= n; i++) {
+  for (int i = 0; i <= n; i++) {
     history tempStruct;
     fiveSecHistory.peekIdx(&tempStruct, i);
 
@@ -118,37 +119,37 @@ void fivesToThirty() {
 
   // For most values, we will take the mathmatical mean.
   float sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempAHArray[i];
 
   thirtySecFill.ambientHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempATArray[i];
 
   thirtySecFill.ambientTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempCHArray[i];
 
   thirtySecFill.chamberHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempCTArray[i];
 
   thirtySecFill.chamberTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempLTArray[i];
 
   thirtySecFill.ledTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempSTArray[i];
 
   thirtySecFill.screenTempC = roundf((sum / n) * 100) / 100;
@@ -156,7 +157,7 @@ void fivesToThirty() {
   // For the LED On value, we will set it on if more than half of the
   // intervals are on.
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempLOArray[n];
   if (sum >= (n / 2)) {
     thirtySecFill.ledOn = 1;
@@ -182,20 +183,20 @@ void fivesToThirty() {
 }
 
 void thirtysTofiveMin() {
-  const int8_t n = thirtySecHistory.getCount();
+  const int n = thirtySecHistory.getCount();
   float tempAHArray[] = {0};
   float tempATArray[] = {0};
   float tempCHArray[] = {0};
   float tempCTArray[] = {0};
   float tempLTArray[] = {0};
   float tempSTArray[] = {0};
-  int8_t tempLOArray[] = {0};
+  int tempLOArray[] = {0};
 
   history fiveMinFill;
 
   // Now we crack open all of the structs in the queue and reassemble them
   // into arrays so we can do math against them.
-  for (int8_t i = 0; i <= n; i++) {
+  for (int i = 0; i <= n; i++) {
     history tempStruct;
 
     thirtySecHistory.peekIdx(&tempStruct, i);
@@ -217,37 +218,37 @@ void thirtysTofiveMin() {
 
   // For most values, we will take the mathmatical mean.
   float sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempAHArray[i];
 
   fiveMinFill.ambientHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempATArray[i];
 
   fiveMinFill.ambientTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempCHArray[i];
 
   fiveMinFill.chamberHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempCTArray[i];
 
   fiveMinFill.chamberTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempLTArray[i];
 
   fiveMinFill.ledTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempSTArray[i];
 
   fiveMinFill.screenTempC = roundf((sum / n) * 100) / 100;
@@ -255,7 +256,7 @@ void thirtysTofiveMin() {
   // For the LED On value, we will set it on if more than half of the
   // intervals are on.
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempLOArray[i];
   if (sum >= (n / 2)) {
     fiveMinFill.ledOn = 1;
@@ -280,20 +281,20 @@ void thirtysTofiveMin() {
 }
 
 void fiveMinToOneHour() {
-  const int8_t n = fiveMinHistory.getCount();
+  const int n = fiveMinHistory.getCount();
   float tempAHArray[] = {0};
   float tempATArray[] = {0};
   float tempCHArray[] = {0};
   float tempCTArray[] = {0};
   float tempLTArray[] = {0};
   float tempSTArray[] = {0};
-  int8_t tempLOArray[] = {0};
+  int tempLOArray[] = {0};
 
   history oneHourFill;
 
   // Now we crack open all of the structs in the queue and reassemble them
   // into arrays so we can do math against them.
-  for (int8_t i = 0; i <= n; i++) {
+  for (int i = 0; i <= n; i++) {
     history tempStruct;
 
     fiveMinHistory.peekIdx(&tempStruct, i);
@@ -315,37 +316,37 @@ void fiveMinToOneHour() {
 
   // For most values, we will take the mathmatical mean.
   float sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempAHArray[i];
 
   oneHourFill.ambientHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempATArray[i];
 
   oneHourFill.ambientTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempCHArray[i];
 
   oneHourFill.chamberHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempCTArray[i];
 
   oneHourFill.chamberTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempLTArray[i];
 
   oneHourFill.ledTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempSTArray[i];
 
   oneHourFill.screenTempC = roundf((sum / n) * 100) / 100;
@@ -353,7 +354,7 @@ void fiveMinToOneHour() {
   // For the LED On value, we will set it on if more than half of the
   // intervals are on.
   sum = 0;
-  for (int8_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
     sum += tempLOArray[i];
   if (sum >= (n / 2)) {
     oneHourFill.ledOn = 1;
@@ -370,7 +371,7 @@ void fiveMinToOneHour() {
 }
 
 void ESParaSite::DataDigest::printRows() {
-  int8_t i;
+  int i;
   Serial.println(fiveSecCycleCount);
   Serial.println(F("5 Second Queue"));
   for (i = 0; i <= FIVESECMAXELEMENT; i++) {
