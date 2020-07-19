@@ -79,8 +79,8 @@ bool dump_sensor_data = 0;
 bool dump_sensor_data = 1;
 #endif
 
-int bme_i2c_address;
-int eeprom_i2c_address;
+int8_t bme_i2c_address;
+int8_t eeprom_i2c_address;
 
 extern ESParaSite::chamberData chamber;
 extern ESParaSite::opticsData optics;
@@ -139,7 +139,7 @@ void ESParaSite::Sensors::dumpSensor(bool in_seq_read) {
 #endif
 }
 
-int ESParaSite::Sensors::pingSensor(uint16_t address) {
+int8_t ESParaSite::Sensors::pingSensor(uint16_t address) {
   // This function provides us a handy way to ping I2C addresses.
   byte error;
   Wire.beginTransmission(address);

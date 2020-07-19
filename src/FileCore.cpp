@@ -69,7 +69,7 @@ bool FileCore::loadConfig() {
   config.cfgPinScl = doc["scl_pin"];
   config.cfgMdnsEnabled = doc["mdns_enabled"];
   strncpy(config.cfgMdnsName, doc["mdns_name"], 32);
-  int len = strlen(config.cfgMdnsName);
+  int8_t len = strlen(config.cfgMdnsName);
   if (len > 0 && config.cfgMdnsName[len - 1] == '\n') {
     config.cfgMdnsName[len - 1] = '\0';
   }

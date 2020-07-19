@@ -100,7 +100,7 @@ void ESParaSite::RtcEeprom::initRtcEeprom() {
 
   Serial.println();
   Serial.println("Determining EEPROM size");
-  int size = rtc_eeprom.determineSize();
+  int8_t size = rtc_eeprom.determineSize();
   if (size > 0) {
     Serial.print("SIZE: ");
     Serial.print(size);
@@ -112,10 +112,10 @@ void ESParaSite::RtcEeprom::initRtcEeprom() {
   }
 
   // Now we will check the first segment for proper format
-  int curSegAddr = 0;
+  int8_t curSegAddr = 0;
   uint32_t readWords[8]{};
 
-  for (int i = 0; i < 8; i++) {
+  for (int8_t i = 0; i < 8; i++) {
     char pageData[BYTES_PER_PAGE];
 
     rtc_eeprom.readBlock(curSegAddr,
@@ -174,8 +174,8 @@ void ESParaSite::RtcEeprom::initRtcEeprom() {
   }
 }
 
-int ESParaSite::RtcEeprom::doEepromFirstRead() {
-  int curSegAddr = FIRST_SEGMENT_OFFSET;
+int8_t ESParaSite::RtcEeprom::doEepromFirstRead() {
+  int16_t curSegAddr = FIRST_SEGMENT_OFFSET;
 
   char firstPart[BYTES_PER_PAGE];
   char secondPart[BYTES_PER_PAGE];
@@ -185,7 +185,7 @@ int ESParaSite::RtcEeprom::doEepromFirstRead() {
 
   Serial.print("Looking for MRU EEPROM segment");
 
-  for (int seg = 0; seg < (NUMBER_OF_EEPROM_SEGMENTS - 1); seg++) {
+  for (int8_t seg = 0; seg < (NUMBER_OF_EEPROM_SEGMENTS - 1); seg++) {
     time_t readTimestamp = 0;
     uint32_t firstWord = 0;
     uint32_t secondWord = 0;
@@ -231,7 +231,7 @@ int ESParaSite::RtcEeprom::doEepromFirstRead() {
 uint8_t ESParaSite::RtcEeprom::doEepromRead(uint16_t segAddr) {
   Serial.print("Reading EEPROM Values");
 
-  for (int page = 0; page < PAGES_PER_SEGMENT; page++) {
+  for (int8_t page = 0; page < PAGES_PER_SEGMENT; page++) {
     Serial.print(".");
 
     uint32_t firstWord = 0;
@@ -363,7 +363,7 @@ uint8_t ESParaSite::RtcEeprom::doEepromWrite() {
   eeprom.lastWriteTimestamp = status.rtcCurrentSecond;
 
   Serial.println();
-  Serial.println(F("DONE!"));
+  Serial.println("DONE!");
   Serial.println();
   
 // "Magic Number Warning" - This logic may be flawed for chips other than the
@@ -378,7 +378,7 @@ uint8_t ESParaSite::RtcEeprom::doEepromWrite() {
 }
 
 void ESParaSite::RtcEeprom::doEepromFormat(uint8_t format_type) {
-  int setFirstOn = 0;
+  int8_t setFirstOn = 0;
 
   // Format Type 1 -
   if (format_type == 1) {
@@ -437,7 +437,7 @@ void ESParaSite::RtcEeprom::dumpEEPROM(uint16_t memoryAddress,
 #ifdef DISPLAY_HEX
   Serial.print("\t ");
 #endif
-  for (int x = 0; x < BLOCK_TO_LENGTH; x++) {
+  for (int8_t x = 0; x < BLOCK_TO_LENGTH; x++) {
     if (x != 0) {
 #ifdef DISPLAY_DECIMAL
       Serial.print("    ");
@@ -460,7 +460,7 @@ void ESParaSite::RtcEeprom::dumpEEPROM(uint16_t memoryAddress,
   length = (length + BLOCK_TO_LENGTH - 1) / BLOCK_TO_LENGTH * BLOCK_TO_LENGTH;
 
   byte b = rtc_eeprom.readByte(memoryAddress);
-  for (unsigned int i = 0; i < length; i++) {
+  for (uint8_t i = 0; i < length; i++) {
     char buf[6];
     if (memoryAddress % BLOCK_TO_LENGTH == 0) {
       if (i != 0) {
