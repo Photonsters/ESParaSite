@@ -28,11 +28,11 @@
 #include "ConfigPortal.h"
 #include "Core.h"
 #include "DebugUtils.h"
+#include "Eeprom.h"
 #include "ESParaSite.h"
 #include "FileCore.h"
 #include "Http.h"
 #include "OTA.h"
-#include "Eeprom.h"
 #include "Sensors.h"
 #include "Util.h"
 
@@ -53,7 +53,7 @@ const byte TRIGGER_PIN2 = 16;
 
 // Onboard LED I/O pin on NodeMCU board
 // D4 on NodeMCU and WeMos. Controls the onboard LED.
-const int PIN_LED = 2;
+const int8_t PIN_LED = 2;
 
 // Indicates whether ESP has WiFi credentials saved from previous session
 bool initialConfig = false;
@@ -171,7 +171,7 @@ void setup(void) {
 
   Serial.println();
   Serial.println(F("ESParaSite Data Logging Server"));
-  Serial.println(F("https://github.com/Photonsters/TemperatureLogger"));
+  Serial.println(F("https://github.com/Photonsters/ESParaSite"));
   Serial.print(F("Compiled: "));
   Serial.print(F(__DATE__));
   Serial.println();
@@ -181,8 +181,7 @@ void setup(void) {
 #ifdef DEBUG_L2
   Serial.println(F("Dumping Wifi Diagnostics"));
   Serial.println();
-  WiFi.printDiag(Serial); // Remove this line if you do not want to see WiFi
-                          // password printed
+  WiFi.printDiag(Serial); 
 #endif
 
 #ifdef FORMAT_LITTLEFS
@@ -240,7 +239,7 @@ void setup(void) {
 #ifdef DEBUG_L1
     unsigned long startedAt = millis();
     Serial.print(F("After waiting "));
-    int connRes = WiFi.waitForConnectResult();
+    int8_t connRes = WiFi.waitForConnectResult();
     float waited = (millis() - startedAt);
     Serial.print(waited / 1000);
     Serial.print(F(" secs in setup() connection result is "));
@@ -318,6 +317,7 @@ void setup(void) {
 
   ESParaSite::OTA::configOTA();
   ESParaSite::OTA::startOTA();
+  
   // Turn led off as we are finished booting.
   digitalWrite(PIN_LED, HIGH);
 }

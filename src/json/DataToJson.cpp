@@ -51,6 +51,7 @@ void ESParaSite::DataToJson::getJsonAmbient() {
   doc["ambHumid"] = ambient.ambientHumidity;
   doc["ambPres"] = ambient.ambientBarometer;
   doc["ambAlt"] = ambient.ambientAltitude;
+  doc["ambDewPt"] = ambient.ambientDewPoint;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -61,8 +62,6 @@ void ESParaSite::DataToJson::getJsonChamber() {
   doc["class"] = "chamber";
   doc["timestamp"] = status.rtcCurrentSecond;
   doc["cmbTempC"] = chamber.chamberTempC;
-  doc["cmbHumid"] = chamber.chamberHumidity;
-  doc["cmbDewPt"] = chamber.chamberDewPoint;
 
   ESParaSite::HttpHandleJson::serializeSendJson(doc);
 }
@@ -74,7 +73,6 @@ void ESParaSite::DataToJson::getJsonCurrent() {
   doc["at"] = ambient.ambientTempC;
   doc["ah"] = ambient.ambientHumidity;
   doc["ct"] = chamber.chamberTempC;
-  doc["ch"] = chamber.chamberHumidity;
   doc["lt"] = optics.ledTempC;
   doc["st"] = optics.screenTempC;
   doc["lo"] = status.isPrintingFlag;
