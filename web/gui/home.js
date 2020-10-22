@@ -26,7 +26,6 @@ function generateTableHead() {
   var row = thead.insertRow();
   row.appendChild(createHeadCell("Time Stamp"));
   row.appendChild(createHeadCell("Chamber Temperature (°C)"));
-  row.appendChild(createHeadCell("Chamber Humidity (%)"));
   row.appendChild(createHeadCell("Ambient Temperature (°C)"));
   row.appendChild(createHeadCell("Ambient Humidity (%)"));
   row.appendChild(createHeadCell("LED Temperature (°C)"));
@@ -150,12 +149,12 @@ function getData() {
   } else if (debug == 2) {
     xhttp.open(
       "GET",
-      "http://esparasite.local/api?readHistory=" + new Date().getTime(),
+      "http://esparasite.local/api?readGraphData=" + new Date().getTime(),
       true
     );
     xhttp.send();
   } else {
-    xhttp.open("GET", "api?readHistory=" + new Date().getTime(), true);
+    xhttp.open("GET", "api?readGraphData=" + new Date().getTime(), true);
     xhttp.send();
   }
 }
@@ -186,7 +185,6 @@ function updateGraphAndTable(data) {
 
     row.appendChild(createRowCell(dutc.toLocaleTimeString()));
     row.appendChild(createRowCell(dataItem["ct"]));
-    row.appendChild(createRowCell(dataItem["ch"]));
     row.appendChild(createRowCell(dataItem["at"]));
     row.appendChild(createRowCell(dataItem["ah"]));
     row.appendChild(createRowCell(dataItem["lt"]));

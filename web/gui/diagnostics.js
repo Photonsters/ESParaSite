@@ -148,20 +148,12 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell("Barometric Pressure"));
     row.appendChild(createRowCell(data["ambPres"] + " hpa"));
     var row = tbody.insertRow();
-    row.appendChild(createRowCell("Altitude"));
-    row.appendChild(createRowCell(trimFloat(data["ambAlt"]) + " m"));
-    var row = tbody.insertRow();
   } else if (dataset == "Chamber") {
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Chamber Temperature"));
     row.appendChild(createRowCell(data["cmbTempC"] + " " + "°C"));
     var row = tbody.insertRow();
-    row.appendChild(createRowCell("Chamber Humidity"));
-    row.appendChild(createRowCell(data["cmbHumid"] + " %"));
-    var row = tbody.insertRow();
-    row.appendChild(createRowCell("Dew Point"));
-    row.appendChild(createRowCell(trimFloat(data["cmbDewPt"]) + " " + "°C"));
-    var row = tbody.insertRow();
+
   } else if (dataset == "Eeprom") {
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Last Write Timestamp"));
@@ -179,8 +171,8 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell("Recorded Vat Life Seconds"));
     row.appendChild(createRowCell(data["eprmVatLS"]));
     var row = tbody.insertRow();
-    row.appendChild(createRowCell("Last EEPROM Segment Written"));
-    row.appendChild(createRowCell(data["lastSegAddr"]));
+    row.appendChild(createRowCell("Last EEPROM Page Written"));
+    row.appendChild(createRowCell(data["lastSegAddr"] + " (0x" + data["lastSegAddr"].toString(16) + ")"));
     var row = tbody.insertRow();
   } else if (dataset == "Enclosure") {
     var row = tbody.insertRow();

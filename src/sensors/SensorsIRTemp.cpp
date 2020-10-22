@@ -1,6 +1,6 @@
 // SensorsCore.cpp
 
-/* ESParasite Data Logger
+/* ESParaSite-ESP32 Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -23,14 +23,11 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#include "ESParaSite.h"
-#include "ConfigPortal.h"
 #include "DebugUtils.h"
+#include "ESParaSite.h"
 #include "Eeprom.h"
 #include "Sensors.h"
 #include "Util.h"
-
-#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 //+++ Advanced Settings +++
 // These values control the I2C address of each sensor. Some chips may use
@@ -44,46 +41,49 @@
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
 extern ESParaSite::opticsData optics;
-extern ESParaSite::statusData status;
-extern ESParaSite::configData config;
-extern ESParaSite::sensorExists exists;
+extern ESParaSite::machineData machine;
 
-extern Adafruit_MLX90614 mlx;
+extern Adafruit_MLX90614 dev_mlx;
 
 void ESParaSite::Sensors::initMlxSensor() {
-  if (!mlx.begin()) {
+  if (!dev_mlx.begin()) {
     Serial.print(F("MLX90614 Initialization Failure"));
   } else {
-    Serial.print(F("OK!"));
-    exists.mlxDetected = 1;
+    Serial.println(F("OK!"));
+    machine.mlxDetected = 1;
   }
 }
 
-void ESParaSite::Sensors::readMlxSensor() {
-  if (exists.mlxDetected == 1) {
-    optics.ledTempC = ESParaSite::Util::floatToInt(mlx.readAmbientTempC());
-    optics.screenTempC = ESParaSite::Util::floatToInt(mlx.readObjectTempC());
+void ESParaSite::Sensors::readMlxSensor(bool print) {
+  if (machine.mlxDetected == 1) {
+    optics.ledTempC = ESParaSite::Util::floatToTwo(dev_mlx.readAmbientTempC());
+    optics.screenTempC =
+        ESParaSite::Util::floatToTwo(dev_mlx.readObjectTempC());
 
 #ifdef DEBUG_L2
     Serial.println("==========LCD Temp Sensor==========");
-    Serial.print("Ambient:\t\t\t");
-    Serial.print(optics.ledTempC);
-    Serial.print("°C / ");
-    Serial.print(mlx.readAmbientTempF());
-    Serial.println("°F");
-    Serial.print("LCD Panel:\t\t\t");
-    Serial.print(optics.screenTempC);
-    Serial.print("°C / ");
-    Serial.print(mlx.readObjectTempF());
-    Serial.println("°F");
+    print = true;
 #endif
+
+    if (print == true) {
+      Serial.print("LED Array:\t\t\t");
+      Serial.print(dev_mlx.readAmbientTempC());
+      Serial.print("°C / ");
+      Serial.print(dev_mlx.readAmbientTempF());
+      Serial.println("°F");
+      Serial.print("LCD Panel:\t\t\t");
+      Serial.print(dev_mlx.readObjectTempC());
+      Serial.print("°C / ");
+      Serial.print(dev_mlx.readObjectTempF());
+      Serial.println("°F");
+    }
 
   } else {
     optics.ledTempC = 0;
     optics.screenTempC = 0;
 
 #ifdef DEBUG_L2
-    Serial.print(F("MLX90614 Sensor not found"));
+    Serial.print(F("MLX90614 Sensor not found, skipping"));
 #endif
   }
 }

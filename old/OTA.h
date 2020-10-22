@@ -1,4 +1,4 @@
-// Core.h
+// OTA.h
 
 /* ESParasite Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
@@ -19,23 +19,16 @@
 
 */
 
-#ifndef INCLUDE_CORE_H_
-#define INCLUDE_CORE_H_
-
-#include <stdint.h>
+#ifndef INCLUDE_OTA_H_
+#define INCLUDE_OTA_H_
 
 namespace ESParaSite {
-namespace Core {
+namespace OTA {
 
-uint16_t doReadSensors(uint16_t, uint16_t);
-uint16_t doHandleEeprom(uint16_t, uint16_t);
-uint16_t doReadDht(uint16_t, uint16_t);
-uint16_t doHandleHistory(uint16_t, uint16_t);
-
-} // namespace Core
+void configOTA();
+void handleOTA();
+void startOTA();
+} // namespace OTA
 } // namespace ESParaSite
 
-void doCheckPrinting();
-bool isPrinting();
-
-#endif // INCLUDE_CORE_H_
+#endif

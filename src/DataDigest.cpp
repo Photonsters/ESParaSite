@@ -22,10 +22,9 @@
 #include <Arduino.h>
 #include <cppQueue.h>
 
+#include "DebugUtils.h"
 #include "DataDigest.h"
 #include "ESParaSite.h"
-#include "Http.h"
-#include "Json.h"
 #include "Sensors.h"
 
 typedef struct history history;
@@ -41,7 +40,7 @@ extern ESParaSite::ambientData ambient;
 extern ESParaSite::enclosureData enclosure;
 extern ESParaSite::statusData status;
 extern ESParaSite::configData config;
-extern ESParaSite::sensorExists exists;
+extern ESParaSite::machineData machine;
 
 int8_t fiveSecCycleCount = 0;
 int8_t thirtySecCycleCount = 0;
@@ -62,23 +61,21 @@ void ESParaSite::DataDigest::fillRow() {
   if (!fiveSecHistory.isFull()) {
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount = FIVESECMAXELEMENT;
-    // ESParaSite::DataToJson::getJsonHistory();
-    // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() && fiveSecCycleCount < FIVESECMAXELEMENT) {
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount++;
-    // ESParaSite::DataToJson::getJsonHistory();
-    // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() &&
              fiveSecCycleCount == FIVESECMAXELEMENT) {
     fivesToThirty();
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
-    // ESParaSite::DataToJson::getJsonHistory();
-    // ESParaSite::DataDigest::printRows();
     fiveSecCycleCount = 0;
   }
+#ifdef PRINT_HISTORY
+  // ESParaSite::DataToJson::getJsonHistory();
+  ESParaSite::DataDigest::printRows();
+#endif
 }
 
 void fivesToThirty() {
@@ -92,8 +89,7 @@ void fivesToThirty() {
   int8_t tempLOArray[] = {0};
 
   history thirtySecFill;
-  // Serial.print("Size of Queue: ");
-  // Serial.print(fiveSecHistory.getCount());
+
   // Now we crack open all of the structs in the queue and reassemble them
   // into arrays so we can do math against them.
   for (int8_t i = 0; i <= n; i++) {

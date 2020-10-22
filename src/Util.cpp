@@ -1,6 +1,6 @@
 // Util.cpp
 
-/* ESParasite Data Logger
+/* ESParaSite-ESP32 Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -21,7 +21,6 @@
 #include <Arduino.h>
 
 #include "ESParaSite.h"
-#include "DebugUtils.h"
 #include "Util.h"
 
 
@@ -60,8 +59,9 @@ void Util::printDateTime(const RtcDateTime &dt) {
   Serial.print(datestring);
 }
 
-uint64 Util::join64(uint32 first_part, uint32 second_part) {
-  uint64 joined_word = (((u64)first_part) << 32 | second_part);
+
+uint64_t Util::join64(uint32_t first_part, uint32_t second_part) {
+  uint64_t joined_word = (((uint64_t)first_part) << 32 | second_part);
   return joined_word;
 }
 
@@ -83,4 +83,10 @@ int16_t ESParaSite::Util::floatToInt(float floatValue){
   int16_t intValue;
   intValue = roundf(floatValue*100);
   return intValue;
+}
+
+float ESParaSite::Util::floatToTwo(float floatValue) {
+  float twoFloat;
+  twoFloat = (roundf(floatValue * 100))/100;
+  return twoFloat;
 }

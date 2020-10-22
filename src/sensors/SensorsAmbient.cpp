@@ -22,10 +22,8 @@
 #include <BlueDot_BME280.h>
 #include <Wire.h>
 
-#include "ESParaSite.h"
-#include "ConfigPortal.h"
 #include "DebugUtils.h"
-#include "Eeprom.h"
+#include "ESParaSite.h"
 #include "Sensors.h"
 #include "Util.h"
 
@@ -52,59 +50,61 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
-extern int8_t bme_i2c_address;
-
 extern ESParaSite::ambientData ambient;
-extern ESParaSite::sensorExists exists;
+extern ESParaSite::machineData machine;
 
-extern BlueDot_BME280 bme;
+extern BlueDot_BME280 dev_bme;
 
 void ESParaSite::Sensors::initBmeSensor()
 {
   // initialize BME280 temperature sensor
-  bme.parameter.communication = 0;
-  bme.parameter.I2CAddress = bme_i2c_address;
-  bme.parameter.sensorMode = 0b11;
-  bme.parameter.IIRfilter = 0b100;
-  bme.parameter.humidOversampling = 0b101;
-  bme.parameter.tempOversampling = 0b101;
-  bme.parameter.pressOversampling = 0b101;
-  bme.parameter.pressureSeaLevel = SEALEVELPRESSURE_HPA;
-  bme.parameter.tempOutsideCelsius = CURRENTAVGTEMP_C;
-  bme.parameter.tempOutsideFahrenheit = CURRENTAVGTEMP_F;
+  dev_bme.parameter.communication = 0;
+  dev_bme.parameter.I2CAddress = machine.bmeI2cAddress;
+  dev_bme.parameter.sensorMode = 0b11;
+  dev_bme.parameter.IIRfilter = 0b100;
+  dev_bme.parameter.humidOversampling = 0b101;
+  dev_bme.parameter.tempOversampling = 0b101;
+  dev_bme.parameter.pressOversampling = 0b101;
+  dev_bme.parameter.pressureSeaLevel = SEALEVELPRESSURE_HPA;
+  dev_bme.parameter.tempOutsideCelsius = CURRENTAVGTEMP_C;
+  dev_bme.parameter.tempOutsideFahrenheit = CURRENTAVGTEMP_F;
 
-  if (bme.init() != 0x60)
+  if (dev_bme.init() != 0x60)
   {
     Serial.print(F("BME280 Sensor not found!"));
   }
   else
   {
-    Serial.print(F("OK!"));
-    exists.bmeDetected = 1;
+    Serial.println(F("OK!"));
+    machine.bmeDetected = 1;
   }
 }
 
-void ESParaSite::Sensors::readBmeSensor()
+void ESParaSite::Sensors::readBmeSensor(bool print)
 {
-  if (exists.bmeDetected == 1)
+  if (machine.bmeDetected == 1)
   {
-    float bmeTempC = bme.readTempC();
-    float bmeHumidity = bme.readHumidity();
-    ambient.ambientTempC = ESParaSite::Util::floatToInt(bmeTempC);
-    ambient.ambientHumidity = ESParaSite::Util::floatToInt(bmeHumidity);
-    ambient.ambientBarometer = bme.readPressure();
-    ambient.ambientAltitude = bme.readAltitudeMeter();
+    float bmeTempC = dev_bme.readTempC();
+    float bmeHumidity = dev_bme.readHumidity();
+    ambient.ambientTempC = ESParaSite::Util::floatToTwo(bmeTempC);
+    ambient.ambientHumidity = ESParaSite::Util::floatToTwo(bmeHumidity);
+    ambient.ambientBarometer = dev_bme.readPressure();
+    ambient.ambientAltitude = dev_bme.readAltitudeMeter();
     ambient.ambientDewPoint = ESParaSite::Util::dewPoint(bmeTempC, bmeHumidity);
 
 #ifdef DEBUG_L2
     Serial.println("==========Ambient Conditions==========");
+    print = true;
+#endif
+
+if (print == true){
     Serial.print(F("Temperature:\t\t\t"));
-    Serial.print(ambient.ambientTempC);
+    Serial.print(dev_bme.readTempC());
     Serial.print("°C / ");
-    Serial.print(bme.readTempF());
+    Serial.print(dev_bme.readTempF());
     Serial.println("°F");
     Serial.print(F("Relative Humidity:\t\t"));
-    Serial.print(ambient.ambientHumidity);
+    Serial.print(dev_bme.readHumidity());
     Serial.println("%");
     Serial.print(F("Barometric Pressure:\t\t"));
     Serial.print(ambient.ambientBarometer);
@@ -112,9 +112,13 @@ void ESParaSite::Sensors::readBmeSensor()
     Serial.print(F("Altitude:\t\t\t"));
     Serial.print(ambient.ambientAltitude);
     Serial.print("m / ");
-    Serial.print(bme.readAltitudeFeet());
+    Serial.print(dev_bme.readAltitudeFeet());
     Serial.println("ft");
-#endif
+    Serial.print(F("Dew Point:\t\t\t"));
+    Serial.print(ambient.ambientDewPoint);
+    Serial.println("°C");
+    Serial.println();
+}
   }
   else
   {

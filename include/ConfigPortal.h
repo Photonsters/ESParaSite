@@ -1,6 +1,6 @@
-// ConfigPortal.cpp
+// ConfigPortal.h
 
-/* ESParasite Data Logger
+/* ESParaSite-ESP32 Data Logger
         Authors: Andy  (SolidSt8Dad)Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -16,13 +16,12 @@
         The Author(s) are extremely grateful for the amazing open source
         communities that work to support all of the sensors, microcontrollers,
         web standards, etc.
-
 */
 
-#include <stdint.h>
+#ifndef INCLUDE_CONFIGP_H_
+#define INCLUDE_CONFIGP_H_
 
-#ifndef INCLUDE_CONFIGPORTAL_H_
-#define INCLUDE_CONFIGPORTAL_H_
+#include <stdint.h>
 
 namespace ESParaSite {
 namespace ConfigPortal {
@@ -32,4 +31,10 @@ void doConfigPortal();
 } // namespace ConfigPortal
 } // namespace ESParaSite
 
-#endif // INCLUDE_CONFIGPORTAL_H_
+uint8_t connectMultiWiFi(void);
+void toggleLED();
+void heartBeatPrint(void);
+void check_WiFi(void);
+void check_status(void);
+
+#endif // INCLUDE_CONFIGP_H_

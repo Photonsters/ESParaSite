@@ -24,15 +24,17 @@
 #include <arduino.h>
 
 namespace ESParaSite {
-namespace RtcEeprom {
-void initRtcEeprom();
+namespace Eeprom {
+
+bool initI2cEeprom();
+void initEeprom();
 void dumpEEPROM(uint16_t, uint16_t);
-int8_t doEepromFirstRead();
+int16_t doEepromFirstRead();
 uint8_t doEepromRead(uint16_t);
 uint8_t doEepromWrite();
 void doEepromFormat(uint8_t);
 
-}; // namespace RtcEeprom
+}; // namespace Eeprom
 }; // namespace ESParaSite
 
 #endif // INCLUDE_EEPROM_H_
