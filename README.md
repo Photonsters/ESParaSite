@@ -1,5 +1,5 @@
 
-# ESParaSite temperature logger (ESP Chip-based Parameter loggger with integrated website)
+# ESParaSite temperature logger (ESP Chip-based Parameter logger with integrated website)
 
 ### Compatible with ESP8266 and ESP32
 
