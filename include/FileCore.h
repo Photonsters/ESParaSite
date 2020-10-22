@@ -1,7 +1,7 @@
 // ConfigFile.h
 
 /* ESParasite Data Logger
-        Authors: Andy  (SolidSt8Dad)Eakin
+        Authors: Andy (SolidSt8Dad) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
         Please see /LIBRARIES for necessary libraries
