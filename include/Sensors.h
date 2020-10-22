@@ -1,6 +1,6 @@
 // Sensors.h
 
-/* ESParasite Data Logger
+/* ESParaSite-ESP32 Data Logger
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -25,25 +25,25 @@
 namespace ESParaSite {
 namespace Sensors {
 // Core Functions
-void initI2cSensors();
+void initI2cSensors(uint8_t, uint8_t);
 int8_t pingSensor(uint16_t);
 void dumpSensor(bool);
 // Chamber Sensor Functions
 void initDhtSensor();
-void readDhtSensor(bool);
+void readDhtSensor(bool, bool);
 // UV Light Sensor Functions
 void initSiSensor();
-void readSiSensor();
+void readSiSensor(bool);
 // IR Temp Sensor Functions
 void initMlxSensor();
-void readMlxSensor();
+void readMlxSensor(bool);
 // Ambient Sensor Functions
 void initBmeSensor();
-void readBmeSensor();
+void readBmeSensor(bool);
 // RTC Functions
 void initRtcClock();
-void readRtcData();
-void readRtcTemp();
+void readRtcData(bool);
+void readRtcTemp(bool);
 time_t readRtcEpoch();
 void checkRtcStatus();
 void setRtcfromEpoch(time_t);

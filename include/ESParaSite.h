@@ -18,10 +18,8 @@
         web standards, etc.
 
 */
-
+#include <Arduino.h>
 #include <stdbool.h>
-
-#define SPIFFS_FIXED_LOCATION 0x100000
 
 #ifndef INCLUDE_H_
 #define INCLUDE_H_
@@ -31,13 +29,13 @@ namespace ESParaSite {
 struct ambientData {
   float ambientBarometer{};
   float ambientAltitude{};
-  int16_t ambientDewPoint{};
-  int16_t ambientTempC{};
-  int16_t ambientHumidity{};
+  float ambientDewPoint{};
+  float ambientTempC{};
+  float ambientHumidity{};
 };
 
 struct chamberData {
-  int16_t chamberTempC{}; 
+  float chamberTempC{}; 
 };
 
 struct enclosureData {
@@ -45,12 +43,12 @@ struct enclosureData {
   uint32_t lcdLifeSec{};
   uint32_t ledLifeSec{};
   uint32_t vatLifeSec{};
-  int16_t caseTempC{};
+  float caseTempC{};
 };
 
 struct opticsData {
-  int16_t ledTempC{};
-  int16_t screenTempC{};
+  float ledTempC{};
+  float screenTempC{};
   uint16_t ledVisible{};
   uint16_t ledInfrared{};
   uint16_t ledUVIndex{};
@@ -61,7 +59,7 @@ struct statusData {
   bool isPrintingFlag{};
 };
 
-struct rtcEepromData {
+struct eepromData {
   time_t firstOnTimestamp{};
   time_t lastWriteTimestamp{};
   uint32_t eepromScreenLifeSec{};
@@ -74,16 +72,21 @@ struct configData {
   char cfgMdnsName[32];
   const char *cfgWifiSsid{};
   const char *cfgWifiPassword{};
+  char cfgWifiSsidChar[32];
+  char cfgWifiPasswordChar[64];
   int8_t cfgPinSda{};
   int8_t cfgPinScl{};
   bool cfgMdnsEnabled{};
 };
 
-struct sensorExists {
+struct machineData {
   bool bmeDetected{};
   bool dhtDetected{};
   bool mlxDetected{};
   bool siDetected{};
+  uint8_t bmeI2cAddress{};
+  uint8_t eepromI2cAddress{};
+  uint16_t eepromSizeBytes{};
 };
 
 }; // namespace ESParaSite

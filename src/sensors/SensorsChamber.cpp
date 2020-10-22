@@ -1,6 +1,6 @@
-// SensorsCore.cpp
+// SensorsChamber.cpp
 
-/* ESParasite Data Logger
+/* ESParaSite-ESP32 Data Logger
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -22,14 +22,10 @@
 #include <DHT12.h>
 #include <Wire.h>
 
-#include "ESParaSite.h"
-#include "ConfigPortal.h"
 #include "DebugUtils.h"
-#include "Eeprom.h"
+#include "ESParaSite.h"
 #include "Sensors.h"
 #include "Util.h"
-
-#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 //+++ Advanced Settings +++
 
@@ -43,102 +39,99 @@
 
 //*** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
 
+extern DHT12 dev_dht;
+
 extern ESParaSite::chamberData chamber;
-extern ESParaSite::sensorExists exists;
+extern ESParaSite::machineData machine;
 
-extern DHT12 dht;
-
-void ESParaSite::Sensors::initDhtSensor()
-{
-  int8_t status = dht.read();
-  switch (status)
-  {
-  case DHT12_OK:
-    Serial.print(F("OK!\t"));
-    exists.dhtDetected = 1;
+void ESParaSite::Sensors::initDhtSensor() {
+  dev_dht.begin();
+  int8_t status = dev_dht.readStatus();
+  switch (status) {
+  case DHT12::OK:
+    Serial.println(F("OK!"));
+    machine.dhtDetected = 1;
     break;
-  case DHT12_ERROR_CHECKSUM:
-    Serial.print(F("DHT12 Checksum error,\t"));
+  case DHT12::ERROR_CHECKSUM:
+    Serial.println(F("Checksum error"));
     break;
-  case DHT12_ERROR_CONNECT:
-    Serial.print(F("DHT12 Connect error,\t"));
+  case DHT12::ERROR_TIMEOUT:
+    Serial.println(F("Timeout error"));
     break;
-  case DHT12_MISSING_BYTES:
-    Serial.print(F("DHT12 Missing bytes,\t"));
+  case DHT12::ERROR_TIMEOUT_LOW:
+    Serial.println(
+        F("Timeout error on low signal, try put high pullup resistance"));
+    break;
+  case DHT12::ERROR_TIMEOUT_HIGH:
+    Serial.println(
+        F("Timeout error on low signal, try put low pullup resistance"));
+    break;
+  case DHT12::ERROR_CONNECT:
+    Serial.println(F("Connect error"));
+    break;
+  case DHT12::ERROR_ACK_L:
+    Serial.println(F("AckL error"));
+    break;
+  case DHT12::ERROR_ACK_H:
+    Serial.println(F("AckH error"));
+    break;
+  case DHT12::ERROR_UNKNOWN:
+    Serial.println(F("Unknown error DETECTED"));
+    break;
+  case DHT12::NONE:
+    Serial.println(F("No result"));
     break;
   default:
-    Serial.print(F("DHT12 Unknown error,\t"));
+    Serial.println(F("Unknown error"));
     break;
   }
 }
 
-void ESParaSite::Sensors::readDhtSensor(bool inLoopRead)
-{
+void ESParaSite::Sensors::readDhtSensor(bool inLoopRead, bool print) {
   // First dht measurement is stale, so if inLoopRead is 'false' (when read is
   // out-of-loop or, in other words, not called by a timer in the loop() ),
   // we read, wait 2 seconds, then read again. Normal in sequence reads do not
   // need this, so we send a 'true' to skip the additional delay.
-  if (exists.dhtDetected == 1)
-  {
-    int8_t status = dht.read();
+  if (machine.dhtDetected == 1) {
 
-    if (!inLoopRead)
-    {
-      switch (status)
-      {
-      case DHT12_OK:
-        break;
-      case DHT12_ERROR_CHECKSUM:
-        Serial.print(F("Checksum error,\t"));
-        break;
-      case DHT12_ERROR_CONNECT:
-        Serial.print(F("Connect error,\t"));
-        break;
-      case DHT12_MISSING_BYTES:
-        Serial.print(F("Missing bytes,\t"));
-        break;
-      default:
-        Serial.print(F("Unknown error,\t"));
-        break;
+    bool dht12Read = true;
+    if (!inLoopRead) {
+      // Read temperature as Celsius (the default)
+      float dhtTempC = dev_dht.readTemperature();
+      // Check if any reads failed and exit early (to try again).
+
+      if (isnan(dhtTempC)) {
+        Serial.println("Failed to read from DHT12 sensor!");
+
+        dht12Read = false;
       }
-      delay(2000);
-      status = dht.read();
+      if (dht12Read) {
+        delay(2000);
+      }
     }
 
-    switch (status)
-    {
-    case DHT12_OK:
-      chamber.chamberTempC = ESParaSite::Util::floatToInt(dht.temperature);
-      break;
-    case DHT12_ERROR_CHECKSUM:
-      Serial.print(F("DHT12 Checksum error,\t"));
-      break;
-    case DHT12_ERROR_CONNECT:
-      Serial.print(F("DHT12 Connect error,\t"));
-      break;
-    case DHT12_MISSING_BYTES:
-      Serial.print(F("DHT12 Missing bytes,\t"));
-      break;
-    default:
-      Serial.print(F("DHT12 Unknown error,\t"));
-      break;
+    if (dht12Read) {
+      // Read temperature as Celsius (the default)
+      float dhtTempC = dev_dht.readTemperature();
+      chamber.chamberTempC = ESParaSite::Util::floatToTwo(dhtTempC);
+
+      if (isnan(dhtTempC)) {
+        Serial.println("Failed to read from DHT12 sensor!");
+        chamber.chamberTempC = 0;
+      }
     }
 
 #ifdef DEBUG_L2
-    Serial.println(F("==========Print Chamber=========="));
-    Serial.print(F("Temperature:\t\t\t"));
-    Serial.print(chamber.chamberTempC, 1);
-    Serial.print("°C / ");
-    Serial.print(Util::convertCtoF(chamber.chamberTempC));
-    Serial.println("°F");
+    Serial.println(F("==========Print Chamber Sensor=========="));
+    print = true;
 #endif
-  }
-  else
-  {
-    chamber.chamberTempC = 0;
 
-#ifdef DEBUG_L2
-    Serial.print(F("DHT12 Sensor not found"));
-#endif
+    if (print == true) {
+      Serial.print(F("Temperature:\t\t\t"));
+      Serial.print((chamber.chamberTempC));
+      Serial.print("°C / ");
+      Serial.print(Util::convertCtoF((chamber.chamberTempC)));
+      Serial.println("°F");
+    }
   }
 }

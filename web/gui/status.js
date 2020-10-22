@@ -87,8 +87,10 @@ function updateTable(data, elementID, dataset) {
   } else if (dataset == "Status") {
     var offset = new Date().getTimezoneOffset();
     var d = parseInt(data["lwts"]);
-    var utc = d + offset * 60; //This converts to UTC 00:00
+    //var utc = d - (offset * 60); //This converts to UTC 00:00
+    var utc = d
     dutc = new Date(utc * 1000);
+    //dutc = offset.toString(10) + " " + d.toString(10)
 
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Case Temperature:"));

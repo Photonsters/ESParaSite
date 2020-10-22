@@ -1,6 +1,6 @@
-// ConfigPortal.h
+// OTA.h
 
-/* ESParaSite-ESP32 Data Logger
+/* ESParasite Data Logger
         Authors: Andy (DocMadmag) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
@@ -16,25 +16,19 @@
         The Author(s) are extremely grateful for the amazing open source
         communities that work to support all of the sensors, microcontrollers,
         web standards, etc.
+
 */
 
-#ifndef INCLUDE_CONFIGP_H_
-#define INCLUDE_CONFIGP_H_
-
-#include <stdint.h>
+#ifndef INCLUDE_OTA_H_
+#define INCLUDE_OTA_H_
 
 namespace ESParaSite {
-namespace ConfigPortal {
+namespace OTA {
 
-void doConfigPortal();
-
-} // namespace ConfigPortal
+void configOTA();
+void handleOTA();
+void startOTA();
+} // namespace OTA
 } // namespace ESParaSite
 
-uint8_t connectMultiWiFi(void);
-void toggleLED();
-void heartBeatPrint(void);
-void check_WiFi(void);
-void check_status(void);
-
-#endif // INCLUDE_CONFIGP_H_
+#endif

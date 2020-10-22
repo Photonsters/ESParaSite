@@ -24,10 +24,9 @@
 
 #include <stdint.h>
 
-
 namespace ESParaSite {
 namespace Core {
-        
+
 uint16_t doReadSensors(uint16_t, uint16_t);
 uint16_t doHandleEeprom(uint16_t, uint16_t);
 uint16_t doReadDht(uint16_t, uint16_t);
