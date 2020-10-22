@@ -42,15 +42,15 @@ def main() -> None:
         print("MDNS Name " + mdnsName)
         target = mdnsName
     if upload:
-        upload(target)
+        doupload(target)
     if setClock:
-        setclock(target)
+        dosetclock(target)
 
 def parse(args: List[str]) -> Tuple[str, List[int]]:
     options, arguments = getopt.getopt(
         args,                                                   # Arguments
         'vhi:m:',                                               # Short option definitions
-        ["version", "help", "ipaddr=", "mdns=", "setclock"])    # Long option definitions
+        ["version", "help", "ipaddr=", "mdns=", "upload", "setclock"])    # Long option definitions
     ipaddr = ""
     mdnsName = ""
     setClock = False
@@ -66,7 +66,6 @@ def parse(args: List[str]) -> Tuple[str, List[int]]:
             ipaddr = a
         if o in ("-m", "--mdns"):
             mdnsName = a
-           #upload(mdnsName)
         if o in ("--setclock"):
             setClock = True
         if o in ("--upload"):
@@ -80,7 +79,7 @@ def parse(args: List[str]) -> Tuple[str, List[int]]:
     return ipaddr, mdnsName, setClock, upload
 
 
-def upload(espsAddr):
+def doupload(espsAddr):
 
     filesDir = os.path.join(os.getcwd(), "gui")
 
@@ -95,7 +94,7 @@ def upload(espsAddr):
             r = requests.post(uploadUrl, files={filePath: f})
 
 
-def setclock(espsAddr):
+def dosetclock(espsAddr):
 
     # seconds from epoch:
     now_utc = datetime.now(timezone.utc).timestamp()
