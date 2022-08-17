@@ -1,7 +1,7 @@
 // DataDigest.cpp
 
-/* ESParasite Data Logger v0.9
-        Authors: Andy  (SolidSt8Dad)Eakin
+/* ESParasite Data Logger
+        Authors: Andy (SolidSt8Dad) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
         Please see /LIBRARIES for necessary libraries
@@ -22,79 +22,77 @@
 #include <Arduino.h>
 #include <cppQueue.h>
 
-#include "ESParaSite.h"
+#include "DebugUtils.h"
 #include "DataDigest.h"
-#include "Http.h"
-#include "SensorsCore.h"
+#include "ESParaSite.h"
+#include "Sensors.h"
 
 typedef struct history history;
 
 Queue fiveSecHistory(sizeof(history), 6, FIFO);
 Queue thirtySecHistory(sizeof(history), 10, FIFO);
-Queue threeHSecHistory(sizeof(history), 12, FIFO);
+Queue fiveMinHistory(sizeof(history), 12, FIFO);
+Queue oneHourHistory(sizeof(history), 12, FIFO);
 
-extern ESParaSite::chamber chamberResource;
-extern ESParaSite::optics opticsResource;
-extern ESParaSite::ambient ambientResource;
-extern ESParaSite::enclosure enclosureResource;
-extern ESParaSite::statusData statusResource;
-extern ESParaSite::configData configResource;
-extern ESParaSite::sensorExists existsResource;
+extern ESParaSite::chamberData chamber;
+extern ESParaSite::opticsData optics;
+extern ESParaSite::ambientData ambient;
+extern ESParaSite::enclosureData enclosure;
+extern ESParaSite::statusData status;
+extern ESParaSite::configData config;
+extern ESParaSite::machineData machine;
 
-int fiveSecCycleCount = 0;
-int thirtySecCycleCount = 0;
-int threeHSecCycleCount = 0;
+int8_t fiveSecCycleCount = 0;
+int8_t thirtySecCycleCount = 0;
+int8_t fiveMinCycleCount = 0;
+int8_t oneHourCycleCount = 0;
 
 void ESParaSite::DataDigest::fillRow() {
   history fiveSecFill = {0};
 
   fiveSecFill.dataTimestamp = ESParaSite::Sensors::readRtcEpoch();
-  fiveSecFill.ambientTempC = ambientResource.ambientTempC;
-  fiveSecFill.ambientHumidity = ambientResource.ambientHumidity;
-  fiveSecFill.chamberTempC = chamberResource.chamberTempC;
-  fiveSecFill.chamberHumidity = chamberResource.chamberHumidity;
-  fiveSecFill.ledTempC = opticsResource.ledTempC;
-  fiveSecFill.screenTempC = opticsResource.screenTempC;
-  fiveSecFill.ledOn = statusResource.isPrintingFlag;
+  fiveSecFill.ambientTempC = ambient.ambientTempC;
+  fiveSecFill.ambientHumidity = ambient.ambientHumidity;
+  fiveSecFill.chamberTempC = chamber.chamberTempC;
+  fiveSecFill.ledTempC = optics.ledTempC;
+  fiveSecFill.screenTempC = optics.screenTempC;
+  fiveSecFill.ledOn = status.isPrintingFlag;
 
   if (!fiveSecHistory.isFull()) {
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount = FIVESECMAXELEMENT;
-    ESParaSite::DataToJson::getJsonHistory();
-    // ESParaSite::DataDigest::printRows();
   } else if (fiveSecHistory.isFull() && fiveSecCycleCount < FIVESECMAXELEMENT) {
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
     fiveSecCycleCount++;
-    ESParaSite::DataToJson::getJsonHistory();
-    // ESParaSite::DataDigest::printRows();
-  } else if (fiveSecHistory.isFull() && fiveSecCycleCount == FIVESECMAXELEMENT) {
+  } else if (fiveSecHistory.isFull() &&
+             fiveSecCycleCount == FIVESECMAXELEMENT) {
     fivesToThirty();
     fiveSecHistory.drop();
     fiveSecHistory.push(&fiveSecFill);
-    ESParaSite::DataToJson::getJsonHistory();
-    // ESParaSite::DataDigest::printRows();
     fiveSecCycleCount = 0;
   }
+#ifdef PRINT_HISTORY
+  // ESParaSite::DataToJson::getJsonHistory();
+  ESParaSite::DataDigest::printRows();
+#endif
 }
 
 void fivesToThirty() {
-  const int n = fiveSecHistory.getCount();
-  float tempAHArray[] = {0};
-  float tempATArray[] = {0};
-  float tempCHArray[] = {0};
-  float tempCTArray[] = {0};
-  float tempLTArray[] = {0};
-  float tempSTArray[] = {0};
-  int tempLOArray[] = {0};
+  const int8_t n = fiveSecHistory.getCount();
+  int16_t tempAHArray[] = {0};
+  int16_t tempATArray[] = {0};
+  int16_t tempCHArray[] = {0};
+  int16_t tempCTArray[] = {0};
+  int16_t tempLTArray[] = {0};
+  int16_t tempSTArray[] = {0};
+  int8_t tempLOArray[] = {0};
 
   history thirtySecFill;
-  //Serial.print("Size of Queue: ");
-  //Serial.print(fiveSecHistory.getCount());
+
   // Now we crack open all of the structs in the queue and reassemble them
   // into arrays so we can do math against them.
-  for (int i = 0; i <= n; i++)
-  {
+  for (int8_t i = 0; i <= n; i++) {
     history tempStruct;
     fiveSecHistory.peekIdx(&tempStruct, i);
 
@@ -116,37 +114,37 @@ void fivesToThirty() {
 
   // For most values, we will take the mathmatical mean.
   float sum = 0;
-  for (int i = 0; i < n; i++)
-      sum += tempAHArray[i];
+  for (int8_t i = 0; i < n; i++)
+    sum += tempAHArray[i];
 
   thirtySecFill.ambientHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempATArray[i];
 
   thirtySecFill.ambientTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempCHArray[i];
 
   thirtySecFill.chamberHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempCTArray[i];
 
   thirtySecFill.chamberTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempLTArray[i];
 
   thirtySecFill.ledTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempSTArray[i];
 
   thirtySecFill.screenTempC = roundf((sum / n) * 100) / 100;
@@ -154,7 +152,7 @@ void fivesToThirty() {
   // For the LED On value, we will set it on if more than half of the
   // intervals are on.
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempLOArray[n];
   if (sum >= (n / 2)) {
     thirtySecFill.ledOn = 1;
@@ -165,112 +163,210 @@ void fivesToThirty() {
   if (!thirtySecHistory.isFull()) {
     thirtySecHistory.push(&thirtySecFill);
     thirtySecCycleCount = THIRTYSECMAXELEMENT;
-  } else if (thirtySecHistory.isFull() && thirtySecCycleCount < THIRTYSECMAXELEMENT) {
+  } else if (thirtySecHistory.isFull() &&
+             thirtySecCycleCount < THIRTYSECMAXELEMENT) {
     thirtySecHistory.drop();
     thirtySecHistory.push(&thirtySecFill);
     thirtySecCycleCount++;
-  } else if (thirtySecHistory.isFull() && thirtySecCycleCount == THIRTYSECMAXELEMENT) {
-    thirtysToThreeH();
+  } else if (thirtySecHistory.isFull() &&
+             thirtySecCycleCount == THIRTYSECMAXELEMENT) {
+    thirtysTofiveMin();
     thirtySecHistory.drop();
     thirtySecHistory.push(&thirtySecFill);
     thirtySecCycleCount = 0;
   }
 }
 
-void thirtysToThreeH() {
-    const int n = thirtySecHistory.getCount();
-    float tempAHArray[] = {0};
-    float tempATArray[] = {0};
-    float tempCHArray[] = {0};
-    float tempCTArray[] = {0};
-    float tempLTArray[] = {0};
-    float tempSTArray[] = {0};
-    int tempLOArray[] = {0};
+void thirtysTofiveMin() {
+  const int8_t n = thirtySecHistory.getCount();
+  float tempAHArray[] = {0};
+  float tempATArray[] = {0};
+  float tempCHArray[] = {0};
+  float tempCTArray[] = {0};
+  float tempLTArray[] = {0};
+  float tempSTArray[] = {0};
+  int8_t tempLOArray[] = {0};
 
-    history threeHSecFill;
+  history fiveMinFill;
 
-    // Now we crack open all of the structs in the queue and reassemble them
-    // into arrays so we can do math against them.
-    for (int i = 0; i <= n; i++)
-    {
-        history tempStruct;
+  // Now we crack open all of the structs in the queue and reassemble them
+  // into arrays so we can do math against them.
+  for (int8_t i = 0; i <= n; i++) {
+    history tempStruct;
 
-        thirtySecHistory.peekIdx(&tempStruct, i);
+    thirtySecHistory.peekIdx(&tempStruct, i);
 
-        // Every 30 seconds we want to reduce the "five second" data points to a
-        // mean and place that into a 30 seconds data set. First thing we will do is
-        // grab the first timestamp.
-        if (i == 0)
-        {
-            threeHSecFill.dataTimestamp = tempStruct.dataTimestamp;
-        }
-        tempAHArray[i] = tempStruct.ambientHumidity;
-        tempATArray[i] = tempStruct.ambientTempC;
-        tempCHArray[i] = tempStruct.chamberHumidity;
-        tempCTArray[i] = tempStruct.chamberTempC;
-        tempLTArray[i] = tempStruct.ledTempC;
-        tempSTArray[i] = tempStruct.screenTempC;
-        tempLOArray[i] = tempStruct.ledOn;
+    // Every 30 seconds we want to reduce the "five second" data points to a
+    // mean and place that into a 30 seconds data set. First thing we will do is
+    // grab the first timestamp.
+    if (i == 0) {
+      fiveMinFill.dataTimestamp = tempStruct.dataTimestamp;
+    }
+    tempAHArray[i] = tempStruct.ambientHumidity;
+    tempATArray[i] = tempStruct.ambientTempC;
+    tempCHArray[i] = tempStruct.chamberHumidity;
+    tempCTArray[i] = tempStruct.chamberTempC;
+    tempLTArray[i] = tempStruct.ledTempC;
+    tempSTArray[i] = tempStruct.screenTempC;
+    tempLOArray[i] = tempStruct.ledOn;
   }
 
   // For most values, we will take the mathmatical mean.
   float sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempAHArray[i];
 
-  threeHSecFill.ambientHumidity = roundf((sum / n) * 100) / 100;
+  fiveMinFill.ambientHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempATArray[i];
 
-  threeHSecFill.ambientTempC = roundf((sum / n) * 100) / 100;
+  fiveMinFill.ambientTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempCHArray[i];
 
-  threeHSecFill.chamberHumidity = roundf((sum / n) * 100) / 100;
+  fiveMinFill.chamberHumidity = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempCTArray[i];
 
-  threeHSecFill.chamberTempC = roundf((sum / n) * 100) / 100;
+  fiveMinFill.chamberTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempLTArray[i];
 
-  threeHSecFill.ledTempC = roundf((sum / n) * 100) / 100;
+  fiveMinFill.ledTempC = roundf((sum / n) * 100) / 100;
 
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempSTArray[i];
 
-  threeHSecFill.screenTempC = roundf((sum / n) * 100) / 100;
+  fiveMinFill.screenTempC = roundf((sum / n) * 100) / 100;
 
   // For the LED On value, we will set it on if more than half of the
   // intervals are on.
   sum = 0;
-  for (int i = 0; i < n; i++)
+  for (int8_t i = 0; i < n; i++)
     sum += tempLOArray[i];
   if (sum >= (n / 2)) {
-    threeHSecFill.ledOn = 1;
+    fiveMinFill.ledOn = 1;
   } else {
-    threeHSecFill.ledOn = 0;
+    fiveMinFill.ledOn = 0;
   }
 
-  if (!threeHSecHistory.isFull()) {
-    threeHSecHistory.push(&threeHSecFill);
+  if (!fiveMinHistory.isFull()) {
+    fiveMinHistory.push(&fiveMinFill);
+    fiveMinCycleCount = FIVEMINMAXELEMENT;
+  } else if (fiveMinHistory.isFull() && fiveMinCycleCount < FIVEMINMAXELEMENT) {
+    fiveMinHistory.drop();
+    fiveMinHistory.push(&fiveMinFill);
+    fiveMinCycleCount++;
+  } else if (fiveMinHistory.isFull() &&
+             fiveMinCycleCount == FIVEMINMAXELEMENT) {
+    fiveMinToOneHour();
+    fiveMinHistory.drop();
+    fiveMinHistory.push(&fiveMinFill);
+    fiveMinCycleCount = 0;
+  }
+}
+
+void fiveMinToOneHour() {
+  const int8_t n = fiveMinHistory.getCount();
+  float tempAHArray[] = {0};
+  float tempATArray[] = {0};
+  float tempCHArray[] = {0};
+  float tempCTArray[] = {0};
+  float tempLTArray[] = {0};
+  float tempSTArray[] = {0};
+  int8_t tempLOArray[] = {0};
+
+  history oneHourFill;
+
+  // Now we crack open all of the structs in the queue and reassemble them
+  // into arrays so we can do math against them.
+  for (int8_t i = 0; i <= n; i++) {
+    history tempStruct;
+
+    fiveMinHistory.peekIdx(&tempStruct, i);
+
+    // Every 30 seconds we want to reduce the "five second" data points to a
+    // mean and place that into a 30 seconds data set. First thing we will do is
+    // grab the first timestamp.
+    if (i == 0) {
+      oneHourFill.dataTimestamp = tempStruct.dataTimestamp;
+    }
+    tempAHArray[i] = tempStruct.ambientHumidity;
+    tempATArray[i] = tempStruct.ambientTempC;
+    tempCHArray[i] = tempStruct.chamberHumidity;
+    tempCTArray[i] = tempStruct.chamberTempC;
+    tempLTArray[i] = tempStruct.ledTempC;
+    tempSTArray[i] = tempStruct.screenTempC;
+    tempLOArray[i] = tempStruct.ledOn;
+  }
+
+  // For most values, we will take the mathmatical mean.
+  float sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempAHArray[i];
+
+  oneHourFill.ambientHumidity = roundf((sum / n) * 100) / 100;
+
+  sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempATArray[i];
+
+  oneHourFill.ambientTempC = roundf((sum / n) * 100) / 100;
+
+  sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempCHArray[i];
+
+  oneHourFill.chamberHumidity = roundf((sum / n) * 100) / 100;
+
+  sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempCTArray[i];
+
+  oneHourFill.chamberTempC = roundf((sum / n) * 100) / 100;
+
+  sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempLTArray[i];
+
+  oneHourFill.ledTempC = roundf((sum / n) * 100) / 100;
+
+  sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempSTArray[i];
+
+  oneHourFill.screenTempC = roundf((sum / n) * 100) / 100;
+
+  // For the LED On value, we will set it on if more than half of the
+  // intervals are on.
+  sum = 0;
+  for (int8_t i = 0; i < n; i++)
+    sum += tempLOArray[i];
+  if (sum >= (n / 2)) {
+    oneHourFill.ledOn = 1;
   } else {
-    threeHSecHistory.drop();
-    threeHSecHistory.push(&threeHSecFill);
+    oneHourFill.ledOn = 0;
+  }
+
+  if (!oneHourHistory.isFull()) {
+    oneHourHistory.push(&oneHourFill);
+  } else {
+    oneHourHistory.drop();
+    oneHourHistory.push(&oneHourFill);
   }
 }
 
 void ESParaSite::DataDigest::printRows() {
-  int i;
+  int8_t i;
   Serial.println(fiveSecCycleCount);
   Serial.println(F("5 Second Queue"));
   for (i = 0; i <= FIVESECMAXELEMENT; i++) {
@@ -322,11 +418,11 @@ void ESParaSite::DataDigest::printRows() {
     Serial.println(myRec2.ledOn);
   }
 
-  Serial.println(F("300 Second Queue"));
-  for (i = 0; i <= THREEHSECMAXELEMENT; i++) {
+  Serial.println(F("5 Minute Queue"));
+  for (i = 0; i <= FIVEMINMAXELEMENT; i++) {
     history myRec3 = {0};
 
-    threeHSecHistory.peekIdx(&myRec3, i);
+    fiveMinHistory.peekIdx(&myRec3, i);
     Serial.print(i);
     Serial.print(" : ");
     Serial.print(myRec3.dataTimestamp);
@@ -344,5 +440,29 @@ void ESParaSite::DataDigest::printRows() {
     Serial.print(myRec3.screenTempC);
     Serial.print(" : ");
     Serial.println(myRec3.ledOn);
+  }
+
+  Serial.println(F("1 Hour Queue"));
+  for (i = 0; i <= FIVEMINMAXELEMENT; i++) {
+    history myRec4 = {0};
+
+    fiveMinHistory.peekIdx(&myRec4, i);
+    Serial.print(i);
+    Serial.print(" : ");
+    Serial.print(myRec4.dataTimestamp);
+    Serial.print(" : ");
+    Serial.print(myRec4.ambientTempC);
+    Serial.print(" : ");
+    Serial.print(myRec4.ambientHumidity);
+    Serial.print(" : ");
+    Serial.print(myRec4.chamberTempC);
+    Serial.print(" : ");
+    Serial.print(myRec4.chamberHumidity);
+    Serial.print(" : ");
+    Serial.print(myRec4.ledTempC);
+    Serial.print(" : ");
+    Serial.print(myRec4.screenTempC);
+    Serial.print(" : ");
+    Serial.println(myRec4.ledOn);
   }
 }

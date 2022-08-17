@@ -1,7 +1,7 @@
 // ESParaSite.h
 
-/* ESParasite Data Logger v0.9
-        Authors: Andy  (SolidSt8Dad)Eakin
+/* ESParasite Data Logger
+        Authors: Andy (SolidSt8Dad) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
         Please see /LIBRARIES for necessary libraries
@@ -18,30 +18,27 @@
         web standards, etc.
 
 */
-
+#include <Arduino.h>
 #include <stdbool.h>
-
-#define SPIFFS_FIXED_LOCATION 0x100000
 
 #ifndef INCLUDE_H_
 #define INCLUDE_H_
 
 namespace ESParaSite {
 
-struct ambient {
-  float ambientTempC{};
-  float ambientHumidity{};
+struct ambientData {
   float ambientBarometer{};
   float ambientAltitude{};
+  float ambientDewPoint{};
+  float ambientTempC{};
+  float ambientHumidity{};
 };
 
-struct chamber {
-  float chamberTempC{};
-  float chamberHumidity{};
-  float chamberDewPoint{};
+struct chamberData {
+  float chamberTempC{}; 
 };
 
-struct enclosure {
+struct enclosureData {
   uint32_t printerLifeSec{};
   uint32_t lcdLifeSec{};
   uint32_t ledLifeSec{};
@@ -49,20 +46,20 @@ struct enclosure {
   float caseTempC{};
 };
 
-struct optics {
-  float ledUVIndex{};
-  float ledVisible{};
-  float ledInfrared{};
+struct opticsData {
   float ledTempC{};
   float screenTempC{};
+  uint16_t ledVisible{};
+  uint16_t ledInfrared{};
+  uint16_t ledUVIndex{};
 };
 
 struct statusData {
   time_t rtcCurrentSecond{};
-  int isPrintingFlag{};
+  bool isPrintingFlag{};
 };
 
-struct rtcEepromData {
+struct eepromData {
   time_t firstOnTimestamp{};
   time_t lastWriteTimestamp{};
   uint32_t eepromScreenLifeSec{};
@@ -75,17 +72,21 @@ struct configData {
   char cfgMdnsName[32];
   const char *cfgWifiSsid{};
   const char *cfgWifiPassword{};
-  int cfgPinSda{};
-  int cfgPinScl{};
+  char cfgWifiSsidChar[32];
+  char cfgWifiPasswordChar[64];
+  int8_t cfgPinSda{};
+  int8_t cfgPinScl{};
   bool cfgMdnsEnabled{};
-
 };
 
-struct sensorExists {
+struct machineData {
   bool bmeDetected{};
   bool dhtDetected{};
   bool mlxDetected{};
   bool siDetected{};
+  uint8_t bmeI2cAddress{};
+  uint8_t eepromI2cAddress{};
+  uint16_t eepromSizeBytes{};
 };
 
 }; // namespace ESParaSite

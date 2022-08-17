@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 2;
 
 // On Page load show graphs
 document.addEventListener("DOMContentLoaded", function () {
@@ -36,7 +36,9 @@ function getData(elementID, dataset) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
     if (this.readyState == 4 && this.status == 200) {
-      var json = this.responseText;
+      var raw = this.responseText;
+      var raw = raw.replace(/(null)/g, "");
+      var json = raw.replace(/(\]\[)/g, ",");
       var data = JSON.parse(json);
       updateTable(data, elementID, dataset);
     }
@@ -63,69 +65,69 @@ function getData(elementID, dataset) {
     if (dataset == "Ambient") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readAmbient=" + new Date().getTime(),
+        "http://esparasite.local/api?readAmbient=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Chamber") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readChamber=" + new Date().getTime(),
+        "http://esparasite.local/api?readChamber=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Eeprom") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readEeprom=" + new Date().getTime(),
+        "http://esparasite.local/api?readEeprom=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Enclosure") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readEnclosure=" + new Date().getTime(),
+        "http://esparasite.local/api?readEnclosure=" + new Date().getTime(),
         true
       );
     } else if (dataset == "I2C") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readI2C=" + new Date().getTime(),
+        "http://esparasite.local/api?readI2C=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Optics") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readOptics=" + new Date().getTime(),
+        "http://esparasite.local/api?readOptics=" + new Date().getTime(),
         true
       );
     } else if (dataset == "FSInfo") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readFSInfo=" + new Date().getTime(),
+        "http://esparasite.local/api?readFSInfo=" + new Date().getTime(),
         true
       );
     } else if (dataset == "FSContents") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readFSList=" + new Date().getTime(),
+        "http://esparasite.local/api?readFSList=" + new Date().getTime(),
         true
       );
     }
   } else {
     if (dataset == "Ambient") {
-      xhttp.open("GET", "guiFeed?readAmbient=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readAmbient=" + new Date().getTime(), true);
     } else if (dataset == "Chamber") {
-      xhttp.open("GET", "guiFeed?readChamber=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readChamber=" + new Date().getTime(), true);
     } else if (dataset == "Eeprom") {
-      xhttp.open("GET", "guiFeed?readEeprom=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readEeprom=" + new Date().getTime(), true);
     } else if (dataset == "Enclosure") {
-      xhttp.open("GET", "guiFeed?readEnclosure=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readEnclosure=" + new Date().getTime(), true);
     } else if (dataset == "I2C") {
-      xhttp.open("GET", "guiFeed?readI2C=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readI2C=" + new Date().getTime(), true);
     } else if (dataset == "Optics") {
-      xhttp.open("GET", "guiFeed?readOptics=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readOptics=" + new Date().getTime(), true);
     } else if (dataset == "FSInfo") {
-      xhttp.open("GET", "guiFeed?readFSInfo=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readFSInfo=" + new Date().getTime(), true);
     } else if (dataset == "FSContents") {
-      xhttp.open("GET", "guiFeed?readFSList=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readFSList=" + new Date().getTime(), true);
     }
   }
   xhttp.send();
@@ -141,44 +143,36 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell(data["ambTempC"] + " " + "°C"));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Ambient Humidity"));
-    row.appendChild(createRowCell(data["ambHumidity"] + " %"));
+    row.appendChild(createRowCell(data["ambHumid"] + " %"));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Barometric Pressure"));
-    row.appendChild(createRowCell(data["ambPressure"] + " hpa"));
-    var row = tbody.insertRow();
-    row.appendChild(createRowCell("Altitude"));
-    row.appendChild(createRowCell(trimFloat(data["ambAltitude"]) + " m"));
+    row.appendChild(createRowCell(data["ambPres"] + " hpa"));
     var row = tbody.insertRow();
   } else if (dataset == "Chamber") {
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Chamber Temperature"));
     row.appendChild(createRowCell(data["cmbTempC"] + " " + "°C"));
     var row = tbody.insertRow();
-    row.appendChild(createRowCell("Chamber Humidity"));
-    row.appendChild(createRowCell(data["cmbHumidity"] + " %"));
-    var row = tbody.insertRow();
-    row.appendChild(createRowCell("Dew Point"));
-    row.appendChild(createRowCell(trimFloat(data["cmbDewpoint"]) + " " + "°C"));
-    var row = tbody.insertRow();
+
   } else if (dataset == "Eeprom") {
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Last Write Timestamp"));
-    row.appendChild(createRowCell(data["lstwrts"]));
+    row.appendChild(createRowCell(data["lastWrtTS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("First On Timestamp"));
-    row.appendChild(createRowCell(data["frstonts"]));
+    row.appendChild(createRowCell(data["firstOnTS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Recorded LED Life Seconds"));
-    row.appendChild(createRowCell(data["eledls"]));
+    row.appendChild(createRowCell(data["eprmLedLS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Recorded Screen Life Seconds"));
-    row.appendChild(createRowCell(data["escrls"]));
+    row.appendChild(createRowCell(data["eprmScrLS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Recorded Vat Life Seconds"));
-    row.appendChild(createRowCell(data["evatls"]));
+    row.appendChild(createRowCell(data["eprmVatLS"]));
     var row = tbody.insertRow();
-    row.appendChild(createRowCell("Last EEPROM Segment Written"));
-    row.appendChild(createRowCell(data["lsegaddr"]));
+    row.appendChild(createRowCell("Last EEPROM Page Written"));
+    row.appendChild(createRowCell(data["lastSegAddr"] + " (0x" + data["lastSegAddr"].toString(16) + ")"));
     var row = tbody.insertRow();
   } else if (dataset == "Enclosure") {
     var row = tbody.insertRow();
@@ -186,16 +180,16 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell(data["caseTempC"] + " " + "°C"));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Printer Life Seconds"));
-    row.appendChild(createRowCell(data["lifetimeSec"]));
+    row.appendChild(createRowCell(data["printerLS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Current LED Life Seconds"));
-    row.appendChild(createRowCell(data["ledLifeSec"]));
+    row.appendChild(createRowCell(data["curLedLS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Current Screen Life Seconds"));
-    row.appendChild(createRowCell(data["scrnLifeSec"]));
+    row.appendChild(createRowCell(data["curScrLS"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Current Vat Life Seconds"));
-    row.appendChild(createRowCell(data["vatLifeSec"]));
+    row.appendChild(createRowCell(data["curVatLS"]));
     var row = tbody.insertRow();
   } else if (dataset == "I2C") {
     var row = tbody.insertRow();
@@ -220,27 +214,27 @@ function updateTable(data, elementID, dataset) {
   } else if (dataset == "Optics") {
     var row = tbody.insertRow();
     row.appendChild(createRowCell("LED UV Index"));
-    row.appendChild(createRowCell(data["uvIndex"]));
+    row.appendChild(createRowCell(data["uvIdx"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("LED Visible"));
-    row.appendChild(createRowCell(data["visible"]));
+    row.appendChild(createRowCell(data["visLux"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("LED IR"));
-    row.appendChild(createRowCell(data["infrared"]));
+    row.appendChild(createRowCell(data["irLux"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("LED Temperature"));
     row.appendChild(createRowCell(data["ledTempC"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Screen Temperature"));
-    row.appendChild(createRowCell(data["scrnTempC"]));
+    row.appendChild(createRowCell(data["scrTempC"]));
     var row = tbody.insertRow();
   } else if (dataset == "FSInfo") {
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Total FileSystem Bytes"));
-    row.appendChild(createRowCell(data["tfsb"]));
+    row.appendChild(createRowCell(data["tFsB"]));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Used FileSystem Bytes"));
-    row.appendChild(createRowCell(data["ufsb"]));
+    row.appendChild(createRowCell(data["uFsB"]));
     var row = tbody.insertRow();
   } else if (dataset == "FSContents") {
     var row = tbody.insertRow();

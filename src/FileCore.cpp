@@ -1,7 +1,7 @@
 // ConfigFile.cpp
 
-/* ESParasite Data Logger v0.9
-        Authors: Andy  (SolidSt8Dad)Eakin
+/* ESParasite Data Logger
+        Authors: Andy (SolidSt8Dad) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
         Please see /LIBRARIES for necessary libraries
@@ -17,7 +17,6 @@
         communities that work to support all of the sensors, microcontrollers,
         web standards, etc.
 */
-
 // BASED ON -
 // Example: storing JSON configuration file in flash file system
 //
@@ -29,35 +28,45 @@
 // This example code is in the public domain.
 
 #include <ArduinoJson.h>
-#include <LittleFS.h>
 
-#include "ESParaSite.h"
 #include "DebugUtils.h"
+#include "ESParaSite.h"
 #include "FileCore.h"
-#include "Http.h"
 
-using namespace ESParaSite;
+#ifdef ESP32
 
-extern configData configResource;
+#include <SPIFFS.h>
+#define FileFS SPIFFS
 
-bool FileCore::loadConfig() {
-  File configFile = LittleFS.open("/config.json", "r");
+#else
+
+#include <LittleFS.h>
+#define FileFS LittleFS
+
+#endif
+
+extern ESParaSite::configData config;
+
+bool ESParaSite::FileCore::loadConfig() {
+  // Open the config.json file for reading.
+  File configFile = FileFS.open("/config.json", "r");
   if (!configFile) {
 
     Serial.println(F("Failed to open config file."));
     return false;
   }
-
+  // Check to make sure the file will fit into the buffer.
   size_t size = configFile.size();
 
   if (size > 1024) {
     Serial.println(F("Config file size is too large."));
     return false;
   }
-
+  // Read config.json into buffer
   std::unique_ptr<char[]> buf(new char[size]);
   configFile.readBytes(buf.get(), size);
 
+  //Parse Buffer into JSON doc
   StaticJsonDocument<1024> doc;
   auto error = deserializeJson(doc, buf.get());
   if (error) {
@@ -65,87 +74,59 @@ bool FileCore::loadConfig() {
     return false;
   }
 
-  configResource.cfgPinSda = doc["sda_pin"];
-  configResource.cfgPinScl = doc["scl_pin"];
-  configResource.cfgMdnsEnabled = doc["mdns_enabled"];
-  strncpy(configResource.cfgMdnsName, doc["mdns_name"], 32);
-  int len = strlen(configResource.cfgMdnsName);
-  if (len > 0 && configResource.cfgMdnsName[len - 1] == '\n') {
-    configResource.cfgMdnsName[len - 1] = '\0';
+
+#ifdef DEBUG_L2
+  // WARNING!!!: This wil print your WiFi Password in plain text!
+  Serial.println("");
+  Serial.println("config.json File Contents:");
+  serializeJsonPretty(doc, Serial);
+  Serial.println("");
+  Serial.println("");
+#endif
+
+  //Convert JSON values into config variables
+  strncpy(config.cfgWifiSsidChar, doc["wifi_ssid"], 32);
+  strncpy(config.cfgWifiPasswordChar, doc["wifi_passwd"], 64);
+  config.cfgMdnsEnabled = doc["mdns_enabled"];
+  strncpy(config.cfgMdnsName, doc["mdns_name"], 32);
+  int8_t len = strlen(config.cfgMdnsName);
+  if (len > 0 && config.cfgMdnsName[len - 1] == '\n') {
+    config.cfgMdnsName[len - 1] = '\0';
   }
+  JsonVariant pinSda = doc["sda_pin"];
+  JsonVariant pinScl = doc["scl_pin"];
+  config.cfgPinSda = pinSda.as<int>();
+  config.cfgPinScl = pinScl.as<int>();
+
 
   Serial.print(F("I2C Bus on Pins (SDA,SCL): "));
-  Serial.print(configResource.cfgPinSda);
+  Serial.print(config.cfgPinSda);
   Serial.print(F(", "));
-  Serial.println(configResource.cfgPinScl);
+  Serial.println(config.cfgPinScl);
 
   return true;
 }
 
-bool FileCore::saveConfig() {
+bool ESParaSite::FileCore::saveConfig() {
+
   StaticJsonDocument<200> doc;
-  doc["sda_pin"] = configResource.cfgPinSda;
-  doc["scl_pin"] = configResource.cfgPinScl;
-  doc["mdns_enabled"] = configResource.cfgMdnsEnabled;
-  doc["mdns_name"] = configResource.cfgMdnsName;
+  doc["sda_pin"] = config.cfgPinSda;
+  doc["scl_pin"] = config.cfgPinScl;
+  doc["wifi_ssid"] = config.cfgWifiSsid;
+  doc["wifi_passwd"] = config.cfgWifiPassword;
+  doc["mdns_enabled"] = config.cfgMdnsEnabled;
+  doc["mdns_name"] = config.cfgMdnsName;
 
   serializeJsonPretty(doc, Serial);
   Serial.println();
 
-  File configFile = LittleFS.open("/config.json", "w");
+  File configFile = FileFS.open("/config.json", "w");
   if (!configFile) {
     Serial.println(F("Failed to open config file for writing"));
     return false;
   }
 
   serializeJson(doc, configFile);
+
   return true;
-}
-
-void FileCore::getFSInfo(int mode) {
-
-  FSInfo fs_info;
-  LittleFS.info(fs_info);
-  if (mode == 1) {
-    Serial.print("Total Filesystem Bytes:\t");
-    Serial.println(fs_info.totalBytes);
-    Serial.print("Used Filesystem Bytes:\t");
-    Serial.println(fs_info.usedBytes);
-  } else if (mode == 2) {
-    StaticJsonDocument<200> doc;
-    doc["tfsb"] = fs_info.totalBytes;
-    doc["ufsb"] = fs_info.usedBytes;
-    HttpHandleJson::serializeSendJson(doc);
-    return;
-  }
-
-  File root = LittleFS.open("/", "r");
-  File file = root.openNextFile();
-  if (mode == 1) {
-    while (file) {
-      Serial.print(file.name());
-      Serial.print("\t\t");
-      Serial.println(file.size());
-      file = root.openNextFile();
-    }
-  } else if (mode == 3) {
-    // We need to find a better way to do this since we can only fit ~50
-    // files in thsi JSON Doc. look into splitting this and doing HTTP Chunks.
-    // https://gist.github.com/spacehuhn/6c89594ad0edbdb0aad60541b72b2388
-    DynamicJsonDocument parentDoc(4096);
-    DynamicJsonDocument nestedDoc(64);
-    while (file) {
-      JsonObject nested = nestedDoc.to<JsonObject>();
-
-      String fName = file.name();
-      nested["fName"] = fName;
-      nested["fSize"] = file.size();
-      file = root.openNextFile();
-
-      String child;
-      serializeJson(nestedDoc, child);
-      parentDoc.add(serialized(child));
-    }
-    HttpHandleJson::serializeSendJson(parentDoc);
-  }
 }

@@ -1,7 +1,7 @@
 // ESParasite VERSION HISTORY
 
-/* ESParasite Data Logger v0.9
-	Authors: Andy  (SolidSt8Dad)Eakin
+/* ESParasite Data Logger
+	Authors: Andy (SolidSt8Dad) Eakin
 	
 	Please see /ATTRIB for full credits and OSS License Info
   	Please see /LIBRARIES for necessary libraries
@@ -20,7 +20,30 @@
 */
 
 /*
-v.10 - Kala-azar
+v 1.1
+	- Fixed BugIssue #39 api feeds for fileList and readHistory now send 2kB
+		chunks of data across multiple HTTP chunks.
+	- Changed digest of data to add hourly digests for 12 hours.  We now 
+		provide 40 datapoints - live data every 5 seconds for 30 seconds, 
+		30 second data averages for 5 minutes, 5 minute data average for 
+		1 hour and 1 hour averages for 12 hours.
+	- Renamed RtcEepromCore.h and .cpp to EepromCore.h and .cpp.
+	- Numerous changes to header and source file naming and src folder layout
+		- This should make the code groupings a bit simpler for humans to 
+			follow and keep the root sprawl to a minimum 
+	- Renamed getGuiData to handleApiRequest
+	- Moved set_rtc_clock, reset_fep, reset_led and reset_screen into 
+		handleApiRequest
+	- Renamed URL /guiFeed to /api 
+	- Renamed Many variables for better consistency
+	- Changed int variables to int8_t
+	- Removed a few unneeded constants
+	- GUI - added regex parsing prior to parsing json data from fileList and 
+		readHistory api calls to deal with extraneous characters created by 
+		chunking responses
+	- GUI - changed URL pointers from /guifeed to /api
+
+v1.0 - Kala-azar
 	- Moved GUI data feeds to be a single URL with query strings
 	- Moved all HTTP_GET handlers that return JSON to their own cpp file
 	- Moved all HTTP Handlers for the web GUI to their own file.
@@ -32,6 +55,7 @@ v.10 - Kala-azar
 	- Moved all feeds to /guiFeed and renamed all to be consistent.
 	- Changed Flash Layout on ESP12F to have a 3MB filesystem and 512K for 
 		OTA updates This update will format your flash and force you to 
+
 		reconfigure wifi.
 	- Removed ESP32-Targz in favor of a python GUI uploader.
 	- Renamed HTTPFile.cpp to HTTPHandleFile.cpp

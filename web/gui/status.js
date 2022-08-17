@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 2;
 
 //On Page load show graphs
 document.addEventListener("DOMContentLoaded", function () {
@@ -39,21 +39,21 @@ function getData(elementID, dataset) {
     if (dataset == "Network") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readNetwork=" + new Date().getTime(),
+        "http://esparasite.local/api?readNetwork=" + new Date().getTime(),
         true
       );
     } else if (dataset == "Status") {
       xhttp.open(
         "GET",
-        "http://esparasite.local/guiFeed?readStatus=" + new Date().getTime(),
+        "http://esparasite.local/api?readStatus=" + new Date().getTime(),
         true
       );
     }
   } else {
     if (dataset == "Network") {
-      xhttp.open("GET", "guiFeed?readNetwork=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readNetwork=" + new Date().getTime(), true);
     } else if (dataset == "Status") {
-      xhttp.open("GET", "guiFeed?readStatus=" + new Date().getTime(), true);
+      xhttp.open("GET", "api?readStatus=" + new Date().getTime(), true);
     }
   }
   xhttp.send();
@@ -74,7 +74,7 @@ function updateTable(data, elementID, dataset) {
     row.appendChild(createRowCell(signal));
     var row = tbody.insertRow();
     row.appendChild(createRowCell("IP Address:"));
-    row.appendChild(createRowCell(data["ipaddr"]));
+    row.appendChild(createRowCell(data["ipAddr"]));
     var row = tbody.insertRow();
 
     if ((data["mdnsS"] = 1)) {
@@ -87,8 +87,10 @@ function updateTable(data, elementID, dataset) {
   } else if (dataset == "Status") {
     var offset = new Date().getTimezoneOffset();
     var d = parseInt(data["lwts"]);
-    var utc = d + offset * 60; //This converts to UTC 00:00
+    //var utc = d - (offset * 60); //This converts to UTC 00:00
+    var utc = d
     dutc = new Date(utc * 1000);
+    //dutc = offset.toString(10) + " " + d.toString(10)
 
     var row = tbody.insertRow();
     row.appendChild(createRowCell("Case Temperature:"));

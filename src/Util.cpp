@@ -1,7 +1,7 @@
 // Util.cpp
 
-/* ESParasite Data Logger v0.9
-        Authors: Andy  (SolidSt8Dad)Eakin
+/* ESParaSite-ESP32 Data Logger
+        Authors: Andy (SolidSt8Dad) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
         Please see /LIBRARIES for necessary libraries
@@ -21,7 +21,6 @@
 #include <Arduino.h>
 
 #include "ESParaSite.h"
-#include "DebugUtils.h"
 #include "Util.h"
 
 
@@ -29,8 +28,8 @@ using namespace ESParaSite;
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
-int Util::convertCtoF(int temp_c) {
-  int temp_f = (static_cast<int>(round(1.8 * temp_c + 32)));
+int16_t Util::convertCtoF(float temp_c) {
+  int16_t temp_f = (static_cast<int>(round(1.8 * temp_c + 32)));
   return temp_f;
 }
 
@@ -60,8 +59,9 @@ void Util::printDateTime(const RtcDateTime &dt) {
   Serial.print(datestring);
 }
 
-uint64 Util::join_64(uint32 first_part, uint32 second_part) {
-  uint64 joined_word = (((u64)first_part) << 32 | second_part);
+
+uint64_t Util::join64(uint32_t first_part, uint32_t second_part) {
+  uint64_t joined_word = (((uint64_t)first_part) << 32 | second_part);
   return joined_word;
 }
 
@@ -77,4 +77,16 @@ uint32_t Util::ParseUint32(const char (&buf)[4]) {
   uint32_t u0 = buf[0], u1 = buf[1], u2 = buf[2], u3 = buf[3];
   uint32_t uval = u0 | (u1 << 8) | (u2 << 16) | (u3 << 24);
   return uval;
+}
+
+int16_t ESParaSite::Util::floatToInt(float floatValue){
+  int16_t intValue;
+  intValue = roundf(floatValue*100);
+  return intValue;
+}
+
+float ESParaSite::Util::floatToTwo(float floatValue) {
+  float twoFloat;
+  twoFloat = (roundf(floatValue * 100))/100;
+  return twoFloat;
 }

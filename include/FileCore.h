@@ -1,7 +1,7 @@
 // ConfigFile.h
 
-/* ESParasite Data Logger v0.9
-        Authors: Andy  (SolidSt8Dad)Eakin
+/* ESParasite Data Logger
+        Authors: Andy (SolidSt8Dad) Eakin
 
         Please see /ATTRIB for full credits and OSS License Info
         Please see /LIBRARIES for necessary libraries
@@ -27,7 +27,7 @@ namespace FileCore {
 
 bool loadConfig();
 bool saveConfig();
-void getFSInfo(int);
+
 } // namespace FileCore
 } // namespace ESParaSite
 
